@@ -1,3 +1,93 @@
+Saker Source License Version 1.0 (SKL-1.0)
+
+Copyright (c) 2025-present Saker AI
+
+This license is based on the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
+All terms of the Apache License, Version 2.0 apply, with the following ADDITIONAL TERMS
+that modify and supplement the Apache License. In case of conflict, the Additional Terms
+take precedence over the Apache License terms.
+
+
+==========================================================================
+ADDITIONAL TERMS
+==========================================================================
+
+1. USAGE LIMIT
+
+   You may use, reproduce, prepare Derivative Works of, publicly display,
+   publicly perform, sublicense, and distribute the Work and Derivative Works
+   in Source or Object form ONLY IF your organization's annual gross revenue
+   does not exceed one million US dollars ($1,000,000 USD).
+
+   Organizations whose annual gross revenue exceeds $1,000,000 USD must
+   obtain a Commercial License from the Licensor before any production use
+   of the Work or Derivative Works.
+
+   Non-production use — including evaluation, testing, development, personal
+   learning, research, and internal prototyping — is always permitted
+   regardless of revenue, provided such use is not part of a production
+   deployment that generates commercial revenue.
+
+   "Annual gross revenue" means the total revenue of the Legal Entity and
+   all entities under common control, as defined in Section 1 of the Apache
+   License.
+
+
+2. ATTRIBUTION REQUIREMENT
+
+   In addition to the attribution requirements in Section 4 of the Apache
+   License, any Derivative Work must:
+
+   (a) Display the text "Powered by Saker" (or an equivalent acknowledgment
+       approved by the Licensor) in a reasonably prominent position within
+       any user interface visible to end users. Suitable locations include
+       but are not limited to: login pages, about/settings pages, navigation
+       footers, or splash screens. The acknowledgment must not be hidden,
+       obscured, or placed in locations where end users would not ordinarily
+       see it.
+
+   (b) Include the same acknowledgment ("Powered by Saker") in the product
+       documentation, including but not limited to: README files, user guides,
+       API documentation, and any publicly accessible product website.
+
+   The attribution requirement applies regardless of whether the Derivative
+   Work is distributed in Source or Object form, and regardless of whether
+   it is used internally or provided to third parties.
+
+
+3. COMMERCIAL LICENSE
+
+   Organizations exceeding the Usage Limit may obtain a Commercial License
+   from the Licensor. A Commercial License grants the right to use, modify,
+   and distribute the Work and Derivative Works in production without the
+   Usage Limit restriction, while the Attribution Requirement may be
+   negotiated as part of the commercial agreement.
+
+   For commercial licensing inquiries, contact: cinience@hotmail.com
+
+
+4. NO AUTOMATIC CONVERSION
+
+   This license does not automatically convert to any other license at any
+   future date. The Work remains permanently under this license unless the
+   Licensor explicitly releases it under a different license or the user
+   obtains a Commercial License.
+
+
+5. DEFINITIONS CLARIFICATION
+
+   "Derivative Works" as used in this license has the same meaning as in
+   Section 1 of the Apache License, with the clarification that any
+   modification, extension, or adaptation of the Work — including but not
+   limited to forked repositories, modified source code, repackaged
+   distributions, and SaaS deployments based on the Work — constitutes a
+   Derivative Work.
+
+
+==========================================================================
+APACHE LICENSE, VERSION 2.0 — FULL TEXT
+==========================================================================
+
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -28,8 +118,8 @@
       source, and configuration files.
 
       "Object" form shall mean any form resulting from mechanical
-      transformation or translation of a Source form, including but
-      not limited to compiled object code, generated documentation,
+      transformation or translation of a Source form, including but not
+      limited to compiled object code, generated documentation,
       and conversions to other media types.
 
       "Work" shall mean the work of authorship, whether in Source or
@@ -42,33 +132,33 @@
       editorial revisions, annotations, elaborations, or other modifications
       represent, as a whole, an original work of authorship. For the purposes
       of this License, Derivative Works shall not include works that remain
-      separable from, or merely link (or bind by name) to the interfaces of,
+      separable from, or merely link (or bind by name) to, the interfaces of,
       the Work and Derivative Works thereof.
 
       "Contribution" shall mean any work of authorship, including
       the original version of the Work and any modifications or additions
-      to that Work or Derivative Works thereof, that is intentionally
+      to the Work or Derivative Works thereof, that is intentionally
       submitted to Licensor for inclusion in the Work by the copyright owner
       or by an individual or Legal Entity authorized to submit on behalf of
       the copyright owner. For the purposes of this definition, "submitted"
       means any form of electronic, verbal, or written communication sent
       to the Licensor or its representatives, including but not limited to
       communication on electronic mailing lists, source code control systems,
-      and issue tracking systems that are managed by, or on behalf of, the
+      and issue tracking systems that are managed by, or on behalf of the
       Licensor for the purpose of discussing and improving the Work, but
       excluding communication that is conspicuously marked or otherwise
       designated in writing by the copyright owner as "Not a Contribution."
 
       "Contributor" shall mean Licensor and any individual or Legal Entity
-      on behalf of whom a Contribution has been received by Licensor and
+      on behalf of whom a Contribution has been received by the Licensor and
       subsequently incorporated within the Work.
 
    2. Grant of Copyright License. Subject to the terms and conditions of
       this License, each Contributor hereby grants to You a perpetual,
       worldwide, non-exclusive, no-charge, royalty-free, irrevocable
       copyright license to reproduce, prepare Derivative Works of,
-      publicly display, publicly perform, sublicense, and distribute the
-      Work and such Derivative Works in Source or Object form.
+      publicly display, publicly perform, sublicense, and distribute
+      the Work and such Derivative Works in Source or Object form.
 
    3. Grant of Patent License. Subject to the terms and conditions of
       this License, each Contributor hereby grants to You a perpetual,
@@ -110,7 +200,7 @@
           pertain to any part of the Derivative Works, in at least one
           of the following places: within a NOTICE text file distributed
           as part of the Derivative Works; within the Source form or
-          documentation, if provided along with the Derivative Works; or,
+          documentation, if provided along with the Derivative Works; or
           within a display generated by the Derivative Works, if and
           wherever such third-party notices normally appear. The contents
           of the NOTICE file are for informational purposes only and
@@ -137,8 +227,8 @@
 
    6. Trademarks. This License does not grant permission to use the trade
       names, trademarks, service marks, or product names of the Licensor,
-      except as required for reasonable and customary use in describing the
-      origin of the Work and reproducing the content of the NOTICE file.
+      except as required for reasonable and customary use in describing
+      the origin of the Work and reproducing the content of the NOTICE file.
 
    7. Disclaimer of Warranty. Unless required by applicable law or
       agreed to in writing, Licensor provides the Work (and each
@@ -165,37 +255,22 @@
    9. Accepting Warranty or Additional Liability. While redistributing
       the Work or Derivative Works thereof, You may choose to offer,
       and charge a fee for, acceptance of support, warranty, indemnity,
-      or other liability obligations and/or rights consistent with this
-      License. However, in accepting such obligations, You may act only
-      on Your own behalf and on Your sole responsibility, not on behalf
-      of any other Contributor, and only if You agree to indemnify,
+      or other liability obligations and/or rights consistent with
+      this License. However, in accepting such obligations, You may act
+      only on Your own behalf and on Your sole responsibility, not on
+      behalf of any Contributor, and only if You agree to indemnify,
       defend, and hold each Contributor harmless for any liability
       incurred by, or claims asserted against, such Contributor by reason
       of your accepting any such warranty or additional liability.
 
-   END OF TERMS AND CONDITIONS
 
-   APPENDIX: How to apply the Apache License to your work.
+==========================================================================
+NOTICE
+==========================================================================
 
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
+Saker AI - https://saker.ai
 
-   Copyright [yyyy] [name of copyright owner]
+This product includes software developed by Saker AI
+(https://saker.ai).
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+Powered by Saker.
