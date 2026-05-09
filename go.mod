@@ -28,7 +28,7 @@ require (
 	github.com/godeps/govm v0.1.4-0.20260320035657-7ab34655fe79
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
-	github.com/landlock-lsm/go-landlock v0.7.0
+	github.com/landlock-lsm/go-landlock v0.8.1
 	github.com/modelcontextprotocol/go-sdk v1.1.0
 	github.com/mojatter/s2 v0.10.0
 	github.com/mojatter/s2/s3 v0.10.0
