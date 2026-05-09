@@ -1,0 +1,484 @@
+package toolbuiltin
+
+import (
+	"bufio"
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+
+	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	"github.com/cinience/saker/pkg/security"
+	"github.com/cinience/saker/pkg/tool"
+)
+
+const (
+	readDefaultLineLimit = 2000
+	readMaxOutputBytes   = 128 * 1024
+	readDescription      = `Reads a text file from the local filesystem within the configured sandbox.
+If the User provides a path, assume that path is valid. It is okay to read a file that does not exist; an error will be returned.
+
+Usage:
+- The file_path parameter can be absolute or relative to the sandbox root
+- By default, it reads up to 2000 lines starting from the beginning of the file
+- You can optionally specify a line offset and limit (especially handy for long files), but it's recommended to read the whole file by not providing these parameters
+- Output may be truncated if the formatted response grows too large; use offset/limit to continue reading
+- Results are returned using cat -n format, with line numbers starting at 1
+- This tool reads text files only; it does not decode images, PDFs, or Jupyter notebooks.
+- If the target looks like a binary file, an error will be returned instead of garbage output.
+- This tool can only read files, not directories. To read a directory, use an ls command via the Bash tool.
+- You can call multiple tools in a single response. It is always better to speculatively read multiple potentially useful files in parallel.
+- If you read a file that exists but has empty contents you will receive a system reminder warning in place of file contents.`
+)
+
+var readSchema = &tool.JSONSchema{
+	Type: "object",
+	Properties: map[string]interface{}{
+		"file_path": map[string]interface{}{
+			"type":        "string",
+			"description": "The absolute path to the file to read",
+		},
+		"offset": map[string]interface{}{
+			"type":        "number",
+			"description": "The line number to start reading from. Only provide if the file is too large to read at once",
+		},
+		"limit": map[string]interface{}{
+			"type":        "number",
+			"description": "The number of lines to read. Only provide if the file is too large to read at once.",
+		},
+	},
+	Required: []string{"file_path"},
+}
+
+// ReadTool streams files with strict sandbox boundaries.
+type ReadTool struct {
+	base           *fileSandbox
+	defaultLimit   int
+	maxOutputBytes int
+}
+
+// NewReadTool builds a ReadTool rooted at the current directory.
+func NewReadTool() *ReadTool {
+	return NewReadToolWithRoot("")
+}
+
+// NewReadToolWithRoot builds a ReadTool rooted at the provided directory.
+func NewReadToolWithRoot(root string) *ReadTool {
+	return &ReadTool{
+		base:           newFileSandbox(root),
+		defaultLimit:   readDefaultLineLimit,
+		maxOutputBytes: readMaxOutputBytes,
+	}
+}
+
+// NewReadToolWithSandbox builds a ReadTool using a custom sandbox.
+func NewReadToolWithSandbox(root string, sandbox *security.Sandbox) *ReadTool {
+	return &ReadTool{
+		base:           newFileSandboxWithSandbox(root, sandbox),
+		defaultLimit:   readDefaultLineLimit,
+		maxOutputBytes: readMaxOutputBytes,
+	}
+}
+
+func (r *ReadTool) Name() string { return "Read" }
+
+func (r *ReadTool) Description() string { return readDescription }
+
+func (r *ReadTool) Schema() *tool.JSONSchema { return readSchema }
+
+func (r *ReadTool) SetEnvironment(env sandboxenv.ExecutionEnvironment) {
+	if r != nil && r.base != nil {
+		r.base.SetEnvironment(env)
+	}
+}
+
+func (r *ReadTool) Execute(ctx context.Context, params map[string]interface{}) (*tool.ToolResult, error) {
+	if ctx == nil {
+		return nil, errors.New("context is nil")
+	}
+	if r == nil || r.base == nil || r.base.sandbox == nil {
+		return nil, errors.New("read tool is not initialised")
+	}
+	ps, err := r.base.prepareSession(ctx)
+	if err != nil {
+		return nil, err
+	}
+	path, err := r.resolveFilePath(params, ps)
+	if err != nil {
+		return nil, err
+	}
+	offset, err := r.parseOffset(params)
+	if err != nil {
+		return nil, err
+	}
+	limit, err := r.parseLimit(params)
+	if err != nil {
+		return nil, err
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	var content string
+	if isVirtualizedSandboxSession(ps) {
+		data, err := r.base.env.ReadFile(ctx, ps, path)
+		if err != nil {
+			return nil, err
+		}
+		content = string(data)
+	} else {
+		// Use streaming partial read when not reading from the start with default limit.
+		if offset > 1 || limit < r.defaultLimit {
+			formatted, returned, outputTruncated, partialErr := r.readFilePartial(path, offset, limit)
+			if partialErr != nil {
+				return nil, partialErr
+			}
+			truncated := offset > 1 || returned >= limit
+			if returned == 0 {
+				totalLines := countFileLines(path)
+				message := fmt.Sprintf("no content in requested range (file has %d lines)", totalLines)
+				return &tool.ToolResult{
+					Success: true,
+					Output:  message,
+					Data: map[string]interface{}{
+						"path":              displayPath(path, r.base.root),
+						"offset":            offset,
+						"limit":             limit,
+						"total_lines":       totalLines,
+						"returned_lines":    0,
+						"line_truncations":  0,
+						"output_truncated":  false,
+						"output_byte_limit": r.maxOutputBytes,
+						"truncated":         true,
+						"range_out_of_file": true,
+					},
+				}, nil
+			}
+			return &tool.ToolResult{
+				Success: true,
+				Output:  formatted,
+				Data: map[string]interface{}{
+					"path":              displayPath(path, r.base.root),
+					"offset":            offset,
+					"limit":             limit,
+					"total_lines":       -1, // unknown in streaming mode
+					"returned_lines":    returned,
+					"line_truncations":  0,
+					"output_truncated":  outputTruncated,
+					"output_byte_limit": r.maxOutputBytes,
+					"truncated":         truncated,
+				},
+			}, nil
+		}
+
+		content, err = r.base.readFile(path)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	lines := splitFileLines(content)
+	totalLines := len(lines)
+	formatted, returned, outputTruncated, truncated := r.formatLines(lines, offset, limit)
+	if returned == 0 {
+		message := fmt.Sprintf("no content in requested range (file has %d lines)", totalLines)
+		return &tool.ToolResult{
+			Success: true,
+			Output:  message,
+			Data: map[string]interface{}{
+				"path":              displayPath(path, r.base.root),
+				"offset":            offset,
+				"limit":             limit,
+				"total_lines":       totalLines,
+				"returned_lines":    returned,
+				"line_truncations":  0,
+				"output_truncated":  false,
+				"output_byte_limit": r.maxOutputBytes,
+				"truncated":         true,
+				"range_out_of_file": true,
+			},
+		}, nil
+	}
+
+	return &tool.ToolResult{
+		Success: true,
+		Output:  formatted,
+		Data: map[string]interface{}{
+			"path":              displayPath(path, r.base.root),
+			"offset":            offset,
+			"limit":             limit,
+			"total_lines":       totalLines,
+			"returned_lines":    returned,
+			"line_truncations":  0,
+			"output_truncated":  outputTruncated,
+			"output_byte_limit": r.maxOutputBytes,
+			"truncated":         truncated,
+		},
+	}, nil
+}
+
+// readFilePartial reads only the lines in [offset, offset+limit) using bufio.Scanner,
+// avoiding loading the entire file into memory. It applies the same file validation
+// checks as fileSandbox.readFile (directory, size, binary).
+func (r *ReadTool) readFilePartial(path string, offset, limit int) (string, int, bool, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return "", 0, false, fmt.Errorf("stat file: %w", err)
+	}
+	if info.IsDir() {
+		return "", 0, false, fmt.Errorf("%s is a directory", path)
+	}
+	if r.base.maxBytes > 0 && info.Size() > r.base.maxBytes {
+		return "", 0, false, fmt.Errorf("file exceeds %d bytes limit", r.base.maxBytes)
+	}
+
+	f, err := os.Open(path)
+	if err != nil {
+		return "", 0, false, fmt.Errorf("open file: %w", err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	scanner.Buffer(make([]byte, 64*1024), 1024*1024) // 1 MB max line
+
+	var b strings.Builder
+	lineNum := 0
+	returned := 0
+	outputTruncated := false
+
+	for scanner.Scan() {
+		lineNum++
+		if lineNum < offset {
+			continue
+		}
+		if returned >= limit {
+			// There are more lines beyond the requested range.
+			break
+		}
+		// Check for binary content (null bytes).
+		if bytes.IndexByte(scanner.Bytes(), 0) >= 0 {
+			return "", 0, false, fmt.Errorf("binary file %s is not supported", path)
+		}
+		line := scanner.Text()
+		entry := fmt.Sprintf("%6d\t%s", lineNum, line)
+		if returned > 0 {
+			entry = "\n" + entry
+		}
+		if r.maxOutputBytes > 0 && b.Len()+len(entry) > r.maxOutputBytes {
+			outputTruncated = true
+			remaining := r.maxOutputBytes - b.Len()
+			if remaining > 0 {
+				b.WriteString(entry[:remaining])
+			}
+			b.WriteString(fmt.Sprintf("\n[Output truncated at %d bytes. Use offset/limit to read more.]", r.maxOutputBytes))
+			break
+		}
+		b.WriteString(entry)
+		returned++
+	}
+	if err := scanner.Err(); err != nil {
+		return "", 0, false, fmt.Errorf("scan file: %w", err)
+	}
+
+	return b.String(), returned, outputTruncated, nil
+}
+
+// countFileLines counts the total number of lines in a file using a scanner.
+// Returns 0 on error (best-effort; used only for error messages).
+func countFileLines(path string) int {
+	f, err := os.Open(path)
+	if err != nil {
+		return 0
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	scanner.Buffer(make([]byte, 64*1024), 1024*1024)
+	count := 0
+	for scanner.Scan() {
+		count++
+	}
+	return count
+}
+
+func (r *ReadTool) resolveFilePath(params map[string]interface{}, ps *sandboxenv.PreparedSession) (string, error) {
+	if params == nil {
+		return "", errors.New("params is nil")
+	}
+	raw, ok := params["file_path"]
+	if !ok {
+		return "", errors.New("file_path is required")
+	}
+	return r.base.resolveGuestPath(raw, ps)
+}
+
+func (r *ReadTool) parseOffset(params map[string]interface{}) (int, error) {
+	value, err := parseLineNumber(params, "offset")
+	if err != nil {
+		return 0, err
+	}
+	if value == 0 {
+		return 1, nil
+	}
+	if value < 0 {
+		return 0, errors.New("offset must be >= 1")
+	}
+	return value, nil
+}
+
+func (r *ReadTool) parseLimit(params map[string]interface{}) (int, error) {
+	value, err := parseLineNumber(params, "limit")
+	if err != nil {
+		return 0, err
+	}
+	switch {
+	case value <= 0:
+		return r.defaultLimit, nil
+	default:
+		return value, nil
+	}
+}
+
+func (r *ReadTool) formatLines(lines []string, offset, limit int) (string, int, bool, bool) {
+	if len(lines) == 0 {
+		return "", 0, false, false
+	}
+	start := offset - 1
+	if start < 0 {
+		start = 0
+	}
+	if start >= len(lines) {
+		return "", 0, false, false
+	}
+	if limit <= 0 || limit > len(lines)-start {
+		limit = len(lines) - start
+	}
+
+	var b strings.Builder
+	returned := 0
+	truncated := start > 0 || start+limit < len(lines)
+	outputTruncated := false
+
+	for i := start; i < start+limit; i++ {
+		lineNumber := i + 1
+		line := strings.TrimRight(lines[i], "\r")
+		entry := fmt.Sprintf("%6d\t%s", lineNumber, line)
+		if i < start+limit-1 {
+			entry += "\n"
+		}
+		if r.maxOutputBytes > 0 && b.Len()+len(entry) > r.maxOutputBytes {
+			outputTruncated = true
+			truncated = true
+			remaining := r.maxOutputBytes - b.Len()
+			if remaining > 0 {
+				b.WriteString(entry[:remaining])
+			}
+			b.WriteString(fmt.Sprintf("\n[Output truncated at %d bytes. Use offset/limit to read more.]", r.maxOutputBytes))
+			break
+		}
+		b.WriteString(entry)
+		returned++
+	}
+	return b.String(), returned, outputTruncated, truncated
+}
+
+func splitFileLines(content string) []string {
+	if content == "" {
+		return nil
+	}
+	return strings.Split(content, "\n")
+}
+
+func parseLineNumber(params map[string]interface{}, key string) (int, error) {
+	if params == nil {
+		return 0, nil
+	}
+	raw, ok := params[key]
+	if !ok || raw == nil {
+		return 0, nil
+	}
+	value, err := coerceInt(raw)
+	if err != nil {
+		return 0, fmt.Errorf("%s must be a number: %w", key, err)
+	}
+	return value, nil
+}
+
+func coerceInt(value interface{}) (int, error) {
+	switch v := value.(type) {
+	case int:
+		return v, nil
+	case int8:
+		return int(v), nil
+	case int16:
+		return int(v), nil
+	case int32:
+		return int(v), nil
+	case int64:
+		if v > math.MaxInt || v < math.MinInt {
+			return 0, fmt.Errorf("value %d out of int range", v)
+		}
+		return int(v), nil
+	case uint:
+		if uint64(v) > uint64(math.MaxInt) {
+			return 0, fmt.Errorf("value %d out of int range", v)
+		}
+		return int(v), nil //nolint:gosec // overflow checked above
+	case uint8:
+		return int(v), nil
+	case uint16:
+		return int(v), nil
+	case uint32:
+		if uint64(v) > uint64(math.MaxInt) {
+			return 0, fmt.Errorf("value %d out of int range", v)
+		}
+		return int(v), nil
+	case uint64:
+		if v > uint64(math.MaxInt) {
+			return 0, fmt.Errorf("value %d out of int range", v)
+		}
+		return int(v), nil
+	case float32:
+		if math.Trunc(float64(v)) != float64(v) {
+			return 0, fmt.Errorf("value %v is not an integer", v)
+		}
+		return int(v), nil
+	case float64:
+		if math.Trunc(v) != v {
+			return 0, fmt.Errorf("value %v is not an integer", v)
+		}
+		return int(v), nil
+	case json.Number:
+		if strings.Contains(v.String(), ".") {
+			f, err := v.Float64()
+			if err != nil {
+				return 0, err
+			}
+			if math.Trunc(f) != f {
+				return 0, fmt.Errorf("value %v is not an integer", f)
+			}
+			return int(f), nil
+		}
+		i, err := v.Int64()
+		if err != nil {
+			return 0, err
+		}
+		return coerceInt(i)
+	case string:
+		trimmed := strings.TrimSpace(v)
+		if trimmed == "" {
+			return 0, errors.New("empty string")
+		}
+		i, err := strconv.Atoi(trimmed)
+		if err != nil {
+			return 0, err
+		}
+		return i, nil
+	default:
+		return 0, fmt.Errorf("unsupported type %T", value)
+	}
+}

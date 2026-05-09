@@ -1,0 +1,24 @@
+{
+  "files": ["CHANGELOG.md", "LICENSE", "README.md", "README_zh.md"],
+  "imageSize": 100,
+  "contributorsPerLine": 7,
+  "contributorsSortAlphabetically": true,
+  "badgeTemplate": "[![All Contributors](https://img.shields.io/badge/all_contributors-0-orange)](#contributors)",
+  "contributorTemplate": "<a href=\"https://github.com/{{github_username}}\"><img src=\"https://avatars.githubusercontent.com/{{github_username}}?size={{imageSize}}\" width=\"{{imageSize}}\" height=\"{{imageSize}}\" alt=\"{{github_username}}\" title=\"{{contribution_type}}\" /></a>",
+  "types": {
+    "code": { "symbol": "💻" },
+    "doc": { "symbol": "📖" },
+    "design": { "symbol": "🎨" },
+    "test": { "symbol": "✅" },
+    "bug": { "symbol": "🐛" },
+    "security": { "symbol": "🛡️" },
+    "infra": { "symbol": "🚇" },
+    "review": { "symbol": "👀" },
+    "maintenance": { "symbol": "🧹" },
+    "question": { "symbol": "💬" },
+    "talk": { "symbol": "🎤" },
+    "financial": { "symbol": "💰" }
+  },
+  "skipCi": true,
+  "contributionTypes": ["code", "doc", "test", "infra", "review", "maintenance"]
+}

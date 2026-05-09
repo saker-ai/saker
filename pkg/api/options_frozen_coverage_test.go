@@ -1,0 +1,139 @@
+package api
+
+import (
+	"testing"
+
+	coremw "github.com/cinience/saker/pkg/core/eventmw"
+	corehooks "github.com/cinience/saker/pkg/core/hooks"
+	"github.com/cinience/saker/pkg/middleware"
+	"github.com/cinience/saker/pkg/model"
+	"github.com/cinience/saker/pkg/runtime/commands"
+	"github.com/cinience/saker/pkg/runtime/skills"
+	"github.com/cinience/saker/pkg/runtime/subagents"
+	"github.com/cinience/saker/pkg/tool"
+)
+
+func TestOptionsFrozenClonesCollections(t *testing.T) {
+	matcher := skills.MatcherFunc(func(skills.ActivationContext) skills.MatchResult { return skills.MatchResult{Score: 1} })
+	skillDef := skills.Definition{
+		Name:     "skill",
+		Metadata: map[string]string{"k": "v"},
+		Matchers: []skills.Matcher{matcher},
+	}
+	subDef := subagents.Definition{
+		Name:        "sub",
+		BaseContext: subagents.Context{SessionID: "sess", Metadata: map[string]any{"k": "v"}, ToolWhitelist: []string{"Bash"}},
+		Matchers:    []skills.Matcher{matcher},
+	}
+
+	opts := Options{
+		Mode:       ModeContext{EntryPoint: EntryPointCLI, CLI: &CLIContext{Args: []string{"--x"}, Flags: map[string]string{"k": "v"}}},
+		Middleware: []middleware.Middleware{nil},
+		Tools:      []tool.Tool{&stubTool{name: "legacy"}},
+		OutputSchema: &model.ResponseFormat{
+			Type: "json_schema",
+			JSONSchema: &model.OutputJSONSchema{
+				Name: "storyboard",
+				Schema: map[string]any{
+					"type": "array",
+				},
+			},
+		},
+		OutputSchemaMode: OutputSchemaModePostProcess,
+		EnabledBuiltinTools: []string{
+			"bash",
+		},
+		DisallowedTools: []string{"grep"},
+		CustomTools:     []tool.Tool{&stubTool{name: "custom"}},
+		MCPServers:      []string{"mcp://server"},
+		TypedHooks:      []corehooks.ShellHook{{Env: map[string]string{"A": "B"}}},
+		HookMiddleware:  []coremw.Middleware{nil},
+		Skills:          []SkillRegistration{{Definition: skillDef}},
+		Commands:        []CommandRegistration{{Definition: commands.Definition{Name: "cmd"}}},
+		Subagents:       []SubagentRegistration{{Definition: subDef}},
+		ModelPool:       map[ModelTier]model.Model{ModelTierLow: &stubModel{}},
+		SubagentModelMapping: map[string]ModelTier{
+			"sub": ModelTierLow,
+		},
+	}
+
+	frozen := opts.frozen()
+
+	opts.EnabledBuiltinTools[0] = "changed"
+	opts.DisallowedTools[0] = "changed"
+	opts.MCPServers[0] = "changed"
+	opts.Mode.CLI.Args[0] = "--changed"
+	opts.Mode.CLI.Flags["k"] = "changed"
+
+	if len(frozen.EnabledBuiltinTools) != 1 || frozen.EnabledBuiltinTools[0] != "bash" {
+		t.Fatalf("EnabledBuiltinTools=%v, want [bash]", frozen.EnabledBuiltinTools)
+	}
+	if len(frozen.DisallowedTools) != 1 || frozen.DisallowedTools[0] != "grep" {
+		t.Fatalf("DisallowedTools=%v, want [grep]", frozen.DisallowedTools)
+	}
+	if len(frozen.MCPServers) != 1 || frozen.MCPServers[0] != "mcp://server" {
+		t.Fatalf("MCPServers=%v, want [mcp://server]", frozen.MCPServers)
+	}
+	if frozen.Mode.CLI == nil || len(frozen.Mode.CLI.Args) != 1 || frozen.Mode.CLI.Args[0] != "--x" {
+		t.Fatalf("Mode.CLI.Args=%v, want [--x]", frozen.Mode.CLI)
+	}
+	if frozen.Mode.CLI.Flags["k"] != "v" {
+		t.Fatalf("Mode.CLI.Flags=%v, want map[k:v]", frozen.Mode.CLI.Flags)
+	}
+	if frozen.OutputSchema == nil || frozen.OutputSchema.JSONSchema == nil {
+		t.Fatalf("expected frozen output schema")
+	}
+	if frozen.OutputSchemaMode != OutputSchemaModePostProcess {
+		t.Fatalf("OutputSchemaMode=%q, want %q", frozen.OutputSchemaMode, OutputSchemaModePostProcess)
+	}
+	if frozen.OutputSchema.JSONSchema.Name != "storyboard" {
+		t.Fatalf("unexpected output schema name %q", frozen.OutputSchema.JSONSchema.Name)
+	}
+
+	opts.Skills[0].Definition.Metadata["k"] = "changed"
+	if frozen.Skills[0].Definition.Metadata["k"] != "v" {
+		t.Fatalf("Skills.Metadata=%v, want map[k:v]", frozen.Skills[0].Definition.Metadata)
+	}
+
+	opts.OutputSchema.JSONSchema.Name = "changed"
+	if frozen.OutputSchema.JSONSchema.Name != "storyboard" {
+		t.Fatalf("OutputSchema=%+v, want storyboard", frozen.OutputSchema)
+	}
+
+	opts.Subagents[0].Definition.BaseContext.Metadata["k"] = "changed"
+	if frozen.Subagents[0].Definition.BaseContext.Metadata["k"] != "v" {
+		t.Fatalf("Subagents.BaseContext.Metadata=%v, want map[k:v]", frozen.Subagents[0].Definition.BaseContext.Metadata)
+	}
+}
+
+func TestRequestNormalizedClonesOutputSchema(t *testing.T) {
+	req := Request{
+		Prompt: "hi",
+		OutputSchema: &model.ResponseFormat{
+			Type: "json_schema",
+			JSONSchema: &model.OutputJSONSchema{
+				Name: "storyboard",
+				Schema: map[string]any{
+					"type": "array",
+				},
+			},
+		},
+		OutputSchemaMode: OutputSchemaModePostProcess,
+	}
+
+	normalized := req.normalized(ModeContext{EntryPoint: EntryPointCLI}, "sess")
+	if normalized.OutputSchema == nil || normalized.OutputSchema.JSONSchema == nil {
+		t.Fatalf("expected normalized output schema")
+	}
+	if normalized.OutputSchemaMode != OutputSchemaModePostProcess {
+		t.Fatalf("OutputSchemaMode=%q, want %q", normalized.OutputSchemaMode, OutputSchemaModePostProcess)
+	}
+	if normalized.OutputSchema.JSONSchema.Name != "storyboard" {
+		t.Fatalf("unexpected output schema name %q", normalized.OutputSchema.JSONSchema.Name)
+	}
+
+	req.OutputSchema.JSONSchema.Name = "changed"
+	if normalized.OutputSchema.JSONSchema.Name != "storyboard" {
+		t.Fatalf("normalized OutputSchema=%+v, want storyboard", normalized.OutputSchema)
+	}
+}

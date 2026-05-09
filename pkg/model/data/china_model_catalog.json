@@ -1,0 +1,1633 @@
+{
+  "deepseek-chat": {
+    "name": "deepseek-chat",
+    "vendor": "DeepSeek",
+    "provider": "deepseek",
+    "family": "DeepSeek-V3.2",
+    "region": "china_mainland",
+    "base_litellm_key": "deepseek-chat",
+    "aliases": [
+      "deepseek-chat",
+      "deepseek-chat-v3",
+      "deepseek-v3.2",
+      "deepseek/deepseek-chat"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 131072,
+    "max_output_tokens": 8192,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": true,
+    "supports_response_schema": true,
+    "supports_reasoning": false,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 2.0,
+        "output_per_million": 3.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.2,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+    "source_verified_at": "2026-04-04",
+    "notes": "Official China pricing page lists DeepSeek-V3.2 for both deepseek-chat and deepseek-reasoner."
+  },
+  "deepseek-reasoner": {
+    "name": "deepseek-reasoner",
+    "vendor": "DeepSeek",
+    "provider": "deepseek",
+    "family": "DeepSeek-V3.2",
+    "region": "china_mainland",
+    "base_litellm_key": "deepseek-reasoner",
+    "aliases": [
+      "deepseek-r1",
+      "deepseek-reasoner",
+      "deepseek/deepseek-reasoner"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 131072,
+    "max_output_tokens": 65536,
+    "supports_vision": false,
+    "supports_function_calling": false,
+    "supports_prompt_caching": true,
+    "supports_response_schema": true,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 2.0,
+        "output_per_million": 3.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.2,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+    "source_verified_at": "2026-04-04",
+    "notes": "Official China pricing page lists DeepSeek-V3.2 for both deepseek-chat and deepseek-reasoner."
+  },
+  "qwen-max": {
+    "name": "qwen-max",
+    "vendor": "Alibaba Cloud",
+    "provider": "dashscope",
+    "family": "Qwen Max",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/qwen-max",
+    "aliases": [
+      "dashscope/qwen-max",
+      "qwen-max",
+      "qwen-max-latest"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 30720,
+    "max_output_tokens": 8192,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.345,
+        "output_per_million": 1.377,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://www.alibabacloud.com/help/zh/model-studio/model-pricing",
+    "source_verified_at": "2026-04-04",
+    "notes": "China Mainland deployment pricing."
+  },
+  "qwen-plus": {
+    "name": "qwen-plus",
+    "vendor": "Alibaba Cloud",
+    "provider": "dashscope",
+    "family": "Qwen Plus",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/qwen-plus",
+    "aliases": [
+      "dashscope/qwen-plus",
+      "qwen-plus",
+      "qwen-plus-latest"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 129024,
+    "max_output_tokens": 16384,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.4,
+        "output_per_million": 1.2,
+        "output_thinking_per_million": 4.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 256000,
+          "input_per_million": 0.4,
+          "output_per_million": 1.2,
+          "output_thinking_per_million": 4.0
+        },
+        {
+          "min_input_tokens": 256000,
+          "max_input_tokens": 1000000,
+          "input_per_million": 1.2,
+          "output_per_million": 3.6,
+          "output_thinking_per_million": 12.0
+        }
+      ]
+    },
+    "source_url": "https://www.alibabacloud.com/help/zh/model-studio/model-pricing",
+    "source_verified_at": "2026-04-04",
+    "notes": "China Mainland deployment pricing with tiered rates by input-token range."
+  },
+  "qwen-turbo": {
+    "name": "qwen-turbo",
+    "vendor": "Alibaba Cloud",
+    "provider": "dashscope",
+    "family": "Qwen Turbo",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/qwen-turbo",
+    "aliases": [
+      "dashscope/qwen-turbo",
+      "qwen-turbo",
+      "qwen-turbo-latest"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 129024,
+    "max_output_tokens": 16384,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.044,
+        "output_per_million": 0.087,
+        "output_thinking_per_million": 0.431,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {
+        "non_thinking": {
+          "input_per_million": 0.044,
+          "output_per_million": 0.087,
+          "output_thinking_per_million": 0.0,
+          "cache_hit_per_million": 0.0,
+          "cache_read_per_million": 0.0,
+          "cache_write_per_million": 0.0
+        },
+        "thinking": {
+          "input_per_million": 0.044,
+          "output_per_million": 0.431,
+          "output_thinking_per_million": 0.0,
+          "cache_hit_per_million": 0.0,
+          "cache_read_per_million": 0.0,
+          "cache_write_per_million": 0.0
+        }
+      },
+      "tiers": []
+    },
+    "source_url": "https://www.alibabacloud.com/help/zh/model-studio/model-pricing",
+    "source_verified_at": "2026-04-04",
+    "notes": "China Mainland deployment pricing; thinking mode bills a higher output rate."
+  },
+  "qwen-vl-max": {
+    "name": "qwen-vl-max",
+    "vendor": "Alibaba Cloud",
+    "provider": "dashscope",
+    "family": "Qwen VL",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/qwen-vl-max",
+    "aliases": [
+      "dashscope/qwen-vl-max",
+      "qwen-vl-max",
+      "qwen-vl-max-latest"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 131072,
+    "max_output_tokens": 0,
+    "supports_vision": true,
+    "supports_function_calling": false,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": false,
+    "pricing": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.8,
+        "output_per_million": 3.2,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://www.alibabacloud.com/help/zh/model-studio/model-pricing",
+    "source_verified_at": "2026-04-04",
+    "notes": "China Mainland deployment pricing."
+  },
+  "qwen-vl-plus": {
+    "name": "qwen-vl-plus",
+    "vendor": "Alibaba Cloud",
+    "provider": "dashscope",
+    "family": "Qwen VL",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/qwen-vl-plus",
+    "aliases": [
+      "dashscope/qwen-vl-plus",
+      "qwen-vl-plus",
+      "qwen-vl-plus-latest"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 131072,
+    "max_output_tokens": 0,
+    "supports_vision": true,
+    "supports_function_calling": false,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": false,
+    "pricing": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.21,
+        "output_per_million": 0.63,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://www.alibabacloud.com/help/zh/model-studio/model-pricing",
+    "source_verified_at": "2026-04-04",
+    "notes": "China Mainland deployment pricing."
+  },
+  "kimi-k2.5": {
+    "name": "kimi-k2.5",
+    "vendor": "Moonshot AI",
+    "provider": "moonshot",
+    "family": "Kimi K2.5",
+    "region": "china_mainland",
+    "base_litellm_key": "moonshot/kimi-k2.5",
+    "aliases": [
+      "kimi-k2.5",
+      "moonshot/kimi-k2.5",
+      "moonshotai.kimi-k2.5"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 262144,
+    "max_output_tokens": 262144,
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 4.0,
+        "output_per_million": 21.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.7,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://platform.moonshot.cn/",
+    "source_verified_at": "2026-04-04",
+    "notes": "Official platform home page pricing card."
+  },
+  "kimi-k2": {
+    "name": "kimi-k2",
+    "vendor": "Moonshot AI",
+    "provider": "moonshot",
+    "family": "Kimi K2",
+    "region": "china_mainland",
+    "base_litellm_key": "moonshot/kimi-k2-0905-preview",
+    "aliases": [
+      "kimi-k2",
+      "kimi-k2-0905",
+      "moonshot/kimi-k2",
+      "moonshot/kimi-k2-0905-preview"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 262144,
+    "max_output_tokens": 262144,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": false,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 4.0,
+        "output_per_million": 16.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 1.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://platform.moonshot.cn/",
+    "source_verified_at": "2026-04-04",
+    "notes": "Official platform home page pricing card labelled K2 0905."
+  },
+  "kimi-k2-thinking": {
+    "name": "kimi-k2-thinking",
+    "vendor": "Moonshot AI",
+    "provider": "moonshot",
+    "family": "Kimi K2 Thinking",
+    "region": "china_mainland",
+    "base_litellm_key": "moonshot/kimi-k2-thinking",
+    "aliases": [
+      "kimi-k2-thinking",
+      "kimi-k2-thinking-251104",
+      "moonshot/kimi-k2-thinking"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 262144,
+    "max_output_tokens": 262144,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 4.0,
+        "output_per_million": 16.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 1.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://platform.moonshot.cn/",
+    "source_verified_at": "2026-04-04",
+    "notes": "Official platform home page pricing card."
+  },
+  "glm-4.5": {
+    "name": "glm-4.5",
+    "vendor": "Zhipu AI",
+    "provider": "zai",
+    "family": "GLM-4.5",
+    "region": "china_mainland",
+    "base_litellm_key": "zai/glm-4.5",
+    "aliases": [
+      "glm-4.5",
+      "glm-4.5-air",
+      "zai/glm-4.5",
+      "zai/glm-4.5-air"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 128000,
+    "max_output_tokens": 32000,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": false,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.8,
+        "output_per_million": 2.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://docs.bigmodel.cn/cn/guide/models/text/glm-4.5",
+    "source_verified_at": "2026-04-04",
+    "notes": "Official GLM-4.5 page states pricing is as low as input 0.8 CNY / output 2 CNY per million tokens."
+  },
+  "minimax-m2.5": {
+    "name": "minimax-m2.5",
+    "vendor": "MiniMax",
+    "provider": "minimax",
+    "family": "MiniMax M2.5",
+    "region": "china_mainland",
+    "base_litellm_key": "minimax/MiniMax-M2.5",
+    "aliases": [
+      "MiniMax-M2.5",
+      "minimax-m2.5",
+      "minimax/MiniMax-M2.5"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 1000000,
+    "max_output_tokens": 8192,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": true,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 2.1,
+        "output_per_million": 8.4,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.21,
+        "cache_write_per_million": 2.625
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://platform.minimaxi.com/docs/guides/pricing-paygo",
+    "source_verified_at": "2026-04-04",
+    "notes": "Official pay-as-you-go pricing page."
+  },
+  "minimax-m2.1": {
+    "name": "minimax-m2.1",
+    "vendor": "MiniMax",
+    "provider": "minimax",
+    "family": "MiniMax M2.1",
+    "region": "china_mainland",
+    "base_litellm_key": "minimax/MiniMax-M2.1",
+    "aliases": [
+      "MiniMax-M2.1",
+      "minimax-m2.1",
+      "minimax/MiniMax-M2.1"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 1000000,
+    "max_output_tokens": 8192,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": true,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 2.1,
+        "output_per_million": 8.4,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.21,
+        "cache_write_per_million": 2.625
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://platform.minimaxi.com/docs/guides/pricing-paygo",
+    "source_verified_at": "2026-04-04",
+    "notes": "Official pay-as-you-go pricing page; listed under historical text models."
+  },
+  "minimax-m2": {
+    "name": "minimax-m2",
+    "vendor": "MiniMax",
+    "provider": "minimax",
+    "family": "MiniMax M2",
+    "region": "china_mainland",
+    "base_litellm_key": "minimax/MiniMax-M2",
+    "aliases": [
+      "MiniMax-M2",
+      "minimax-m2",
+      "minimax/MiniMax-M2"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 200000,
+    "max_output_tokens": 8192,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": true,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 2.1,
+        "output_per_million": 8.4,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.21,
+        "cache_write_per_million": 2.625
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://platform.minimaxi.com/docs/guides/pricing-paygo",
+    "source_verified_at": "2026-04-04",
+    "notes": "Official pay-as-you-go pricing page; listed under historical text models."
+  },
+  "doubao-seed-2-0-pro-260215": {
+    "name": "doubao-seed-2-0-pro-260215",
+    "vendor": "Volcengine",
+    "provider": "volcengine",
+    "family": "Doubao Seed 2.0",
+    "region": "china_mainland",
+    "base_litellm_key": "volcengine/doubao-seed-2-0-pro-260215",
+    "aliases": [
+      "doubao-seed-2-0-pro-260215",
+      "doubao.seed.2.0.pro.260215",
+      "volcengine/doubao-seed-2-0-pro-260215"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 256000,
+    "max_output_tokens": 128000,
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.0,
+        "output_per_million": 0.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 32000,
+          "input_per_million": 0.46,
+          "output_per_million": 2.3,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 32000,
+          "max_input_tokens": 128000,
+          "input_per_million": 0.7,
+          "output_per_million": 3.5,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 128000,
+          "max_input_tokens": 256000,
+          "input_per_million": 1.4,
+          "output_per_million": 7.0,
+          "output_thinking_per_million": 0.0
+        }
+      ]
+    },
+    "source_url": "https://www.volcengine.com/docs/82379/1330310",
+    "source_verified_at": "2026-04-04",
+    "notes": "Tiered China pricing derived from the official Volcengine source URL embedded in the LiteLLM base catalog."
+  },
+  "doubao-seed-2-0-lite-260215": {
+    "name": "doubao-seed-2-0-lite-260215",
+    "vendor": "Volcengine",
+    "provider": "volcengine",
+    "family": "Doubao Seed 2.0",
+    "region": "china_mainland",
+    "base_litellm_key": "volcengine/doubao-seed-2-0-lite-260215",
+    "aliases": [
+      "doubao-seed-2-0-lite-260215",
+      "doubao.seed.2.0.lite.260215",
+      "volcengine/doubao-seed-2-0-lite-260215"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 256000,
+    "max_output_tokens": 128000,
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.0,
+        "output_per_million": 0.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 32000,
+          "input_per_million": 0.087,
+          "output_per_million": 0.52,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 32000,
+          "max_input_tokens": 128000,
+          "input_per_million": 0.13,
+          "output_per_million": 0.78,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 128000,
+          "max_input_tokens": 256000,
+          "input_per_million": 0.26,
+          "output_per_million": 1.6,
+          "output_thinking_per_million": 0.0
+        }
+      ]
+    },
+    "source_url": "https://www.volcengine.com/docs/82379/1330310",
+    "source_verified_at": "2026-04-04",
+    "notes": "Tiered China pricing derived from the official Volcengine source URL embedded in the LiteLLM base catalog."
+  },
+  "doubao-seed-2-0-mini-260215": {
+    "name": "doubao-seed-2-0-mini-260215",
+    "vendor": "Volcengine",
+    "provider": "volcengine",
+    "family": "Doubao Seed 2.0",
+    "region": "china_mainland",
+    "base_litellm_key": "volcengine/doubao-seed-2-0-mini-260215",
+    "aliases": [
+      "doubao-seed-2-0-mini-260215",
+      "doubao.seed.2.0.mini.260215",
+      "volcengine/doubao-seed-2-0-mini-260215"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 256000,
+    "max_output_tokens": 128000,
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.0,
+        "output_per_million": 0.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 32000,
+          "input_per_million": 0.029,
+          "output_per_million": 0.29,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 32000,
+          "max_input_tokens": 128000,
+          "input_per_million": 0.058,
+          "output_per_million": 0.58,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 128000,
+          "max_input_tokens": 256000,
+          "input_per_million": 0.12,
+          "output_per_million": 1.2,
+          "output_thinking_per_million": 0.0
+        }
+      ]
+    },
+    "source_url": "https://www.volcengine.com/docs/82379/1330310",
+    "source_verified_at": "2026-04-04",
+    "notes": "Tiered China pricing derived from the official Volcengine source URL embedded in the LiteLLM base catalog."
+  },
+  "doubao-seed-2-0-code-preview-260215": {
+    "name": "doubao-seed-2-0-code-preview-260215",
+    "vendor": "Volcengine",
+    "provider": "volcengine",
+    "family": "Doubao Seed Code",
+    "region": "china_mainland",
+    "base_litellm_key": "volcengine/doubao-seed-2-0-code-preview-260215",
+    "aliases": [
+      "doubao-seed-2-0-code-preview-260215",
+      "doubao.seed.2.0.code.preview.260215",
+      "volcengine/doubao-seed-2-0-code-preview-260215"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 256000,
+    "max_output_tokens": 128000,
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.0,
+        "output_per_million": 0.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 32000,
+          "input_per_million": 0.46,
+          "output_per_million": 2.3,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 32000,
+          "max_input_tokens": 128000,
+          "input_per_million": 0.7,
+          "output_per_million": 3.5,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 128000,
+          "max_input_tokens": 256000,
+          "input_per_million": 1.4,
+          "output_per_million": 7.0,
+          "output_thinking_per_million": 0.0
+        }
+      ]
+    },
+    "source_url": "https://www.volcengine.com/docs/82379/1330310",
+    "source_verified_at": "2026-04-04",
+    "notes": "Tiered China pricing derived from the official Volcengine source URL embedded in the LiteLLM base catalog."
+  },
+  "qwen3.5-plus": {
+    "name": "qwen3.5-plus",
+    "vendor": "Alibaba Cloud",
+    "provider": "dashscope",
+    "family": "Qwen 3.5 Plus",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/qwen3.5-plus",
+    "aliases": [
+      "dashscope/qwen3.5-plus",
+      "qwen3.5-plus",
+      "qwen3.5-plus-2026-02-15",
+      "dashscope/qwen3.5-plus-2026-02-15"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 1000000,
+    "max_output_tokens": 16384,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.4,
+        "output_per_million": 2.4,
+        "output_thinking_per_million": 2.4,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {
+        "non_thinking": {
+          "input_per_million": 0.4,
+          "output_per_million": 2.4,
+          "output_thinking_per_million": 0.0,
+          "cache_hit_per_million": 0.0,
+          "cache_read_per_million": 0.0,
+          "cache_write_per_million": 0.0
+        }
+      },
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 256000,
+          "input_per_million": 0.4,
+          "output_per_million": 2.4,
+          "output_thinking_per_million": 2.4
+        },
+        {
+          "min_input_tokens": 256000,
+          "max_input_tokens": 1000000,
+          "input_per_million": 0.5,
+          "output_per_million": 3.0,
+          "output_thinking_per_million": 3.0
+        }
+      ],
+      "regional": {
+        "china_mainland": {
+          "default": {
+            "input_per_million": 0.115,
+            "output_per_million": 0.688,
+            "output_thinking_per_million": 0.688,
+            "cache_hit_per_million": 0.0,
+            "cache_read_per_million": 0.0,
+            "cache_write_per_million": 0.0
+          },
+          "tiers": [
+            {
+              "min_input_tokens": 0,
+              "max_input_tokens": 128000,
+              "input_per_million": 0.115,
+              "output_per_million": 0.688,
+              "output_thinking_per_million": 0.688
+            },
+            {
+              "min_input_tokens": 128000,
+              "max_input_tokens": 256000,
+              "input_per_million": 0.287,
+              "output_per_million": 1.72,
+              "output_thinking_per_million": 1.72
+            },
+            {
+              "min_input_tokens": 256000,
+              "max_input_tokens": 1000000,
+              "input_per_million": 0.573,
+              "output_per_million": 3.44,
+              "output_thinking_per_million": 3.44
+            }
+          ]
+        }
+      }
+    },
+    "source_url": "https://www.alibabacloud.com/help/zh/model-studio/model-pricing",
+    "source_verified_at": "2026-04-04",
+    "notes": "International pricing as default; china_mainland regional override with cheaper tiered rates."
+  },
+  "qwen3.6-plus": {
+    "name": "qwen3.6-plus",
+    "vendor": "Alibaba Cloud",
+    "provider": "dashscope",
+    "family": "Qwen 3.6 Plus",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/qwen3.6-plus",
+    "aliases": [
+      "dashscope/qwen3.6-plus",
+      "qwen3.6-plus"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 1000000,
+    "max_output_tokens": 16384,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.276,
+        "output_per_million": 1.651,
+        "output_thinking_per_million": 1.651,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {
+        "non_thinking": {
+          "input_per_million": 0.276,
+          "output_per_million": 1.651,
+          "output_thinking_per_million": 0.0,
+          "cache_hit_per_million": 0.0,
+          "cache_read_per_million": 0.0,
+          "cache_write_per_million": 0.0
+        }
+      },
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 256000,
+          "input_per_million": 0.276,
+          "output_per_million": 1.651,
+          "output_thinking_per_million": 1.651
+        },
+        {
+          "min_input_tokens": 256000,
+          "max_input_tokens": 1000000,
+          "input_per_million": 1.101,
+          "output_per_million": 6.602,
+          "output_thinking_per_million": 6.602
+        }
+      ]
+    },
+    "source_url": "https://www.alibabacloud.com/help/zh/model-studio/model-pricing",
+    "source_verified_at": "2026-04-04",
+    "notes": "International deployment pricing. Thinking and non-thinking output at same price. Tiered by input token range."
+  },
+  "qwen3.5-flash": {
+    "name": "qwen3.5-flash",
+    "vendor": "Alibaba Cloud",
+    "provider": "dashscope",
+    "family": "Qwen 3.5 Flash",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/qwen3.5-flash",
+    "aliases": [
+      "dashscope/qwen3.5-flash",
+      "qwen3.5-flash",
+      "qwen3.5-flash-2026-02-23",
+      "dashscope/qwen3.5-flash-2026-02-23"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 1000000,
+    "max_output_tokens": 16384,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": false,
+    "pricing": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.1,
+        "output_per_million": 0.4,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://www.alibabacloud.com/help/zh/model-studio/model-pricing",
+    "source_verified_at": "2026-04-04",
+    "notes": "International deployment pricing. Flat rate up to 1M tokens."
+  },
+  "qwen3-max": {
+    "name": "qwen3-max",
+    "vendor": "Alibaba Cloud",
+    "provider": "dashscope",
+    "family": "Qwen 3 Max",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/qwen3-max",
+    "aliases": [
+      "dashscope/qwen3-max",
+      "qwen3-max",
+      "qwen3-max-2026-01-23",
+      "dashscope/qwen3-max-2026-01-23"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 252000,
+    "max_output_tokens": 16384,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 1.2,
+        "output_per_million": 6.0,
+        "output_thinking_per_million": 6.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 32000,
+          "input_per_million": 1.2,
+          "output_per_million": 6.0,
+          "output_thinking_per_million": 6.0
+        },
+        {
+          "min_input_tokens": 32000,
+          "max_input_tokens": 128000,
+          "input_per_million": 2.4,
+          "output_per_million": 12.0,
+          "output_thinking_per_million": 12.0
+        },
+        {
+          "min_input_tokens": 128000,
+          "max_input_tokens": 252000,
+          "input_per_million": 3.0,
+          "output_per_million": 15.0,
+          "output_thinking_per_million": 15.0
+        }
+      ],
+      "regional": {
+        "china_mainland": {
+          "default": {
+            "input_per_million": 0.359,
+            "output_per_million": 1.434,
+            "output_thinking_per_million": 1.434,
+            "cache_hit_per_million": 0.0,
+            "cache_read_per_million": 0.0,
+            "cache_write_per_million": 0.0
+          },
+          "tiers": [
+            {
+              "min_input_tokens": 0,
+              "max_input_tokens": 32000,
+              "input_per_million": 0.359,
+              "output_per_million": 1.434,
+              "output_thinking_per_million": 1.434
+            },
+            {
+              "min_input_tokens": 32000,
+              "max_input_tokens": 128000,
+              "input_per_million": 0.574,
+              "output_per_million": 2.294,
+              "output_thinking_per_million": 2.294
+            },
+            {
+              "min_input_tokens": 128000,
+              "max_input_tokens": 252000,
+              "input_per_million": 1.004,
+              "output_per_million": 4.014,
+              "output_thinking_per_million": 4.014
+            }
+          ]
+        }
+      }
+    },
+    "source_url": "https://www.alibabacloud.com/help/zh/model-studio/model-pricing",
+    "source_verified_at": "2026-04-04",
+    "notes": "International pricing as default; china_mainland regional override with cheaper tiered rates."
+  },
+  "qwen3-coder-plus": {
+    "name": "qwen3-coder-plus",
+    "vendor": "Alibaba Cloud",
+    "provider": "dashscope",
+    "family": "Qwen 3 Coder",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/qwen3-coder-plus",
+    "aliases": [
+      "dashscope/qwen3-coder-plus",
+      "qwen3-coder-plus",
+      "qwen3-coder-plus-2025-09-23",
+      "dashscope/qwen3-coder-plus-2025-09-23"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 1000000,
+    "max_output_tokens": 16384,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": false,
+    "pricing": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 1.0,
+        "output_per_million": 5.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 32000,
+          "input_per_million": 1.0,
+          "output_per_million": 5.0,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 32000,
+          "max_input_tokens": 128000,
+          "input_per_million": 1.8,
+          "output_per_million": 9.0,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 128000,
+          "max_input_tokens": 256000,
+          "input_per_million": 3.0,
+          "output_per_million": 15.0,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 256000,
+          "max_input_tokens": 1000000,
+          "input_per_million": 6.0,
+          "output_per_million": 60.0,
+          "output_thinking_per_million": 0.0
+        }
+      ],
+      "regional": {
+        "china_mainland": {
+          "default": {
+            "input_per_million": 0.574,
+            "output_per_million": 2.294,
+            "output_thinking_per_million": 0.0,
+            "cache_hit_per_million": 0.0,
+            "cache_read_per_million": 0.0,
+            "cache_write_per_million": 0.0
+          },
+          "tiers": [
+            {
+              "min_input_tokens": 0,
+              "max_input_tokens": 32000,
+              "input_per_million": 0.574,
+              "output_per_million": 2.294,
+              "output_thinking_per_million": 0.0
+            },
+            {
+              "min_input_tokens": 32000,
+              "max_input_tokens": 128000,
+              "input_per_million": 0.861,
+              "output_per_million": 3.441,
+              "output_thinking_per_million": 0.0
+            },
+            {
+              "min_input_tokens": 128000,
+              "max_input_tokens": 256000,
+              "input_per_million": 1.434,
+              "output_per_million": 7.17,
+              "output_thinking_per_million": 0.0
+            }
+          ]
+        }
+      }
+    },
+    "source_url": "https://www.alibabacloud.com/help/zh/model-studio/model-pricing",
+    "source_verified_at": "2026-04-04",
+    "notes": "International pricing as default; china_mainland regional override with cheaper tiered rates."
+  },
+  "qwen3-coder-flash": {
+    "name": "qwen3-coder-flash",
+    "vendor": "Alibaba Cloud",
+    "provider": "dashscope",
+    "family": "Qwen 3 Coder",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/qwen3-coder-flash",
+    "aliases": [
+      "dashscope/qwen3-coder-flash",
+      "qwen3-coder-flash",
+      "qwen3-coder-flash-2025-07-28",
+      "dashscope/qwen3-coder-flash-2025-07-28"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 1000000,
+    "max_output_tokens": 16384,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": false,
+    "supports_response_schema": false,
+    "supports_reasoning": false,
+    "pricing": {
+      "currency": "USD",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 0.3,
+        "output_per_million": 1.5,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 32000,
+          "input_per_million": 0.3,
+          "output_per_million": 1.5,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 32000,
+          "max_input_tokens": 128000,
+          "input_per_million": 0.5,
+          "output_per_million": 2.5,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 128000,
+          "max_input_tokens": 256000,
+          "input_per_million": 0.8,
+          "output_per_million": 4.0,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 256000,
+          "max_input_tokens": 1000000,
+          "input_per_million": 1.6,
+          "output_per_million": 9.6,
+          "output_thinking_per_million": 0.0
+        }
+      ]
+    },
+    "source_url": "https://www.alibabacloud.com/help/zh/model-studio/model-pricing",
+    "source_verified_at": "2026-04-04",
+    "notes": "International deployment pricing. Tiered by input range up to 1M tokens."
+  },
+  "deepseek-v4-pro": {
+    "name": "deepseek-v4-pro",
+    "vendor": "DeepSeek",
+    "provider": "dashscope",
+    "family": "DeepSeek-V4",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/deepseek-v4-pro",
+    "aliases": [
+      "deepseek-v4-pro",
+      "dashscope/deepseek-v4-pro"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 1000000,
+    "max_output_tokens": 393216,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": true,
+    "supports_response_schema": true,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 12.0,
+        "output_per_million": 24.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://help.aliyun.com/zh/model-studio/models",
+    "source_verified_at": "2026-04-28",
+    "notes": "DashScope-hosted DeepSeek-V4-Pro. 1M context, 393K combined thinking+answer output. Free tier: 1M tokens for 90 days after Bailian activation."
+  },
+  "deepseek-v4-flash": {
+    "name": "deepseek-v4-flash",
+    "vendor": "DeepSeek",
+    "provider": "dashscope",
+    "family": "DeepSeek-V4",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/deepseek-v4-flash",
+    "aliases": [
+      "deepseek-v4-flash",
+      "dashscope/deepseek-v4-flash"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 1000000,
+    "max_output_tokens": 393216,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": true,
+    "supports_response_schema": true,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 1.0,
+        "output_per_million": 2.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://help.aliyun.com/zh/model-studio/models",
+    "source_verified_at": "2026-04-28",
+    "notes": "DashScope-hosted DeepSeek-V4-Flash. Lightweight tier; free 1M tokens for 90 days after Bailian activation."
+  },
+  "kimi-k2.6": {
+    "name": "kimi-k2.6",
+    "vendor": "Moonshot AI",
+    "provider": "dashscope",
+    "family": "Kimi K2.6",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/kimi-k2.6",
+    "aliases": [
+      "kimi-k2.6",
+      "dashscope/kimi-k2.6",
+      "Moonshot-Kimi-K2.6"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 262144,
+    "max_output_tokens": 98304,
+    "supports_vision": true,
+    "supports_function_calling": true,
+    "supports_prompt_caching": true,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 6.5,
+        "output_per_million": 27.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://help.aliyun.com/zh/model-studio/models",
+    "source_verified_at": "2026-04-28",
+    "notes": "DashScope-hosted Kimi K2.6. 262K context; thinking mode caps reasoning at 81,920 tokens, non-thinking at 98,304. Free 1M tokens for 90 days after Bailian activation."
+  },
+  "minimax-m2.7": {
+    "name": "minimax-m2.7",
+    "vendor": "MiniMax",
+    "provider": "dashscope",
+    "family": "MiniMax M2.7",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/MiniMax-M2.7",
+    "aliases": [
+      "MiniMax-M2.7",
+      "minimax-m2.7",
+      "dashscope/MiniMax-M2.7",
+      "MiniMax/MiniMax-M2.7"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 204800,
+    "max_output_tokens": 131072,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": true,
+    "supports_response_schema": false,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 2.1,
+        "output_per_million": 8.4,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.21,
+        "cache_read_per_million": 0.21,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": []
+    },
+    "source_url": "https://help.aliyun.com/zh/model-studio/models",
+    "source_verified_at": "2026-04-28",
+    "notes": "DashScope-hosted MiniMax M2.7 (vendor: MiniMax/稀宇科技 direct supply). Cache-hit discount is 10%."
+  },
+  "glm-5.1": {
+    "name": "glm-5.1",
+    "vendor": "Zhipu AI",
+    "provider": "dashscope",
+    "family": "GLM-5.1",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/glm-5.1",
+    "aliases": [
+      "glm-5.1",
+      "dashscope/glm-5.1"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 202745,
+    "max_output_tokens": 131072,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": true,
+    "supports_response_schema": true,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 6.0,
+        "output_per_million": 24.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 32000,
+          "input_per_million": 6.0,
+          "output_per_million": 24.0,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 32000,
+          "max_input_tokens": 198000,
+          "input_per_million": 8.0,
+          "output_per_million": 28.0,
+          "output_thinking_per_million": 0.0
+        }
+      ]
+    },
+    "source_url": "https://help.aliyun.com/zh/model-studio/models",
+    "source_verified_at": "2026-04-28",
+    "notes": "DashScope-hosted GLM-5.1. Tiered pricing by input length; thinking and non-thinking modes share the same price."
+  },
+  "glm-5": {
+    "name": "glm-5",
+    "vendor": "Zhipu AI",
+    "provider": "dashscope",
+    "family": "GLM-5",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/glm-5",
+    "aliases": [
+      "glm-5",
+      "dashscope/glm-5"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 202752,
+    "max_output_tokens": 32768,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": true,
+    "supports_response_schema": true,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 4.0,
+        "output_per_million": 18.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 32000,
+          "input_per_million": 4.0,
+          "output_per_million": 18.0,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 32000,
+          "max_input_tokens": 198000,
+          "input_per_million": 6.0,
+          "output_per_million": 22.0,
+          "output_thinking_per_million": 0.0
+        }
+      ]
+    },
+    "source_url": "https://help.aliyun.com/zh/model-studio/models",
+    "source_verified_at": "2026-04-28",
+    "notes": "DashScope-hosted GLM-5. Tiered pricing by input length; thinking output cap is 16,384 tokens."
+  },
+  "glm-4.7": {
+    "name": "glm-4.7",
+    "vendor": "Zhipu AI",
+    "provider": "dashscope",
+    "family": "GLM-4.7",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/glm-4.7",
+    "aliases": [
+      "glm-4.7",
+      "dashscope/glm-4.7"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 169984,
+    "max_output_tokens": 98304,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": true,
+    "supports_response_schema": true,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 3.0,
+        "output_per_million": 14.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 32000,
+          "input_per_million": 3.0,
+          "output_per_million": 14.0,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 32000,
+          "max_input_tokens": 166000,
+          "input_per_million": 4.0,
+          "output_per_million": 16.0,
+          "output_thinking_per_million": 0.0
+        }
+      ]
+    },
+    "source_url": "https://help.aliyun.com/zh/model-studio/models",
+    "source_verified_at": "2026-04-28",
+    "notes": "DashScope-hosted GLM-4.7. Tiered pricing by input length; thinking and non-thinking modes share the same price."
+  },
+  "glm-4.6": {
+    "name": "glm-4.6",
+    "vendor": "Zhipu AI",
+    "provider": "dashscope",
+    "family": "GLM-4.6",
+    "region": "china_mainland",
+    "base_litellm_key": "dashscope/glm-4.6",
+    "aliases": [
+      "glm-4.6",
+      "dashscope/glm-4.6"
+    ],
+    "mode": "chat",
+    "max_input_tokens": 169984,
+    "max_output_tokens": 98304,
+    "supports_vision": false,
+    "supports_function_calling": true,
+    "supports_prompt_caching": true,
+    "supports_response_schema": true,
+    "supports_reasoning": true,
+    "pricing": {
+      "currency": "CNY",
+      "unit": "per_million_tokens",
+      "default": {
+        "input_per_million": 3.0,
+        "output_per_million": 14.0,
+        "output_thinking_per_million": 0.0,
+        "cache_hit_per_million": 0.0,
+        "cache_read_per_million": 0.0,
+        "cache_write_per_million": 0.0
+      },
+      "modes": {},
+      "tiers": [
+        {
+          "min_input_tokens": 0,
+          "max_input_tokens": 32000,
+          "input_per_million": 3.0,
+          "output_per_million": 14.0,
+          "output_thinking_per_million": 0.0
+        },
+        {
+          "min_input_tokens": 32000,
+          "max_input_tokens": 166000,
+          "input_per_million": 4.0,
+          "output_per_million": 16.0,
+          "output_thinking_per_million": 0.0
+        }
+      ]
+    },
+    "source_url": "https://help.aliyun.com/zh/model-studio/models",
+    "source_verified_at": "2026-04-28",
+    "notes": "DashScope-hosted GLM-4.6. Tiered pricing by input length; thinking and non-thinking modes share the same price."
+  }
+}

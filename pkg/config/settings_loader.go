@@ -1,0 +1,181 @@
+package config
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	iofs "io/fs"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+// SettingsLoader composes settings using the simplified precedence model.
+// Higher-priority layers override lower ones while preserving unspecified fields.
+// Order (low -> high): defaults < user-global (~/.saker/settings.json) < project < local < runtime overrides.
+type SettingsLoader struct {
+	ProjectRoot      string
+	ConfigRoot       string
+	SettingsFiles    []string
+	RuntimeOverrides *Settings
+	FS               *FS
+	UserHome         string // optional; if empty, resolved via os.UserHomeDir()
+}
+
+// Load resolves and merges settings across all layers.
+func (l *SettingsLoader) Load() (*Settings, error) {
+	if strings.TrimSpace(l.ProjectRoot) == "" {
+		return nil, errors.New("project root is required for settings loading")
+	}
+
+	root := l.ProjectRoot
+	if abs, err := filepath.Abs(root); err == nil {
+		root = abs
+	} else {
+		return nil, fmt.Errorf("resolve project root: %w", err)
+	}
+
+	merged := GetDefaultSettings()
+
+	type settingsLayer struct {
+		name string
+		path string
+	}
+
+	var layers []settingsLayer
+
+	// User-global layer: ~/.saker/settings.json (lowest priority after defaults).
+	userHome := l.UserHome
+	if userHome == "" {
+		userHome, _ = os.UserHomeDir()
+	}
+	if strings.TrimSpace(userHome) != "" {
+		layers = append(layers, settingsLayer{
+			name: "user-global",
+			path: filepath.Join(userHome, ".saker", "settings.json"),
+		})
+	}
+
+	if len(l.SettingsFiles) > 0 {
+		for idx, path := range l.SettingsFiles {
+			layers = append(layers, settingsLayer{
+				name: fmt.Sprintf("settings[%d]", idx),
+				path: resolveSettingsPath(path, root),
+			})
+		}
+	} else {
+		configRoot := resolveConfigRoot(root, l.ConfigRoot)
+		layers = append(layers,
+			settingsLayer{name: "project", path: getProjectSettingsPath(root, configRoot)},
+			settingsLayer{name: "local", path: getLocalSettingsPath(root, configRoot)},
+		)
+	}
+
+	for _, layer := range layers {
+		if err := applySettingsLayer(&merged, layer.name, layer.path, l.FS); err != nil {
+			return nil, err
+		}
+	}
+
+	if l.RuntimeOverrides != nil {
+		if next := MergeSettings(&merged, l.RuntimeOverrides); next != nil {
+			merged = *next
+		}
+	}
+
+	return &merged, nil
+}
+
+// getProjectSettingsPath returns the tracked project settings path.
+func getProjectSettingsPath(root, configRoot string) string {
+	if strings.TrimSpace(root) == "" && strings.TrimSpace(configRoot) == "" {
+		return ""
+	}
+	base := resolveConfigRoot(root, configRoot)
+	return filepath.Join(base, "settings.json")
+}
+
+// getLocalSettingsPath returns the untracked project-local settings path.
+func getLocalSettingsPath(root, configRoot string) string {
+	if strings.TrimSpace(root) == "" && strings.TrimSpace(configRoot) == "" {
+		return ""
+	}
+	base := resolveConfigRoot(root, configRoot)
+	return filepath.Join(base, "settings.local.json")
+}
+
+func resolveConfigRoot(projectRoot, configRoot string) string {
+	projectRoot = strings.TrimSpace(projectRoot)
+	configRoot = strings.TrimSpace(configRoot)
+	if configRoot == "" {
+		if projectRoot == "" {
+			return ""
+		}
+		return filepath.Join(projectRoot, ".saker")
+	}
+	if filepath.IsAbs(configRoot) {
+		return filepath.Clean(configRoot)
+	}
+	if projectRoot == "" {
+		return filepath.Clean(configRoot)
+	}
+	return filepath.Join(projectRoot, configRoot)
+}
+
+func resolveSettingsPath(path, projectRoot string) string {
+	path = strings.TrimSpace(path)
+	if path == "" {
+		return ""
+	}
+	if filepath.IsAbs(path) {
+		return filepath.Clean(path)
+	}
+	if strings.TrimSpace(projectRoot) == "" {
+		return filepath.Clean(path)
+	}
+	return filepath.Join(projectRoot, path)
+}
+
+// loadJSONFile decodes a settings JSON file. Missing files return (nil, nil).
+func loadJSONFile(path string, filesystem *FS) (*Settings, error) {
+	if strings.TrimSpace(path) == "" {
+		return nil, nil
+	}
+	var (
+		data []byte
+		err  error
+	)
+	if filesystem != nil {
+		data, err = filesystem.ReadFile(path)
+	} else {
+		data, err = os.ReadFile(path)
+	}
+	if err != nil {
+		if errors.Is(err, iofs.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var s Settings
+	if err := json.Unmarshal(data, &s); err != nil {
+		return nil, fmt.Errorf("decode %s: %w", path, err)
+	}
+	return &s, nil
+}
+
+func applySettingsLayer(dst *Settings, name, path string, filesystem *FS) error {
+	if path == "" {
+		return nil
+	}
+	cfg, err := loadJSONFile(path, filesystem)
+	if err != nil {
+		return fmt.Errorf("load %s settings: %w", name, err)
+	}
+	if cfg == nil {
+		return nil
+	}
+	if next := MergeSettings(dst, cfg); next != nil {
+		*dst = *next
+	}
+	return nil
+}

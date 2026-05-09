@@ -1,0 +1,11 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "saker",
+  "outputfilename": "saker-desktop",
+  "frontend:install": "cd ../../web && npm install",
+  "frontend:build": "cd ../../web && npm run build",
+  "frontend:dir": "frontend/dist",
+  "author": {
+    "name": "Saker"
+  }
+}

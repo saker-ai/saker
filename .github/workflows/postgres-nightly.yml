@@ -1,0 +1,51 @@
+name: Postgres Integration (Nightly)
+
+# Runs the project-store postgres-backed test suite that's gated by both
+# `-tags postgres integration` and the SAKER_TEST_PG_DSN env var. Kept on
+# its own schedule because spinning up Postgres adds ~30s to every run and
+# isn't worth it on every PR — we want the signal that the dialect still
+# compiles + AutoMigrate still produces a valid schema, not gating PRs on it.
+
+on:
+  schedule:
+    # 04:17 UTC daily — odd minute to avoid GitHub's hourly cron stampede
+    # (the docs warn that on-the-hour schedules can be delayed under load).
+    - cron: "17 4 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: saker
+          POSTGRES_PASSWORD: saker
+          POSTGRES_DB: saker_test
+        ports:
+          - 5432:5432
+        # The default healthcheck is too lazy — we use pg_isready so the test
+        # job doesn't race the container startup.
+        options: >-
+          --health-cmd "pg_isready -U saker -d saker_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      # Belt & suspenders: confirm the dialect package still compiles with the
+      # postgres tag in case the integration test suite ever gets skipped.
+      - name: Compile postgres dialect
+        run: go build -tags postgres ./pkg/project/dialect/...
+
+      - name: Run postgres integration tests
+        env:
+          SAKER_TEST_PG_DSN: postgres://saker:saker@localhost:5432/saker_test?sslmode=disable
+        run: go test -tags 'postgres integration' -count=1 ./pkg/project/dialect/...

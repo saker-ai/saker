@@ -1,0 +1,29 @@
+{
+  "version": "2026-04-15-qwen-plus",
+  "suites": {
+    "video_quick_e2e": {
+      "min_pass_rate": 0.0,
+      "min_avg_score": 0.15
+    },
+    "video_deep_e2e": {
+      "min_pass_rate": 0.0,
+      "min_avg_score": 0.05
+    },
+    "tool_selection_e2e": {
+      "min_pass_rate": 0.0,
+      "min_avg_score": 0.15
+    },
+    "browser_e2e": {
+      "min_pass_rate": 0.65,
+      "min_avg_score": 0.55
+    },
+    "webhook_e2e": {
+      "min_pass_rate": 0.0,
+      "min_avg_score": 0.15
+    },
+    "memory_e2e": {
+      "min_pass_rate": 0.65,
+      "min_avg_score": 0.55
+    }
+  }
+}

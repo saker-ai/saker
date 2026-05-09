@@ -1,0 +1,131 @@
+# golangci-lint v2 configuration for saker Go Agent SDK
+# Run: golangci-lint run
+# Docs: https://golangci-lint.run/usage/configuration/
+
+version: "2"
+
+run:
+  # Timeout for analysis
+  timeout: 5m
+
+issues:
+  # Cap issues per linter to keep output readable
+  max-issues-per-linter: 50
+  # Cap repeated same-issue occurrences
+  max-same-issues: 10
+
+linters:
+  # Start from zero — only enable what we explicitly list
+  default: none
+
+  enable:
+    # Core correctness
+    - govet        # Reports suspicious constructs (shadow, printf format mismatches, etc.)
+    - errcheck     # Ensures errors are not silently dropped
+    - staticcheck  # Comprehensive static analysis (SA*, S*, ST*, QF* checks)
+    - ineffassign  # Detects assignments whose values are never used
+
+    # Simplification & style
+    # Note: gosimple was merged into staticcheck in golangci-lint v2 (S* checks now run via staticcheck).
+    - unused       # Finds unused code (functions, types, constants, variables)
+    - gocritic     # Opinionated but practical code suggestions
+    - revive       # Flexible, fast drop-in replacement for golint
+
+    # Spelling
+    - misspell     # Fixes common English misspellings in comments and strings
+
+  # Linters explicitly NOT enabled (too noisy or not suitable for an SDK):
+  # - exhaustive        — requires all enum cases handled; overly strict for SDKs
+  # - wrapcheck         — requires all errors to be wrapped; creates boilerplate
+  # - nlreturn          — enforces blank lines before returns; stylistic overkill
+  # - wsl               — whitespace linter; extremely opinionated, hard to satisfy
+  # - gochecknoglobals  — bans package-level vars; incompatible with SDK patterns
+  #                       (e.g. sentinel errors, registries, sync.Once)
+
+  exclusions:
+    # Skip auto-generated files (protobuf, mocks, bindata, etc.)
+    generated: lax
+
+    rules:
+      # errcheck: test files often intentionally ignore errors (e.g. t.Log, defer f.Close)
+      # gocritic/revive: test helpers and exported test types need less strictness
+      - path: "_test\\.go"
+        linters:
+          - errcheck
+          - gocritic
+          - revive
+
+      # Generated protobuf files — skip all analysis
+      - path: ".*\\.pb\\.go"
+        linters:
+          - govet
+          - errcheck
+          - staticcheck
+          - gocritic
+          - revive
+
+      # Examples are illustrative; relax doc-comment requirements
+      - path: "examples/"
+        linters:
+          - revive
+
+  settings:
+    govet:
+      # Enable shadow checking to catch variable shadowing bugs
+      enable:
+        - shadow
+
+    errcheck:
+      # Do not flag ignored errors in type assertions (x, _ := y.(T))
+      check-type-assertions: false
+      # Do not flag blank-identifier error discards
+      check-blank: false
+
+    gocritic:
+      # Enable useful extra checks beyond the defaults
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
+      disabled-checks:
+        - hugeParam      # Too aggressive for SDK value types
+        - rangeValCopy   # Often intentional
+        - unnamedResult  # Named returns are sometimes clearer
+
+    revive:
+      rules:
+        - name: exported
+          severity: warning
+          arguments:
+            - "checkPrivateReceivers"
+            - "sayRepetitiveInsteadOfStutters"
+        - name: unused-parameter
+          severity: warning
+        - name: error-return
+          severity: warning
+        - name: blank-imports
+          severity: error
+
+    misspell:
+      locale: US
+
+    staticcheck:
+      # SA* = bugs/correctness, S* = simplifications, ST* = style, QF* = quickfixes
+      checks:
+        - "all"
+        - "-ST1000" # Package-level doc comment; too strict for internal packages
+        - "-ST1003" # Naming convention; conflicts with some Go idioms
+        - "-QF1008" # Embed fields; not always desirable
+
+# Formatters are separate from linters in golangci-lint v2
+formatters:
+  enable:
+    - gofmt    # Enforces standard Go formatting (runs gofmt -s)
+
+  settings:
+    gofmt:
+      # Apply gofmt -s simplifications (e.g. composite literals)
+      simplify: true
+
+  exclusions:
+    generated: lax

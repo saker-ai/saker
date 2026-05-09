@@ -1,0 +1,43 @@
+# Configuration for probot/stale - https://github.com/probot/stale
+
+daysUntilStale: 60
+daysUntilClose: 14
+
+onlyLabels: []
+
+exemptLabels:
+  - pinned
+  - security
+  - "good first issue"
+
+staleLabel: stale
+
+pulls:
+  daysUntilStale: 30
+  daysUntilClose: 10
+  exemptLabels:
+    - pinned
+    - security
+    - dependencies
+  markComment: >
+    This pull request has been automatically marked as stale because it has
+    not had any activity for 30 days. It will be closed in 10 days if no
+    further activity occurs. If you're still working on this, please remove
+    the `stale` label or add a comment to keep it open.
+  closeComment: >
+    This pull request was automatically closed because it has been inactive
+    for 10 days since being marked as stale. Feel free to reopen if you're
+    still working on this.
+
+issues:
+  markComment: >
+    This issue has been automatically marked as stale because it has not had
+    any activity for 60 days. It will be closed in 14 days if no further
+    activity occurs. If this issue is still relevant, please remove the
+    `stale` label or add a comment to keep it open.
+  closeComment: >
+    This issue was automatically closed because it has been inactive for 14
+    days since being marked as stale. If you believe this issue is still
+    relevant, please reopen it with a comment explaining why.
+
+limitPerRun: 30

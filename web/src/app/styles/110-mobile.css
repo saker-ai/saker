@@ -1,0 +1,252 @@
+/*
+ * 110-mobile.css — responsive overrides (last-loaded so it wins).
+ * Sections: small-phone breakpoint (max-width: 375px), tablet
+ * breakpoints, hero/composer/topbar narrow-screen tweaks,
+ * project settings modal & danger zone narrow-screen rules.
+ * Note: only overrides — base layout stays in feature shards.
+ */
+
+/* ── 375px Small Phone ── */
+@media (max-width: 375px) {
+  .hero-title { font-size: 22px; }
+  .hero-subtitle { font-size: 14px; }
+  .hero-brand { letter-spacing: 0.02em; }
+  .home-examples { grid-template-columns: 1fr; gap: 8px; }
+  .home-example-card { padding: 12px; font-size: 12px; min-height: 0; }
+  .home-example-icon { width: 32px; height: 32px; }
+  .thread-panel { width: min(220px, 70vw); }
+}
+
+/* ── 480px Phone — Project Settings ──
+ * Base layout assumes ≥640px (modal min-width is 640px). On phones we drop
+ * the min-width so the modal hugs the viewport, collapse the page header
+ * onto one column, and hide the "Joined" / "Invited at" timestamp columns
+ * which would otherwise force horizontal scroll. The danger zone keeps its
+ * red border but loses the generous padding so the destructive button
+ * stays reachable above the keyboard.
+ */
+@media (max-width: 480px) {
+  .project-settings-modal {
+    min-width: 0;
+    max-width: 100vw;
+    max-height: 100vh;
+    width: 100vw;
+    border-radius: 0;
+    padding: 4px 0 0;
+  }
+  .project-settings-page {
+    padding: 16px 12px;
+    gap: 14px;
+  }
+  .project-settings-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .project-settings-title { font-size: 16px; }
+  .project-settings-meta { flex-wrap: wrap; }
+
+  .member-table { font-size: 12px; }
+  /* Hide the 3rd / 4th columns ("Joined" / "Invited at") to keep the table
+   * single-line on narrow screens. The remaining role + actions cells stay
+   * legible because role is the primary affordance for owners/admins. */
+  .member-table th:nth-child(3),
+  .member-table td:nth-child(3),
+  .member-table th:nth-child(4),
+  .member-table td:nth-child(4) {
+    display: none;
+  }
+
+  .danger-zone {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+  .danger-zone-title { font-size: 13px; }
+  .danger-zone-body { font-size: 11.5px; }
+  /* Stack Transfer + Delete vertically so each is a full-width tap target —
+   * easier to hit one-handed and avoids accidental adjacency selection. */
+  .danger-zone-actions { flex-direction: column; align-items: stretch; }
+}
+
+/* Canvas node corner radii are owned by 70-canvas.css. Earlier attempts here
+ * relied on `border-radius: inherit` (which resolves to 0 because the media
+ * body has no own radius) and `:last-child` (which never matches because
+ * react-flow's <Handle> is always the last child), so they were no-ops. */
+
+/* Ensure dropdowns pop downward by default and are on top */
+.gen-select {
+  z-index: 101;
+  position: relative;
+  transform-origin: top;
+}
+
+/* --- ULTIMATE FIXES FOR CANVAS UI --- */
+.canvas-node, 
+.canvas-node-body, 
+.gen-param-group, 
+.gen-select-wrapper {
+  overflow: visible !important;
+}
+
+/* Fix engine selector width and prevent neighbor squashing */
+.gen-param-group .engine-select-fixed {
+  flex: 0 0 130px !important;
+  width: 130px !important;
+  max-width: 130px !important;
+  min-width: 130px !important;
+}
+
+.gen-param-label {
+  flex-shrink: 0 !important;
+}
+
+/* Ensure the generation button doesn't get squeezed */
+.gen-btn {
+  flex-shrink: 0 !important;
+}
+
+/* Force select to stay on top of EVERYTHING */
+.gen-select {
+  z-index: 9999 !important;
+  position: relative !important;
+  cursor: pointer !important;
+}
+
+/* Fix for ToolbarDropdown (Video Gen Node etc.) */
+.tbd-root {
+  flex-shrink: 0 !important;
+  max-width: 140px;
+}
+.tbd-menu {
+  z-index: 9999 !important;
+  /* Reset backdrop-filter if it causes clipping in some browsers */
+  backdrop-filter: blur(16px) !important;
+}
+/* Ensure the menu pops downward when dropBelow is true */
+.tbd-menu-below {
+  top: 100% !important;
+  bottom: auto !important;
+  margin-top: 4px;
+}
+
+/* --- Edge Interaction Styles --- */
+.flow-edge-label-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.flow-edge-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--danger);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  pointer-events: all;
+}
+
+.flow-edge-delete-btn:hover {
+  background: var(--danger-glow);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+.flow-edge-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: white;
+  padding: 1px 4px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+@keyframes canvas-flow-pulse {
+  from { stroke-dashoffset: 20; }
+  to { stroke-dashoffset: 0; }
+}
+
+.flow-edge-selected {
+  stroke-width: 3px !important;
+}
+
+/* --- Refined Select Styling for Engine/Param Selectors --- */
+.gen-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.gen-select-display-val {
+  position: absolute;
+  left: 8px;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: var(--text);
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 1;
+}
+
+.gen-select {
+  /* Make native select invisible but clickable */
+  color: transparent !important;
+  z-index: 2 !important;
+  background: var(--bg-tertiary) !important;
+}
+
+.gen-select option {
+  color: var(--text) !important;
+  background: var(--bg-primary) !important;
+}
+
+.engine-select-fixed {
+  flex: 0 0 130px !important;
+  width: 130px !important;
+}
+
+/* Ensure the label has enough space and doesn't squash */
+.gen-param-label {
+  min-width: 64px !important;
+  flex-shrink: 0 !important;
+}
+
+/* --- Node Resizing Support --- */
+.canvas-node-media {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+.canvas-node-media .canvas-node-body.media {
+  flex: 1 !important;
+  height: 0; /* Important for flex-grow to work in some browsers */
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: black; /* Backdrop for contain/cover */
+}
+
+.canvas-node-media .canvas-node-body.media img,
+.canvas-node-media .canvas-node-body.media video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important; /* contain is safer for varying ratios */
+}
+
+/* Resizer handles should be on top of the node toolbar */
+.react-flow__node-resizer {
+  z-index: 1000 !important;
+}

@@ -1,0 +1,244 @@
+/*
+ * 01-themes.css — alternate color palettes (in addition to the default
+ * Gemini Blue dark/light defined in 00-base.css). Each theme is a
+ * complete CSS-variable override of the same token surface.
+ *
+ * Themes:
+ *   - warm-editorial   light, cream + ink + burnt orange (Substack/Are.na vibe)
+ *   - cinema-gold      dark, deep charcoal + ivory + pale gold (saker-cc kin)
+ *   - ink-wash         light, rice-paper + heavy ink + cinnabar red
+ *   - brutalist        light, pure white + black + electric green
+ */
+
+/* ── Warm Editorial (light scheme) ── */
+:root[data-theme="warm-editorial"] {
+  --bg: #f5f1ea;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #ede4d3;
+  --text: #1a1815;
+  --text-muted: #6b6358;
+  --text-secondary: #4a4338;
+  --text-tertiary: #8a8276;
+  --accent: #c2410c;
+  --accent-secondary: #9a3412;
+  --accent-hover: #9a3412;
+  --accent-glow: rgba(194, 65, 12, 0.12);
+  --accent-gradient: linear-gradient(135deg, #c2410c 0%, #d97706 100%);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.14);
+  --user-bubble: #ede4d3;
+  --assistant-bubble: #ffffff;
+  --danger: #b91c1c;
+  --success: #15803d;
+  --warning: #a16207;
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.06);
+  --card-border-hover: rgba(0, 0, 0, 0.12);
+  --shadow: 0 1px 3px rgba(28, 22, 14, 0.04), 0 1px 2px rgba(28, 22, 14, 0.06);
+  --shadow-lg: 0 8px 24px -8px rgba(28, 22, 14, 0.10), 0 4px 12px -4px rgba(28, 22, 14, 0.06);
+  --code-bg: #ede4d3;
+  --bg-hover: #ede4d3;
+  --bg-primary: var(--bg);
+  --text-primary: var(--text);
+  --border-primary: var(--border);
+  --empty-title-gradient: linear-gradient(135deg, #1a1815 0%, #6b6358 100%);
+}
+
+/* ── Cinema Gold (dark scheme) ── */
+:root[data-theme="cinema-gold"] {
+  --bg: #1a1614;
+  --bg-secondary: #2a2420;
+  --bg-tertiary: #3a3128;
+  --text: #f0e6d2;
+  --text-muted: #a39682;
+  --text-secondary: #d4c8b0;
+  --text-tertiary: #877860;
+  --accent: #d4a574;
+  --accent-secondary: #c2410c;
+  --accent-hover: #b8915c;
+  --accent-glow: rgba(212, 165, 116, 0.20);
+  --accent-gradient: linear-gradient(135deg, #d4a574 0%, #c2410c 100%);
+  --border: rgba(240, 230, 210, 0.08);
+  --border-strong: rgba(240, 230, 210, 0.15);
+  --user-bubble: #3a3128;
+  --assistant-bubble: transparent;
+  --danger: #ef6055;
+  --success: #86b76a;
+  --warning: #e0b350;
+  --card-bg: #2a2420;
+  --card-border: rgba(240, 230, 210, 0.08);
+  --card-border-hover: rgba(212, 165, 116, 0.30);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 8px 24px -8px rgba(0, 0, 0, 0.5), 0 4px 12px -4px rgba(0, 0, 0, 0.3);
+  --code-bg: #1f1a17;
+  --bg-hover: #322a23;
+  --bg-primary: var(--bg);
+  --text-primary: var(--text);
+  --border-primary: var(--border);
+  --empty-title-gradient: linear-gradient(135deg, #f0e6d2 0%, #a39682 100%);
+}
+
+/* ── Ink Wash (light scheme) ── */
+:root[data-theme="ink-wash"] {
+  --bg: #faf8f3;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f0ece1;
+  --text: #1c1c1c;
+  --text-muted: #6b6b6b;
+  --text-secondary: #3d3d3d;
+  --text-tertiary: #8a8a8a;
+  --accent: #c8392b;
+  --accent-secondary: #8a2820;
+  --accent-hover: #a82d22;
+  --accent-glow: rgba(200, 57, 43, 0.10);
+  --accent-gradient: linear-gradient(135deg, #c8392b 0%, #8a2820 100%);
+  --border: rgba(0, 0, 0, 0.07);
+  --border-strong: rgba(0, 0, 0, 0.13);
+  --user-bubble: #f0ece1;
+  --assistant-bubble: #ffffff;
+  --danger: #c8392b;
+  --success: #2d6e3a;
+  --warning: #b87333;
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.07);
+  --card-border-hover: rgba(0, 0, 0, 0.14);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px -8px rgba(0, 0, 0, 0.10);
+  --code-bg: #f0ece1;
+  --bg-hover: #f0ece1;
+  --bg-primary: var(--bg);
+  --text-primary: var(--text);
+  --border-primary: var(--border);
+  --empty-title-gradient: linear-gradient(135deg, #1c1c1c 0%, #6b6b6b 100%);
+}
+
+/* ── Brutalist (light scheme, high contrast) ── */
+:root[data-theme="brutalist"] {
+  --bg: #ffffff;
+  --bg-secondary: #fafafa;
+  --bg-tertiary: #f0f0f0;
+  --text: #0a0a0a;
+  --text-muted: #6b6b6b;
+  --text-secondary: #2a2a2a;
+  --text-tertiary: #999999;
+  --accent: #00b86d;
+  --accent-secondary: #00d77f;
+  --accent-hover: #009a5a;
+  --accent-glow: rgba(0, 184, 109, 0.18);
+  --accent-gradient: linear-gradient(135deg, #00d77f 0%, #00b86d 100%);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.14);
+  --user-bubble: #f5f5f5;
+  --assistant-bubble: #ffffff;
+  --danger: #cc0000;
+  --success: #00b86d;
+  --warning: #cc7a00;
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.08);
+  --card-border-hover: rgba(0, 184, 109, 0.4);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px -8px rgba(0, 0, 0, 0.10), 0 4px 12px -4px rgba(0, 0, 0, 0.06);
+  --code-bg: #f5f5f5;
+  --bg-hover: #f4f4f4;
+  --bg-primary: var(--bg);
+  --text-primary: var(--text);
+  --border-primary: var(--border);
+  --empty-title-gradient: linear-gradient(135deg, #00b86d 0%, #009a5a 100%);
+}
+
+/* ── Suppress global ambient glow on alternate themes ──
+ * 00-base.css renders body::before/::after with the Gemini blue/purple
+ * radial gradients. Each new palette has its own accent surface, so we
+ * hide the legacy ambient layer for these themes. */
+:root[data-theme="warm-editorial"] body::before,
+:root[data-theme="warm-editorial"] body::after,
+:root[data-theme="cinema-gold"] body::before,
+:root[data-theme="cinema-gold"] body::after,
+:root[data-theme="ink-wash"] body::before,
+:root[data-theme="ink-wash"] body::after,
+:root[data-theme="brutalist"] body::before,
+:root[data-theme="brutalist"] body::after {
+  display: none;
+}
+
+/* ── Scrollbars match the new themes ── */
+:root[data-theme="warm-editorial"] ::-webkit-scrollbar-thumb,
+:root[data-theme="ink-wash"] ::-webkit-scrollbar-thumb,
+:root[data-theme="brutalist"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+:root[data-theme="warm-editorial"] ::-webkit-scrollbar-thumb:hover,
+:root[data-theme="ink-wash"] ::-webkit-scrollbar-thumb:hover,
+:root[data-theme="brutalist"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.22);
+}
+:root[data-theme="cinema-gold"] ::-webkit-scrollbar-thumb {
+  background: rgba(212, 165, 116, 0.25);
+}
+:root[data-theme="cinema-gold"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 165, 116, 0.45);
+}
+
+/* ── Light-scheme grid overrides (mirror the existing data-theme="light" rule) ── */
+:root[data-theme="warm-editorial"] .grid-bg-soft,
+:root[data-theme="ink-wash"] .grid-bg-soft,
+:root[data-theme="brutalist"] .grid-bg-soft {
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 0 0 / 0.04) 1px, transparent 1px);
+}
+
+:root[data-theme="warm-editorial"] .messages--threaded::before,
+:root[data-theme="ink-wash"] .messages--threaded::before,
+:root[data-theme="brutalist"] .messages--threaded::before {
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 0 0 / 0.04) 1px, transparent 1px);
+}
+
+:root[data-theme="warm-editorial"] .auth-page::before,
+:root[data-theme="ink-wash"] .auth-page::before,
+:root[data-theme="brutalist"] .auth-page::before {
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 0 0 / 0.04) 1px, transparent 1px);
+}
+
+/* ── Hero title / brand wordmark per theme ── */
+:root[data-theme="warm-editorial"] .hero-title,
+:root[data-theme="ink-wash"] .hero-title,
+:root[data-theme="brutalist"] .hero-title { color: var(--text-muted); }
+
+:root[data-theme="cinema-gold"] .hero-title { color: var(--text-muted); }
+
+/* hero-brand defaults to a 5-stop blue gradient in 20-chat.css; replace
+ * with palette-specific gradients for each new theme so the wordmark
+ * stays cohesive. */
+:root[data-theme="warm-editorial"] .hero-brand {
+  background: linear-gradient(135deg, #c2410c, #d97706, #ea580c, #d97706, #c2410c);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+:root[data-theme="cinema-gold"] .hero-brand {
+  background: linear-gradient(135deg, #d4a574, #e8c39b, #d4a574, #b8915c, #d4a574);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+:root[data-theme="ink-wash"] .hero-brand {
+  background: linear-gradient(135deg, #1c1c1c, #c8392b, #1c1c1c, #c8392b, #1c1c1c);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+:root[data-theme="brutalist"] .hero-brand {
+  background: linear-gradient(135deg, #009a5a, #00d77f, #00b86d, #00d77f, #009a5a);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

@@ -1,0 +1,169 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            web/package-lock.json
+            web-editor-next/package-lock.json
+
+      - name: Build web workspace
+        run: |
+          cd web && npm ci --no-audit --no-fund && npm run build
+
+      - name: Build web editor
+        run: |
+          cd web-editor-next && npm ci --no-audit --no-fund && npm run build
+
+      - name: Upload frontend artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: |
+            web/out
+            web-editor-next/out
+
+  release:
+    needs: frontend
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - name: Download frontend artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+
+      - name: Embed frontend into Go binary
+        run: |
+          rm -rf cmd/cli/frontend/dist/_next
+          mkdir -p cmd/cli/frontend/dist
+          cp -r web/out/* cmd/cli/frontend/dist/
+          rm -rf cmd/cli/editor/dist/_next
+          mkdir -p cmd/cli/editor/dist
+          cp -r web-editor-next/out/* cmd/cli/editor/dist/
+          find cmd/cli/editor/dist -maxdepth 2 -name '__next.*.txt' -delete 2>/dev/null || true
+          touch cmd/cli/frontend/dist/.gitkeep
+          touch cmd/cli/editor/dist/.gitkeep
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          VERSION=${GITHUB_REF_NAME}
+          BINARY=saker
+          if [ "$GOOS" = "windows" ]; then
+            BINARY=saker.exe
+          fi
+          go build -ldflags "-s -w -X main.version=${VERSION}" -trimpath -o ${BINARY} ./cmd/cli/
+
+      - name: Package
+        run: |
+          VERSION=${GITHUB_REF_NAME}
+          ARCHIVE_NAME=saker-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}
+
+          mkdir -p dist/${ARCHIVE_NAME}
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            cp saker.exe dist/${ARCHIVE_NAME}/
+          else
+            cp saker dist/${ARCHIVE_NAME}/
+          fi
+          cp LICENSE dist/${ARCHIVE_NAME}/ 2>/dev/null || true
+
+          cd dist
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            zip -r ${ARCHIVE_NAME}.zip ${ARCHIVE_NAME}
+          else
+            tar czf ${ARCHIVE_NAME}.tar.gz ${ARCHIVE_NAME}
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: saker-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/saker-*.*
+
+  publish:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install git-cliff
+        uses: orhun/git-cliff-action@v3
+        with:
+          config: cliff.toml
+        id: git-cliff
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          cd artifacts
+          sha256sum saker-* > checksums.txt
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: saker
+          format: spdx-json
+          output-file: artifacts/sbom.spdx.json
+
+      - name: Sign release artifacts
+        uses: sigstore/cosign-installer@v3
+        if: env.COSIGN_PRIVATE_KEY != ''
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        run: |
+          cosign sign-blob artifacts/checksums.txt --output-signature artifacts/checksums.txt.sig --key env://COSIGN_PRIVATE_KEY
+          cosign sign-blob artifacts/sbom.spdx.json --output-signature artifacts/sbom.spdx.json.sig --key env://COSIGN_PRIVATE_KEY
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.git-cliff.outputs.content }}
+          files: |
+            artifacts/*
+            artifacts/checksums.txt

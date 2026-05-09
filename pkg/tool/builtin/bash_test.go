@@ -1,0 +1,471 @@
+package toolbuiltin
+
+import (
+	"context"
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/cinience/saker/pkg/middleware"
+	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	"github.com/cinience/saker/pkg/sandbox/govmenv"
+	"github.com/cinience/saker/pkg/sandbox/gvisorenv"
+)
+
+func TestBashToolExecuteScript(t *testing.T) {
+	skipIfWindows(t)
+	dir := cleanTempDir(t)
+	script := writeScript(t, dir, "script.sh", "#!/bin/sh\necho \"$1-$2\"")
+
+	tool := NewBashToolWithRoot(dir)
+	result, err := tool.Execute(context.Background(), map[string]interface{}{
+		"command": "./" + filepath.Base(script) + " foo bar",
+		"workdir": dir,
+	})
+	if err != nil {
+		t.Fatalf("Execute failed: %v", err)
+	}
+	if got, want := strings.TrimSpace(result.Output), "foo-bar"; got != want {
+		t.Fatalf("unexpected output %q want %q", got, want)
+	}
+}
+
+func TestBashToolBlocksInjectionVectors(t *testing.T) {
+	skipIfWindows(t)
+	dir := cleanTempDir(t)
+	tool := NewBashToolWithRoot(dir)
+	commands := []string{
+		"ls; rm -rf /",
+		"ls\nrm -rf /",
+		filepath.Join(string(filepath.Separator), "usr", "bin", "rm") + " -rf /outside",
+		"chmod 777 /tmp/secrets",
+		"sudo ls",
+	}
+	for _, cmd := range commands {
+		t.Run(strings.ReplaceAll(cmd, string(os.PathSeparator), "_"), func(t *testing.T) {
+			_, err := tool.Execute(context.Background(), map[string]interface{}{
+				"command": cmd,
+			})
+			if err == nil {
+				t.Fatalf("expected command %q to be rejected", cmd)
+			}
+		})
+	}
+}
+
+func TestBashToolTimeout(t *testing.T) {
+	skipIfWindows(t)
+	dir := cleanTempDir(t)
+	slow := writeScript(t, dir, "slow.sh", "#!/bin/sh\nsleep 2\necho done")
+
+	tool := NewBashToolWithRoot(dir)
+	_, err := tool.Execute(context.Background(), map[string]interface{}{
+		"command": "./" + filepath.Base(slow),
+		"timeout": 0.1,
+	})
+	if err == nil || !strings.Contains(strings.ToLower(err.Error()), "timeout") {
+		t.Fatalf("expected timeout error, got %v", err)
+	}
+}
+
+func TestBashToolWorkdirValidation(t *testing.T) {
+	skipIfWindows(t)
+	dir := cleanTempDir(t)
+	file := filepath.Join(dir, "file.txt")
+	if err := os.WriteFile(file, []byte("data"), 0o644); err != nil {
+		t.Fatalf("write file: %v", err)
+	}
+	tool := NewBashToolWithRoot(dir)
+	_, err := tool.Execute(context.Background(), map[string]interface{}{
+		"command": "true",
+		"workdir": filepath.Base(file),
+	})
+	if err == nil {
+		t.Fatalf("expected workdir file to be rejected")
+	}
+
+	_, err = tool.Execute(context.Background(), map[string]interface{}{
+		"command": "true",
+		"workdir": "missing-dir",
+	})
+	if err == nil {
+		t.Fatalf("expected missing workdir to fail")
+	}
+}
+
+func TestBashToolMetadata(t *testing.T) {
+	tool := NewBashTool()
+	if tool.Name() == "" || tool.Description() == "" || tool.Schema() == nil {
+		t.Fatalf("metadata missing")
+	}
+}
+
+func TestBashToolExecuteAsyncReturnsTaskID(t *testing.T) {
+	skipIfWindows(t)
+	defaultAsyncTaskManager = newAsyncTaskManager()
+	dir := cleanTempDir(t)
+	tool := NewBashToolWithRoot(dir)
+	res, err := tool.Execute(context.Background(), map[string]interface{}{
+		"command": "echo hi",
+		"async":   true,
+	})
+	if err != nil {
+		t.Fatalf("execute async: %v", err)
+	}
+	data := res.Data.(map[string]interface{})
+	id, ok := data["task_id"].(string)
+	if !ok || !strings.HasPrefix(id, "task-") {
+		t.Fatalf("unexpected task id %v", data["task_id"])
+	}
+	if status, _ := data["status"].(string); status != "running" {
+		t.Fatalf("expected status running, got %v", status)
+	}
+	if _, exists := DefaultAsyncTaskManager().lookup(id); !exists {
+		t.Fatalf("expected task to exist in manager")
+	}
+}
+
+func TestDurationFromParamHelpers(t *testing.T) {
+	if dur, err := durationFromParam("2"); err != nil || dur != 2*time.Second {
+		t.Fatalf("string seconds parse failed: %v %v", dur, err)
+	}
+	if _, err := durationFromParam("bad"); err == nil {
+		t.Fatalf("expected parse error")
+	}
+}
+
+func TestBashToolTimeoutClamp(t *testing.T) {
+	skipIfWindows(t)
+	dir := cleanTempDir(t)
+	script := writeScript(t, dir, "fast.sh", "#!/bin/sh\necho ok")
+
+	tool := NewBashToolWithRoot(dir)
+	result, err := tool.Execute(context.Background(), map[string]interface{}{
+		"command": "./" + filepath.Base(script),
+		"timeout": 9999,
+	})
+	if err != nil {
+		t.Fatalf("Execute failed: %v", err)
+	}
+	data, ok := result.Data.(map[string]interface{})
+	if !ok {
+		t.Fatalf("unexpected data type %T", result.Data)
+	}
+	timeoutMS, ok := data["timeout_ms"].(int64)
+	if !ok {
+		t.Fatalf("missing timeout data: %v", data)
+	}
+	if timeoutMS != maxBashTimeout.Milliseconds() {
+		t.Fatalf("expected timeout clamp to %d got %d", maxBashTimeout.Milliseconds(), timeoutMS)
+	}
+}
+
+func TestExtractCommand(t *testing.T) {
+	tests := []struct {
+		name    string
+		params  map[string]interface{}
+		want    string
+		wantErr string
+	}{
+		{"ok", map[string]interface{}{"command": "echo hi"}, "echo hi", ""},
+		{"missing", map[string]interface{}{}, "", "required"},
+		{"empty", map[string]interface{}{"command": "   "}, "", "cannot be empty"},
+		{"wrong type", map[string]interface{}{"command": 123}, "", "must be string"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := extractCommand(tt.params)
+			if tt.wantErr != "" {
+				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
+					t.Fatalf("expected error %q got %v", tt.wantErr, err)
+				}
+				return
+			}
+			if got != tt.want || err != nil {
+				t.Fatalf("extractCommand = %q err=%v want=%q", got, err, tt.want)
+			}
+		})
+	}
+}
+
+func TestDurationFromParam(t *testing.T) {
+	tests := []struct {
+		value   interface{}
+		want    time.Duration
+		wantErr bool
+	}{
+		{time.Second, time.Second, false},
+		{float64(2), 2 * time.Second, false},
+		{json.Number("3.5"), 3500 * time.Millisecond, false},
+		{"1.5", 1500 * time.Millisecond, false},
+		{"2s", 2 * time.Second, false},
+		{int64(4), 4 * time.Second, false},
+		{-1, 0, true},
+		{"abc", 0, true},
+	}
+	for _, tt := range tests {
+		got, err := durationFromParam(tt.value)
+		if tt.wantErr {
+			if err == nil {
+				t.Fatalf("expected error for %v", tt.value)
+			}
+			continue
+		}
+		if err != nil {
+			t.Fatalf("unexpected error for %v: %v", tt.value, err)
+		}
+		if got != tt.want {
+			t.Fatalf("durationFromParam(%v)=%v want %v", tt.value, got, tt.want)
+		}
+	}
+}
+
+func TestBashToolUsesGVisorEnvironment(t *testing.T) {
+	skipIfWindows(t)
+	root := cleanTempDir(t)
+	env := gvisorenv.New(root, &sandboxenv.GVisorOptions{
+		Enabled:                    true,
+		AutoCreateSessionWorkspace: true,
+		SessionWorkspaceBase:       filepath.Join(root, "workspace"),
+	})
+	tool := NewBashToolWithRoot(root)
+	tool.SetEnvironment(env)
+	ctx := context.WithValue(context.Background(), middleware.SessionIDContextKey, "sess-gv-bash")
+
+	res, err := tool.Execute(ctx, map[string]interface{}{
+		"command": "printf 'hello'",
+	})
+	if err != nil {
+		t.Fatalf("execute failed: %v", err)
+	}
+	if !strings.Contains(res.Output, "hello") {
+		t.Fatalf("unexpected output %q", res.Output)
+	}
+}
+
+func TestBashToolUsesGovmEnvironment(t *testing.T) {
+	if os.Getenv("AGENTKIT_GOVM_E2E") != "1" {
+		t.Skip("set AGENTKIT_GOVM_E2E=1 to run govm-backed integration tests")
+	}
+	skipIfWindows(t)
+	root := cleanTempDir(t)
+	sessionDir := filepath.Join(root, "workspace", "sess-govm-bash")
+	if err := os.MkdirAll(sessionDir, 0o755); err != nil {
+		t.Fatalf("mkdir session dir: %v", err)
+	}
+	scriptPath := filepath.Join(sessionDir, "write.py")
+	if err := os.WriteFile(scriptPath, []byte("from pathlib import Path\nPath('/workspace/out.txt').write_text('hello')\nprint(Path('/workspace/out.txt').read_text())\n"), 0o644); err != nil {
+		t.Fatalf("write script: %v", err)
+	}
+	env := govmenv.New(root, &sandboxenv.GovmOptions{
+		Enabled:         true,
+		DefaultGuestCwd: "/workspace",
+		OfflineImage:    "py312-alpine",
+		RuntimeHome:     filepath.Join(root, ".govm-home"),
+		Mounts: []sandboxenv.MountSpec{
+			{HostPath: sessionDir, GuestPath: "/workspace"},
+		},
+	})
+	tool := NewBashToolWithRoot(root)
+	tool.SetEnvironment(env)
+	ctx := context.WithValue(context.Background(), middleware.SessionIDContextKey, "sess-govm-bash")
+
+	res, err := tool.Execute(ctx, map[string]interface{}{
+		"command": "python3 /workspace/write.py",
+	})
+	if err != nil {
+		t.Fatalf("execute failed: %v", err)
+	}
+	if !strings.Contains(res.Output, "hello") {
+		t.Fatalf("unexpected output %q", res.Output)
+	}
+	data, err := os.ReadFile(filepath.Join(root, "workspace", "sess-govm-bash", "out.txt"))
+	if err != nil {
+		t.Fatalf("read host file: %v", err)
+	}
+	if strings.TrimSpace(string(data)) != "hello" {
+		t.Fatalf("unexpected host file %q", string(data))
+	}
+}
+
+func TestDurationFromParamEmptyString(t *testing.T) {
+	if got, err := durationFromParam("   "); err != nil || got != 0 {
+		t.Fatalf("expected empty string to yield zero duration, got %v err=%v", got, err)
+	}
+}
+
+func TestDurationFromParamNegativeDuration(t *testing.T) {
+	if _, err := durationFromParam(time.Duration(-1)); err == nil {
+		t.Fatalf("expected error for negative duration value")
+	}
+}
+
+func TestBashToolExecuteNilContext(t *testing.T) {
+	tool := NewBashTool()
+	if _, err := tool.Execute(nil, map[string]any{"command": "true"}); err == nil || !strings.Contains(err.Error(), "context is nil") {
+		t.Fatalf("expected nil context error, got %v", err)
+	}
+}
+
+func TestBashToolExecuteUninitialised(t *testing.T) {
+	var tool BashTool
+	if _, err := tool.Execute(context.Background(), map[string]any{"command": "true"}); err == nil || !strings.Contains(err.Error(), "not initialised") {
+		t.Fatalf("expected not initialised error, got %v", err)
+	}
+}
+
+func TestCombineOutput(t *testing.T) {
+	tests := []struct {
+		name   string
+		stdout string
+		stderr string
+		want   string
+	}{
+		{"both", "out\n", "err\n", "out\nerr"},
+		{"stdout only", "out\n", "", "out"},
+		{"stderr only", "", "err\n", "err"},
+		{"empty", "", "", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := combineOutput(tt.stdout, tt.stderr); got != tt.want {
+				t.Fatalf("combineOutput(%q,%q)=%q want %q", tt.stdout, tt.stderr, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSecondsToDuration(t *testing.T) {
+	if _, err := secondsToDuration(-1); err == nil {
+		t.Fatalf("expected error for negative seconds")
+	}
+	got, err := secondsToDuration(1.5)
+	if err != nil {
+		t.Fatalf("secondsToDuration unexpected error: %v", err)
+	}
+	if got != 1500*time.Millisecond {
+		t.Fatalf("secondsToDuration returned %v want 1.5s", got)
+	}
+}
+
+type stubStringer struct{}
+
+func (stubStringer) String() string { return "stringer" }
+
+func TestCoerceString(t *testing.T) {
+	tests := []struct {
+		value   interface{}
+		want    string
+		wantErr bool
+	}{
+		{"text", "text", false},
+		{[]byte("bytes"), "bytes", false},
+		{json.Number("42"), "42", false},
+		{stubStringer{}, "stringer", false},
+		{42, "", true},
+	}
+	for _, tt := range tests {
+		got, err := coerceString(tt.value)
+		if tt.wantErr {
+			if err == nil {
+				t.Fatalf("expected error for %v", tt.value)
+			}
+			continue
+		}
+		if err != nil || got != tt.want {
+			t.Fatalf("coerceString(%v)=%q err=%v want %q", tt.value, got, err, tt.want)
+		}
+	}
+}
+
+func TestResolveRoot(t *testing.T) {
+	orig, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	dir := cleanTempDir(t)
+	if err := os.Chdir(dir); err != nil {
+		t.Fatalf("chdir: %v", err)
+	}
+	defer func() {
+		_ = os.Chdir(orig)
+	}()
+	if got := filepath.Clean(resolveRoot("")); got != dir {
+		t.Fatalf("expected resolveRoot to return cwd %q got %q", dir, got)
+	}
+	if rel := resolveRoot(".."); !filepath.IsAbs(rel) {
+		t.Fatalf("expected absolute path got %q", rel)
+	}
+}
+
+func TestRedactSecrets(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  string
+		expect string
+	}{
+		{
+			name:   "sk- token standalone",
+			input:  "token is sk-e17e481f8e90416e861d7f095cb7534d here",
+			expect: "token is sk-*** here",
+		},
+		{
+			name:   "env var with sk- value",
+			input:  "DASHSCOPE_API_KEY: SETsk-e17e481f8e90416e861d7f095cb7534d",
+			expect: "DASHSCOPE_API_KEY: ***",
+		},
+		{
+			name:   "env var assignment",
+			input:  "API_KEY=abcdef1234567890abcdef",
+			expect: "API_KEY=***",
+		},
+		{
+			name:   "env var with colon",
+			input:  "SECRET_KEY: my-super-secret-value-here",
+			expect: "SECRET_KEY: ***",
+		},
+		{
+			name:   "AUTH_TOKEN in output",
+			input:  "AUTH_TOKEN=bearer_token_value_1234",
+			expect: "AUTH_TOKEN=***",
+		},
+		{
+			name:   "no secrets",
+			input:  "hello world\ntotal 42\ndrwxr-xr-x 2 user user 4096",
+			expect: "hello world\ntotal 42\ndrwxr-xr-x 2 user user 4096",
+		},
+		{
+			name:   "empty",
+			input:  "",
+			expect: "",
+		},
+		{
+			name:   "short values not redacted",
+			input:  "API_KEY=short",
+			expect: "API_KEY=short",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := redactSecrets(tt.input)
+			if got != tt.expect {
+				t.Errorf("redactSecrets(%q)\n  got:  %q\n  want: %q", tt.input, got, tt.expect)
+			}
+		})
+	}
+}
+
+func writeScript(t *testing.T, dir, name, contents string) string {
+	t.Helper()
+	path := filepath.Join(dir, name)
+	if err := os.WriteFile(path, []byte(contents), 0o755); err != nil {
+		t.Fatalf("write script: %v", err)
+	}
+	if err := os.Chmod(path, 0o755); err != nil {
+		t.Fatalf("chmod script: %v", err)
+	}
+	return path
+}

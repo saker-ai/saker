@@ -1,0 +1,29 @@
+/*
+ * Per-feature stylesheets — split out of the original 12k-line monolith for
+ * maintainability. Order is load-bearing: later sheets override earlier ones
+ * when selectors collide, matching the cascade of the pre-split file. To find
+ * a rule, grep ./styles/ — the section comments at the top of each shard
+ * map back to the headers in the legacy file.
+ *
+ * Adding new rules: append to the closest-matching shard. Avoid creating new
+ * shards casually — the import order has to stay stable.
+ */
+@import "./styles/00-base.css";
+@import "./styles/01-themes.css";
+@import "./styles/05-decor.css";
+@import "./styles/10-shell.css";
+@import "./styles/20-chat.css";
+@import "./styles/30-settings.css";
+@import "./styles/40-skills.css";
+@import "./styles/50-tasks.css";
+@import "./styles/60-composer.css";
+@import "./styles/70-canvas.css";
+@import "./styles/80-misc.css";
+@import "./styles/90-tasks-view.css";
+@import "./styles/95-auth.css";
+@import "./styles/100-canvas-extras.css";
+@import "./styles/110-mobile.css";
+@import "./styles/120-canvas-nodes.css";
+@import "./styles/130-persona.css";
+@import "./styles/140-memory.css";
+@import "./styles/150-skills-shell.css";

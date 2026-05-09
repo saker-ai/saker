@@ -1,0 +1,28 @@
+# Dockerfile.e2e — E2E test runner container.
+# Builds and runs Go e2e tests against the saker server.
+ARG GO_VERSION=1.26
+
+FROM golang:${GO_VERSION}-alpine AS builder
+RUN apk add --no-cache ca-certificates git ffmpeg font-noto
+
+WORKDIR /src
+ENV GOPROXY=https://goproxy.cn,direct
+COPY go.mod go.sum ./
+COPY aigo/ aigo/
+RUN go mod download
+COPY . .
+
+# Generate test videos
+RUN sh e2e/fixtures/gen_videos.sh /src/e2e/fixtures/videos
+
+# Build the e2e test binary
+RUN CGO_ENABLED=0 go test -c -tags e2e -o /e2e-runner ./e2e/suites/...
+
+FROM alpine:3.20
+RUN apk add --no-cache ca-certificates
+COPY --from=builder /e2e-runner /usr/local/bin/e2e-runner
+COPY --from=builder /src/e2e/fixtures/videos /data/videos
+COPY --from=builder /src/e2e/baseline.json /data/baseline.json
+
+WORKDIR /data
+ENTRYPOINT ["/usr/local/bin/e2e-runner", "-test.v", "-test.timeout=1800s"]

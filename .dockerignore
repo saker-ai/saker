@@ -1,0 +1,8 @@
+.git
+bin/
+web/
+*.mp4
+.claude/
+.omc/
+cmd/cli/frontend/dist/
+cmd/desktop/frontend/dist/

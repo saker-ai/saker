@@ -1,0 +1,1055 @@
+/*
+ * 120-canvas-nodes.css — per-node-type appearance + interactions.
+ * Sections: .canvas-node-sketch (SketchNode), .canvas-node-thought-*
+ * (collapsible thought sections), .canvas-node-prompt /
+ * .canvas-node-placeholder, .ai-typo-* (AI typography panel),
+ * .manuscript-editor-* + .manuscript-copilot-* (manuscript node UI).
+ * Note: shared canvas-node base lives in 70-canvas.css.
+ */
+
+/* ── SketchNode ── */
+.canvas-node-sketch {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 280px;
+}
+
+.canvas-node-sketch .canvas-node-body.media {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.canvas-node-sketch .canvas-node-body.media img {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: contain;
+}
+
+.sketch-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* In edit mode the .sketch-toolbar sits directly below this canvas and
+   * carries the bottom corners; the canvas itself stays square so the two
+   * radii don't fight each other. */
+}
+
+.sketch-empty-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.sketch-empty-hint:hover {
+  color: var(--text-secondary);
+}
+
+.sketch-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 8px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-secondary);
+  /* Match the parent .canvas-node radius minus its 1px border so the toolbar
+   * sits flush against the rounded edge. The previous `border-radius: 0 0 8px 8px`
+   * shorthand was overriding any longhand we set above and left an 8px curve
+   * inside a 16px parent — the parent border showed through as a stray arc. */
+  border-bottom-left-radius: calc(var(--radius-lg) - 1px);
+  border-bottom-right-radius: calc(var(--radius-lg) - 1px);
+  flex-wrap: wrap;
+}
+
+.sketch-tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sketch-tool-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.sketch-tool-btn.active {
+  background: var(--accent);
+  color: white;
+}
+
+.sketch-tool-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Stick-figure pose menu (anchored under the PersonStanding tool button) */
+.sketch-pose-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+.sketch-pose-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  min-width: 180px;
+}
+.sketch-pose-item {
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.sketch-pose-item:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* In fullscreen the toolbar sits at the bottom of the viewport, so the pose
+   menu must open upward to stay on screen. */
+.sketch-fullscreen-overlay .sketch-pose-menu {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
+.sketch-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 3px;
+  flex-shrink: 0;
+}
+
+.sketch-color-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+  padding: 0;
+}
+
+.sketch-color-btn:hover {
+  transform: scale(1.2);
+}
+
+.sketch-color-btn.active {
+  border-color: var(--accent);
+  transform: scale(1.25);
+  box-shadow: 0 0 0 2px var(--bg-primary);
+}
+
+.sketch-width-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.sketch-width-btn:hover {
+  background: var(--bg-tertiary);
+}
+
+.sketch-width-btn.active {
+  background: var(--accent);
+}
+
+.sketch-width-dot {
+  display: block;
+  border-radius: 50%;
+  background: var(--text-secondary);
+}
+
+.sketch-width-btn.active .sketch-width-dot {
+  background: white;
+}
+
+.sketch-bg-indicator {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+.sketch-bg-indicator[data-bg="white"] {
+  background: #fff;
+}
+
+.sketch-bg-indicator[data-bg="black"] {
+  background: #000;
+}
+
+.sketch-bg-indicator[data-bg="transparent"] {
+  background: repeating-conic-gradient(#d0d0d0 0% 25%, #fff 0% 50%) 0 0 / 6px 6px;
+}
+
+.sketch-finish-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.sketch-finish-btn:hover {
+  opacity: 0.85;
+}
+
+.sketch-canvas-wrapper {
+  width: 100%;
+  position: relative;
+}
+
+.sketch-text-overlay {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px dashed var(--accent);
+  border-radius: 2px;
+  outline: none;
+  padding: 2px 4px;
+  font-family: sans-serif;
+  min-width: 80px;
+  max-width: calc(100% - 16px);
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.sketch-text-hint {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.82);
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 9;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+/* Per-figure delete button shown above each stick figure's head while the
+   pose tool is active. Position is anchored to the nose joint via inline
+   percentages; the transform lifts the button above the head so it never
+   sits on top of a draggable joint. */
+.sketch-pose-delete-btn {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 6px));
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.6);
+  background: rgba(239, 68, 68, 0.92);
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.sketch-pose-delete-btn:hover {
+  background: rgba(220, 38, 38, 1);
+  transform: translate(-50%, calc(-100% - 6px)) scale(1.12);
+}
+
+/* ── Sketch fullscreen edit overlay ── */
+.sketch-fullscreen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(10, 10, 12, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 56px 24px 24px;
+  cursor: default;
+}
+
+.sketch-fullscreen-overlay .sketch-canvas-wrapper {
+  width: min(95vw, calc((100vh - 180px) * 4 / 3));
+  aspect-ratio: 4 / 3;
+  flex: 0 0 auto;
+  box-shadow: 0 12px 60px rgba(0, 0, 0, 0.5);
+}
+
+.sketch-fullscreen-overlay .sketch-canvas {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+.sketch-fullscreen-overlay .sketch-toolbar {
+  max-width: min(95vw, 880px);
+  width: 100%;
+  /* Fullscreen toolbar is a floating bar (portal'd to body), not glued to a
+   * canvas node, so it gets symmetric corners instead of bottom-only. */
+  border-radius: 10px;
+}
+
+.sketch-fullscreen-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+}
+
+.sketch-fullscreen-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.sketch-fullscreen-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  background: repeating-conic-gradient(#e6e6e6 0% 25%, #fafafa 0% 50%) 0 0 / 16px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+}
+
+.sketch-fullscreen-placeholder:hover {
+  color: var(--accent);
+}
+
+/* ── AITypoNode & TextGenNode Enhancements ── */
+.ai-typo-container {
+  padding: 12px;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  line-height: 24px;
+  position: relative;
+  overflow: visible;
+}
+
+.ai-typo-markdown {
+  font-size: 14px;
+  line-height: 24px;
+  max-height: none;
+  overflow: visible;
+}
+
+.ai-typo-markdown p,
+.ai-typo-markdown ul,
+.ai-typo-markdown ol,
+.ai-typo-markdown blockquote,
+.ai-typo-markdown pre {
+  margin-bottom: 8px;
+}
+
+.ai-typo-markdown h1,
+.ai-typo-markdown h2,
+.ai-typo-markdown h3 {
+  margin: 6px 0 8px;
+  font-size: 1em;
+  font-weight: 700;
+}
+
+.word-level-handle {
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: auto !important;
+}
+
+.canvas-node:hover .word-level-handle {
+  opacity: 1;
+}
+
+.word-highlight {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-gradient);
+  border-radius: 1px;
+  opacity: 0.6;
+  filter: blur(1px);
+}
+
+.ai-typo-footer {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.manuscript-fullscreen-trigger {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.manuscript-fullscreen-trigger:hover {
+  color: var(--accent);
+}
+
+.manuscript-editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background:
+    radial-gradient(circle at 16% 12%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 34%),
+    color-mix(in srgb, var(--bg) 92%, black);
+  padding: 24px;
+  color: var(--text);
+}
+
+.manuscript-editor-shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--bg-secondary) 94%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.manuscript-editor-header {
+  min-height: 88px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 9%, transparent), transparent);
+}
+
+.manuscript-editor-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.manuscript-editor-title {
+  width: min(760px, 60vw);
+  margin-top: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: clamp(24px, 3vw, 42px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  outline: none;
+}
+
+.manuscript-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.manuscript-editor-actions button,
+.manuscript-section-toolbar button,
+.manuscript-add-section {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 36px;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.manuscript-editor-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.manuscript-editor-save-state,
+.manuscript-muted {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.manuscript-editor-grid {
+  min-height: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 0;
+}
+
+.manuscript-editor-inspector {
+  min-height: 0;
+  overflow: auto;
+  padding: 20px;
+  background: color-mix(in srgb, var(--bg) 65%, transparent);
+  border-left: 1px solid var(--border);
+}
+
+.manuscript-editor-inspector h3 {
+  margin: 0 0 12px;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.manuscript-editor-inspector section + section {
+  margin-top: 24px;
+}
+
+.manuscript-entity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.manuscript-entity-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-secondary);
+  padding: 8px 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.manuscript-entity-row span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.manuscript-entity-row input {
+  min-width: 0;
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  outline: none;
+}
+
+.manuscript-editor-main {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 28px clamp(24px, 5vw, 72px);
+}
+
+.manuscript-editor-summary,
+.manuscript-editor-inspector textarea,
+.manuscript-section-editor textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg);
+  color: var(--text);
+  padding: 14px 16px;
+  font: inherit;
+  line-height: 1.65;
+  outline: none;
+}
+
+.manuscript-editor-summary:focus,
+.manuscript-editor-inspector textarea:focus,
+.manuscript-section-editor textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.manuscript-markdown-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.manuscript-markdown-toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.manuscript-file-input {
+  display: none;
+}
+
+.manuscript-markdown-toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.manuscript-markdown-toolbar button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.manuscript-ai-toolbar,
+.manuscript-entity-actions,
+.manuscript-smart-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.manuscript-ai-toolbar span,
+.manuscript-entity-actions strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.manuscript-ai-toolbar button,
+.manuscript-entity-actions button,
+.manuscript-smart-actions button {
+  min-height: 34px;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  padding: 0 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.manuscript-smart-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.manuscript-entity-row.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.manuscript-copilot {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.manuscript-copilot-scope,
+.manuscript-copilot-presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.manuscript-copilot-scope button,
+.manuscript-copilot-presets button,
+.manuscript-copilot-run {
+  min-height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.manuscript-copilot-scope button.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg));
+  color: var(--accent);
+}
+
+.manuscript-copilot-run {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.manuscript-copilot-proposal {
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
+  background: color-mix(in srgb, var(--accent) 6%, var(--bg));
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.manuscript-copilot-proposal-header,
+.manuscript-copilot-proposal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.manuscript-copilot-source pre,
+.manuscript-copilot-suggestion pre {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.manuscript-markdown-source {
+  width: 100%;
+  min-height: 620px;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--bg) 96%, black 4%);
+  color: var(--text);
+  padding: 18px 20px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  outline: none;
+}
+
+.manuscript-markdown-source:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.manuscript-section-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.manuscript-section-editor {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--bg-secondary) 86%, transparent);
+  padding: 14px;
+}
+
+.manuscript-section-editor.section-heading textarea {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.manuscript-section-editor.section-quote textarea {
+  border-left: 4px solid var(--accent);
+  font-style: italic;
+}
+
+.manuscript-section-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.manuscript-section-toolbar select {
+  margin-right: auto;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  padding: 0 12px;
+}
+
+.manuscript-add-section {
+  margin-top: 18px;
+  min-height: 44px;
+  width: 100%;
+  border-style: dashed;
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+.manuscript-preview {
+  min-height: 520px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg);
+  padding: 28px;
+  font-size: 15px;
+  line-height: 1.75;
+  overflow: auto;
+}
+
+.manuscript-preview h1,
+.manuscript-preview h2,
+.manuscript-preview h3 {
+  letter-spacing: -0.03em;
+}
+
+.manuscript-editor-inspector ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+@media (max-width: 1100px) {
+  .manuscript-editor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .manuscript-editor-inspector {
+    display: none;
+  }
+
+  .manuscript-editor-title {
+    width: 100%;
+  }
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 3px;
+}
+
+.typing-indicator span {
+  width: 4px;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: typing-bounce 1s infinite;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+
+.ai-active {
+  background: var(--accent-glow) !important;
+}
+
+/* --- Agent Node Thought & Scrolling Fixes --- */
+.canvas-node-body {
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.canvas-node-content {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.canvas-node-thought-section {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.canvas-node-thought-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.canvas-node-thought-toggle:hover {
+  background: var(--bg-secondary);
+  color: var(--text);
+}
+
+.canvas-node-thought-content {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-tertiary) 80%, black);
+  font-style: italic;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.canvas-node-placeholder {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 10px 0;
+  text-align: center;
+}
+
+/* --- ULTIMATE OVERFLOW FIXES FOR TEXT NODES --- */
+
+/* Target Agent, Text and Prompt nodes specifically */
+.canvas-node-agent,
+.canvas-node-text,
+.canvas-node-prompt {
+  max-height: 500px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  /* Keep overflow visible for node toolbars if any, 
+     but we'll scroll the body inside */
+  overflow: visible !important; 
+}
+
+.canvas-node-agent .canvas-node-body,
+.canvas-node-text .canvas-node-body,
+.canvas-node-prompt .canvas-node-body {
+  flex: 1 !important;
+  min-height: 0 !important; /* CRITICAL: prevents flex child from growing beyond parent */
+  max-height: 420px !important; /* Total node 500 - header/footer roughly 80 */
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  /* Custom scrollbar for better look */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* Ensure markdown content stays inside */
+.canvas-node-content {
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+}
+
+/* Fix for pre/code blocks which are common in agent responses */
+.canvas-node-content pre {
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+}
+
+/* Shown when a media node receives a non-URL value (e.g. async task UUID
+   that escaped the engine layer). Visible failure beats silent black frame. */
+.canvas-node-media-error {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: var(--surface-2, #fef2f2);
+  color: var(--danger, #b91c1c);
+  border: 1px dashed var(--danger, #b91c1c);
+  border-radius: 6px;
+  font-size: 12px;
+  word-break: break-all;
+}
+.canvas-node-media-error strong {
+  font-weight: 600;
+}
+.canvas-node-media-error small {
+  opacity: 0.8;
+  font-size: 11px;
+}

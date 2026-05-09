@@ -1,0 +1,34 @@
+{
+  "batch": {
+    "steps": [
+      {
+        "name": "sample-frames",
+        "tool": "video_sampler",
+        "with": {
+          "strategy": "uniform",
+          "count": 8
+        }
+      },
+      {
+        "fan_out": {
+          "collection": "frames",
+          "concurrency": 4,
+          "step": {
+            "name": "analyze-frame",
+            "tool": "frame_analyzer"
+          }
+        }
+      },
+      {
+        "fan_in": {
+          "strategy": "ordered",
+          "into": "frame_analyses"
+        }
+      },
+      {
+        "name": "summarize",
+        "tool": "video_summarizer"
+      }
+    ]
+  }
+}
