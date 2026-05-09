@@ -1,0 +1,21 @@
+Saker
+
+The browser video editor in web-editor-next/ contains code derived from
+OpenCut (https://github.com/OpenCut-app/OpenCut), licensed under the MIT
+License. Saker-specific changes are also licensed under the project license.
+
+The editor ships flag SVG assets under web-editor-next/public/flags/. These
+assets use the flag-icons naming/source convention and are treated as
+third-party MIT-licensed assets; see web-editor-next/ASSET_LICENSES.md.
+
+The embedded model pricing and context window data in
+pkg/model/data/model_prices_and_context_window.json is sourced from the
+BerriAI/litellm project (https://github.com/BerriAI/litellm), licensed under
+the MIT License.
+
+The hooks system, event types, settings format, and CLAUDE.md loader are
+implemented following the Claude Code (Anthropic) publicly documented
+specification. See https://docs.anthropic.com/en/docs/claude-code for the
+reference specification.
+
+Dependency license inventory is maintained in docs/third-party-notices.md.
