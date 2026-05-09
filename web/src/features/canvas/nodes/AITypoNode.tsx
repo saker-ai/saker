@@ -1,6 +1,7 @@
 import { memo, useMemo, useCallback, useDeferredValue, useState } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Sparkles, ChevronUp, ChevronDown, Maximize2, Edit3, Table as TableIcon } from "lucide-react";
+import DOMPurify from "dompurify";
 import { motion, AnimatePresence } from "framer-motion";
 import { measureNaturalWidth, prepareWithSegments, layoutWithLines, type LayoutLine } from "@chenglou/pretext";
 import type { CanvasNodeData } from "../types";
@@ -234,7 +235,7 @@ export const AITypoNode = memo(function AITypoNode({ id, data, selected }: NodeP
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
-                dangerouslySetInnerHTML={{ __html: markdownHtml }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(markdownHtml) }}
               />
             </AnimatePresence>
             {entityHandles.map((h) => (

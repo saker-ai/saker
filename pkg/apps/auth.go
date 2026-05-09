@@ -56,12 +56,24 @@ func ValidateAPIKey(keys *KeysFile, header string) (*ApiKey, bool) {
 		return nil, false
 	}
 	now := time.Now().UTC()
+	// Prefix pre-filter: only compare bcrypt against keys sharing the
+	// same 8-char display prefix. This turns an O(n) ~100ms-per-comparison
+	// loop into an O(1) lookup for the common case.
+	keyPrefix := key
+	if len(keyPrefix) > 8 {
+		keyPrefix = keyPrefix[:8]
+	}
 	for i := range keys.ApiKeys {
 		ak := &keys.ApiKeys[i]
 		// ExpiresAt is opt-in; nil → never expires. Skip the bcrypt
 		// comparison entirely when expired so a leaked-and-rotated key
 		// can't keep authenticating until UpdateLastUsed re-saves it.
 		if ak.ExpiresAt != nil && !ak.ExpiresAt.After(now) {
+			continue
+		}
+		// Skip keys with a different prefix — no point in a slow bcrypt
+		// comparison when the display prefix doesn't match.
+		if ak.Prefix != keyPrefix {
 			continue
 		}
 		if bcrypt.CompareHashAndPassword([]byte(ak.Hash), []byte(key)) == nil {
@@ -85,15 +97,17 @@ func GenerateShareToken() (string, error) {
 // tokenBucket is a simple sliding-window rate limiter for a single token.
 // It keeps the timestamps of the last RateLimit hits within the past minute.
 type tokenBucket struct {
-	mu        sync.Mutex
-	hits      []time.Time
-	rateLimit int
+	mu         sync.Mutex
+	hits       []time.Time
+	rateLimit  int
+	lastAccess time.Time
 }
 
 func (b *tokenBucket) allow() bool {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	now := time.Now()
+	b.lastAccess = now
 	cutoff := now.Add(-time.Minute)
 	// Evict hits older than 1 minute.
 	i := 0
@@ -108,8 +122,55 @@ func (b *tokenBucket) allow() bool {
 	return true
 }
 
-// rateLimiters maps token string → *tokenBucket.
-var rateLimiters sync.Map
+// RateLimitManager owns the per-token rate-limit buckets and a background
+// goroutine that sweeps stale entries every 5 minutes. Entries older than
+// 30 minutes since their last access are removed.
+type RateLimitManager struct {
+	limiters sync.Map // token string → *tokenBucket
+	stopCh   chan struct{}
+}
+
+// NewRateLimitManager creates a manager and starts its cleanup goroutine.
+func NewRateLimitManager() *RateLimitManager {
+	m := &RateLimitManager{stopCh: make(chan struct{})}
+	go m.cleanupLoop()
+	return m
+}
+
+// Close stops the background cleanup goroutine.
+func (m *RateLimitManager) Close() {
+	if m.stopCh != nil {
+		close(m.stopCh)
+	}
+}
+
+func (m *RateLimitManager) cleanupLoop() {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-m.stopCh:
+			return
+		case <-ticker.C:
+			now := time.Now()
+			cutoff := now.Add(-30 * time.Minute)
+			m.limiters.Range(func(key, value any) bool {
+				bucket := value.(*tokenBucket)
+				bucket.mu.Lock()
+				if bucket.lastAccess.Before(cutoff) {
+					m.limiters.Delete(key)
+				}
+				bucket.mu.Unlock()
+				return true
+			})
+		}
+	}
+}
+
+// defaultRateLimitMgr is the package-level rate-limit manager used by
+// ValidateShareToken. It is initialised at package load so the cleanup
+// goroutine starts early.
+var defaultRateLimitMgr = NewRateLimitManager()
 
 // ValidateShareToken returns the matching ShareToken when found, not expired,
 // and (when RateLimit > 0) within the per-minute budget. Returns (nil, false)
@@ -129,7 +190,7 @@ func ValidateShareToken(keys *KeysFile, token string) (*ShareToken, bool) {
 		}
 		// Check rate limit.
 		if st.RateLimit > 0 {
-			v, _ := rateLimiters.LoadOrStore(token, &tokenBucket{rateLimit: st.RateLimit})
+			v, _ := defaultRateLimitMgr.limiters.LoadOrStore(token, &tokenBucket{rateLimit: st.RateLimit})
 			bucket := v.(*tokenBucket)
 			if !bucket.allow() {
 				return nil, false

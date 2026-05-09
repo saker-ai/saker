@@ -1,6 +1,7 @@
 import { memo, useMemo, useCallback, useState } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Bot, Zap, CheckCircle2, Loader2, GitBranch, ChevronDown, ChevronUp, BrainCircuit } from "lucide-react";
+import DOMPurify from "dompurify";
 import type { CanvasNodeData } from "../types";
 import { NodeToolbar, getDetailActions } from "./NodeToolbar";
 import { LockToggle } from "./LockToggle";
@@ -84,7 +85,7 @@ export const AgentNode = memo(function AgentNode({ id, data, selected }: NodePro
             {thoughtExpanded && (
               <div 
                 className="canvas-node-thought-content nodrag"
-                dangerouslySetInnerHTML={{ __html: thoughtHtml }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(thoughtHtml) }}
               />
             )}
           </div>
@@ -94,7 +95,7 @@ export const AgentNode = memo(function AgentNode({ id, data, selected }: NodePro
         {parsed.answer && (
           <div
             className="canvas-node-content nodrag"
-            dangerouslySetInnerHTML={{ __html: answerHtml }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(answerHtml) }}
           />
         )}
 

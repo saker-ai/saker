@@ -136,7 +136,7 @@ make demo-pipeline
 
 ## agentctl Pipeline Mode
 
-The main CLI (`cmd/cli`) also supports pipeline mode with the same flags:
+The main CLI (`cmd/saker`) also supports pipeline mode with the same flags:
 
 ```bash
 # Build agentctl
@@ -214,7 +214,7 @@ make demo-pipeline
 
 ### agentctl Pipeline 模式
 
-主 CLI (`cmd/cli`) 同样支持 pipeline 模式：
+主 CLI (`cmd/saker`) 同样支持 pipeline 模式：
 
 ```bash
 make agentctl

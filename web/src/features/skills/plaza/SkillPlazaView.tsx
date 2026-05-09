@@ -13,6 +13,7 @@ import {
   Lock,
 } from "lucide-react";
 import { RpcError, type RPCClient } from "@/features/rpc/client";
+import DOMPurify from "dompurify";
 import type {
   SkillhubConfig,
   SkillhubSearchHit,
@@ -605,7 +606,7 @@ function SkillPlazaViewInner({ rpc, config, onConfigChange, onInstalled, onShowT
                     {readmeHtml ? (
                       <div
                         className="md-content plaza-detail-readme"
-                        dangerouslySetInnerHTML={{ __html: readmeHtml }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(readmeHtml) }}
                       />
                     ) : (
                       <div className="skills-detail-empty">{t("plaza.noReadme")}</div>

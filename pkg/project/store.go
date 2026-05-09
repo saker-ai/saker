@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
@@ -38,7 +39,17 @@ type Store struct {
 	// concurrent first-request bursts (typical for localhost or LDAP login
 	// from multiple tabs) cannot race past the existence check and produce
 	// duplicate rows. Keyed by caller-supplied namespace strings.
-	provisioningMu sync.Map // map[string]*sync.Mutex
+	provisioningMu sync.Map // map[string]*provisioningMuEntry
+
+	// stopCh stops the provisioningMu cleanup goroutine.
+	stopCh chan struct{}
+}
+
+// provisioningMuEntry wraps a per-key mutex with a last-access timestamp so
+// stale entries can be swept by the background cleanup goroutine.
+type provisioningMuEntry struct {
+	mu         sync.Mutex
+	lastAccess time.Time
 }
 
 // Open creates a Store using cfg, runs AutoMigrate for AllModels(), and
@@ -92,7 +103,9 @@ func Open(cfg Config) (*Store, error) {
 		return nil, fmt.Errorf("project.Open: auto-migrate: %w", err)
 	}
 
-	return &Store{db: db, driver: scheme, dsn: dsn}, nil
+	s := &Store{db: db, driver: scheme, dsn: dsn, stopCh: make(chan struct{})}
+	go s.provisioningCleanupLoop()
+	return s, nil
 }
 
 // DB exposes the underlying *gorm.DB. Prefer service methods; this is for
@@ -102,8 +115,12 @@ func (s *Store) DB() *gorm.DB { return s.db }
 // Driver returns the resolved dialect name ("sqlite", "postgres", ...).
 func (s *Store) Driver() string { return s.driver }
 
-// Close releases the underlying DB connection (for tests / graceful shutdown).
+// Close releases the underlying DB connection and stops the background
+// provisioningMu cleanup goroutine (for tests / graceful shutdown).
 func (s *Store) Close() error {
+	if s.stopCh != nil {
+		close(s.stopCh)
+	}
 	sqlDB, err := s.db.DB()
 	if err != nil {
 		return err
@@ -115,8 +132,35 @@ func (s *Store) Close() error {
 // Callers MUST call the returned release func (typically `defer release()`).
 // Different keys do not contend; the same key serializes.
 func (s *Store) provisioningLock(key string) func() {
-	v, _ := s.provisioningMu.LoadOrStore(key, &sync.Mutex{})
-	mu := v.(*sync.Mutex)
-	mu.Lock()
-	return mu.Unlock
+	now := time.Now()
+	v, _ := s.provisioningMu.LoadOrStore(key, &provisioningMuEntry{lastAccess: now})
+	entry := v.(*provisioningMuEntry)
+	entry.mu.Lock()
+	entry.lastAccess = now
+	return entry.mu.Unlock
+}
+
+// provisioningCleanupLoop periodically removes stale entries from the
+// provisioningMu sync.Map (entries older than 1 hour since last access).
+func (s *Store) provisioningCleanupLoop() {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-s.stopCh:
+			return
+		case <-ticker.C:
+			now := time.Now()
+			cutoff := now.Add(-1 * time.Hour)
+			s.provisioningMu.Range(func(key, value any) bool {
+				entry := value.(*provisioningMuEntry)
+				entry.mu.Lock()
+				if entry.lastAccess.Before(cutoff) {
+					s.provisioningMu.Delete(key)
+				}
+				entry.mu.Unlock()
+				return true
+			})
+		}
+	}
 }

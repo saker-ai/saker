@@ -196,7 +196,7 @@ func TestValidateShareToken_RateLimit(t *testing.T) {
 	// Manually drain the bucket by resetting its hits to the past so the
 	// window slides. We reach into the sync.Map directly since there's no
 	// exported reset API (this is an internal test).
-	if v, loaded := rateLimiters.Load(tok); loaded {
+	if v, loaded := defaultRateLimitMgr.limiters.Load(tok); loaded {
 		bucket := v.(*tokenBucket)
 		bucket.mu.Lock()
 		past := time.Now().Add(-2 * time.Minute)

@@ -171,6 +171,18 @@ Options:
 		return err
 	}
 
+	// In CLI/TUI mode, redirect slog to a log file only (no stderr)
+	// so structured logs don't pollute the terminal output.
+	absProjectRoot, _ := filepath.Abs(*project)
+	cliLogDir := filepath.Join(absProjectRoot, ".saker", "logs")
+	_, cliLogCleanup, cliLogErr := logging.SetupCLI(cliLogDir)
+	if cliLogErr != nil {
+		fmt.Fprintf(stderr, "Warning: failed to setup CLI file logging: %v\n", cliLogErr)
+	}
+	if cliLogCleanup != nil {
+		defer cliLogCleanup()
+	}
+
 	// Handle --version / -v
 	if *showVersion || *showVersionShort {
 		fmt.Fprintln(stdout, Version)

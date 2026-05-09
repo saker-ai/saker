@@ -35,11 +35,11 @@ RUN go mod download
 COPY . .
 
 # Copy frontend build outputs from stage 1
-COPY --from=frontend /src/web/out ./cmd/cli/frontend/dist/
-COPY --from=frontend /src/web-editor-next/out ./cmd/cli/editor/dist/
+COPY --from=frontend /src/web/out ./cmd/saker/frontend/dist/
+COPY --from=frontend /src/web-editor-next/out ./cmd/saker/editor/dist/
 
 RUN CGO_ENABLED=0 GOOS=${GOOS} GOARCH=${GOARCH} \
-    go build -trimpath -ldflags="-s -w" -o /out/saker ./cmd/cli/
+    go build -trimpath -ldflags="-s -w" -o /out/saker ./cmd/saker/
 
 # --- Stage 3: Runtime ---
 FROM alpine:3.20

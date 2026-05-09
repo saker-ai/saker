@@ -189,7 +189,7 @@ make web-editor-dev   # 编辑器开发服务器
 ```mermaid
 graph TB
     subgraph CLI["CLI / 桌面端"]
-        CLI_CMD[cmd/cli]
+        CLI_CMD[cmd/saker]
     end
 
     subgraph Runtime["Go 运行时 (pkg/)"]

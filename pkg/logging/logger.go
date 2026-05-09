@@ -37,6 +37,23 @@ func From(ctx context.Context) *slog.Logger {
 // log file under dir. It returns the logger and a cleanup function that closes
 // the file handle. The log file is named saker-YYYY-MM-DD.log.
 func Setup(dir string) (*slog.Logger, func(), error) {
+	return setupLogger(dir, true)
+}
+
+// SetupCLI creates a JSON logger that writes only to a date-stamped log file
+// (no stderr output), and sets it as slog.SetDefault so all global slog calls
+// are captured without polluting the terminal. Returns the logger, a cleanup
+// function, and any error.
+func SetupCLI(dir string) (*slog.Logger, func(), error) {
+	logger, cleanup, err := setupLogger(dir, false)
+	if err != nil {
+		return nil, nil, err
+	}
+	slog.SetDefault(logger)
+	return logger, cleanup, nil
+}
+
+func setupLogger(dir string, stderr bool) (*slog.Logger, func(), error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, nil, fmt.Errorf("logging: mkdir %s: %w", dir, err)
 	}
@@ -49,9 +66,12 @@ func Setup(dir string) (*slog.Logger, func(), error) {
 		return nil, nil, fmt.Errorf("logging: open %s: %w", path, err)
 	}
 
-	w := io.MultiWriter(os.Stderr, f)
+	var w io.Writer = f
+	if stderr {
+		w = io.MultiWriter(os.Stderr, f)
+	}
 	handler := slog.NewJSONHandler(w, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
+		Level: slog.LevelInfo,
 	})
 	logger := slog.New(handler)
 

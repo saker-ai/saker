@@ -6,7 +6,7 @@ as project state, media assets, and editable outputs.
 
 ## Runtime
 
-The Go runtime lives in `pkg/` and is exposed through `cmd/cli`.
+The Go runtime lives in `pkg/` and is exposed through `cmd/saker`.
 
 Important packages:
 
@@ -24,8 +24,8 @@ Important packages:
 - `web-editor-next/` is the browser editor exported as static files and mounted
   by the Go server at `/editor/`.
 
-The production server build copies `web/out` into `cmd/cli/frontend/dist` and
-`web-editor-next/out` into `cmd/cli/editor/dist` before compiling the Go binary.
+The production server build copies `web/out` into `cmd/saker/frontend/dist` and
+`web-editor-next/out` into `cmd/saker/editor/dist` before compiling the Go binary.
 
 ## Generated Files
 

@@ -152,7 +152,17 @@ type Executor struct {
 	defaultCommand string
 
 	// onceTracker tracks which Once hooks have already executed per session.
-	onceTracker sync.Map // key: "sessionID:hookName" -> struct{}
+	// Value is a onceTrackerEntry carrying a timestamp for TTL cleanup.
+	onceTracker sync.Map // key: "sessionID:hookName" -> onceTrackerEntry
+
+	// stopCh stops the onceTracker cleanup goroutine.
+	stopCh chan struct{}
+}
+
+// onceTrackerEntry records when a Once hook was first executed so stale
+// entries can be swept by the background cleanup goroutine.
+type onceTrackerEntry struct {
+	executedAt time.Time
 }
 
 // ExecutorOption configures optional behaviour.
@@ -195,13 +205,14 @@ func WithWorkDir(dir string) ExecutorOption {
 
 // NewExecutor constructs a shell-based hook executor.
 func NewExecutor(opts ...ExecutorOption) *Executor {
-	exe := &Executor{timeout: defaultHookTimeout, errFn: func(events.EventType, error) {}}
+	exe := &Executor{timeout: defaultHookTimeout, errFn: func(events.EventType, error) {}, stopCh: make(chan struct{})}
 	for _, opt := range opts {
 		opt(exe)
 	}
 	if exe.timeout <= 0 {
 		exe.timeout = defaultHookTimeout
 	}
+	go exe.onceTrackerCleanupLoop()
 	return exe
 }
 
@@ -242,9 +253,34 @@ func (e *Executor) Execute(ctx context.Context, evt events.Event) ([]Result, err
 	return results, nil
 }
 
-// Close is present for API parity; no resources are held.
+// Close stops the background onceTracker cleanup goroutine.
 func (e *Executor) Close() {
-	_ = e
+	if e.stopCh != nil {
+		close(e.stopCh)
+	}
+}
+
+// onceTrackerCleanupLoop periodically removes stale entries from the
+// onceTracker sync.Map (entries older than 24 hours since execution).
+func (e *Executor) onceTrackerCleanupLoop() {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-e.stopCh:
+			return
+		case <-ticker.C:
+			now := time.Now()
+			cutoff := now.Add(-24 * time.Hour)
+			e.onceTracker.Range(func(key, value any) bool {
+				entry, ok := value.(onceTrackerEntry)
+				if ok && entry.executedAt.Before(cutoff) {
+					e.onceTracker.Delete(key)
+				}
+				return true
+			})
+		}
+	}
 }
 
 func (e *Executor) runHooks(ctx context.Context, evt events.Event) ([]Result, error) {
@@ -268,7 +304,7 @@ func (e *Executor) runHooks(ctx context.Context, evt events.Event) ([]Result, er
 			}
 			if onceKey != "" {
 				key := evt.SessionID + ":" + onceKey
-				if _, loaded := e.onceTracker.LoadOrStore(key, struct{}{}); loaded {
+				if _, loaded := e.onceTracker.LoadOrStore(key, onceTrackerEntry{executedAt: time.Now()}); loaded {
 					continue
 				}
 			}
