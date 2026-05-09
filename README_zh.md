@@ -143,7 +143,6 @@ saker/
 ├── test/                # 集成测试和 Pipeline 测试
 ├── e2e/                 # Docker e2e 测试
 ├── eval/                # 评测框架
-├── godeps/aigo/         # go.mod replace 使用的本地 AIGC provider 模块
 ├── skills/              # 内置 Skills
 ├── docs/                # 稳定的开源项目文档
 ```
@@ -201,11 +200,7 @@ Saker 使用 **Saker Source License Version 1.0 (SKL-1.0)** — 基于 Apache 2.
 
 `web-editor-next/` 下的浏览器编辑器包含 MIT 许可的 OpenCut 衍生代码，素材说明见 `web-editor-next/ASSET_LICENSES.md`。
 
-`godeps/aigo` 会被跟随仓库提交，因为当前 `go.mod` 使用本地 replace 来保证可复现构建：
-
-```text
-replace github.com/godeps/aigo => ./godeps/aigo
-```
+`godeps` 包（aigo、goim、govm）是通过 `go.mod` 解析的远程 Go 模块，而非本地目录。
 
 ## 贡献
 

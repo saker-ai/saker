@@ -146,7 +146,6 @@ saker/
 ├── test/                # Integration and pipeline tests
 ├── e2e/                 # Docker-based end-to-end suites
 ├── eval/                # Evaluation harnesses
-├── godeps/aigo/         # Local AIGC provider module used by go.mod replace
 ├── skills/              # Built-in skills
 ├── docs/                # Stable open-source project documentation
 ```
@@ -204,12 +203,8 @@ Upstream notices are maintained in `NOTICE`, and dependency/asset license invent
 
 The browser editor under `web-editor-next/` contains MIT-licensed code derived from OpenCut. Its asset notes live in `web-editor-next/ASSET_LICENSES.md`.
 
-`godeps/aigo` is intentionally tracked because `go.mod` contains a local
-replace directive for reproducible builds:
-
-```text
-replace github.com/godeps/aigo => ./godeps/aigo
-```
+The `godeps` packages (aigo, goim, govm) are remote Go modules resolved
+through `go.mod`, not local in-tree directories.
 
 ## Contributing
 
