@@ -47,7 +47,7 @@ ADDITIONAL TERMS
    In addition to the attribution requirements in Section 4 of the Apache
    License, any Derivative Work must:
 
-   (a) Display the text "Powered by Saker" (or an equivalent acknowledgment
+   (a) Display the text "Powered by Saker.cc" (or an equivalent acknowledgment
        approved by the Licensor) in a reasonably prominent position within
        any user interface visible to end users. Suitable locations include
        but are not limited to: login pages, about/settings pages, navigation
@@ -55,7 +55,7 @@ ADDITIONAL TERMS
        obscured, or placed in locations where end users would not ordinarily
        see it.
 
-   (b) Include the same acknowledgment ("Powered by Saker") in the product
+   (b) Include the same acknowledgment ("Powered by Saker.cc") in the product
        documentation, including but not limited to: README files, user guides,
        API documentation, and any publicly accessible product website.
 
@@ -282,4 +282,4 @@ Saker AI - https://saker.cc
 This product includes software developed by Saker AI
 (https://saker.cc).
 
-Powered by Saker.
+Powered by Saker.cc.
