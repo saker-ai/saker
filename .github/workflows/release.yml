@@ -15,21 +15,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "npm"
-          cache-dependency-path: |
-            web/package-lock.json
-            web-editor-next/package-lock.json
+          cache: "pnpm"
+
+      - name: Install deps
+        run: pnpm install
 
       - name: Build web workspace
-        run: |
-          cd web && npm ci --no-audit --no-fund && npm run build
+        run: pnpm --filter saker-web run build
 
       - name: Build web editor
-        run: |
-          cd web-editor-next && npm ci --no-audit --no-fund && npm run build
+        run: pnpm --filter saker-web-editor run build
 
       - name: Upload frontend artifacts
         uses: actions/upload-artifact@v4

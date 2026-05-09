@@ -109,37 +109,31 @@ server-dev:
 	mkdir -p $(BIN_DIR)
 	$(GO) build -ldflags="$(LDFLAGS)" -trimpath -o $(BINARY) $(CMD)
 
-# Web frontend
+# Web frontend (pnpm workspace)
 web-deps:
-	@if [ ! -x web/node_modules/.bin/next ]; then \
-		echo "Installing web dependencies with npm ci..."; \
-		cd web && npm ci; \
-	fi
+	pnpm install
 
 web-dev: web-deps
-	cd web && npm run dev
+	pnpm --filter saker-web run dev
 
 web-clean:
 	rm -rf web/.next web/out
 
 web-build: web-deps
-	cd web && npm run build
+	pnpm --filter saker-web run build
 
 # Web editor subapp (OpenCut-derived, served at /editor/)
 web-editor-deps:
-	@if [ ! -x web-editor-next/node_modules/.bin/next ]; then \
-		echo "Installing web editor dependencies with npm ci..."; \
-		cd web-editor-next && npm ci; \
-	fi
+	pnpm install
 
 web-editor-dev: web-editor-deps
-	cd web-editor-next && npm run dev
+	pnpm --filter saker-web-editor run dev
 
 web-editor-clean:
 	rm -rf web-editor-next/.next web-editor-next/out
 
 web-editor-build: web-editor-deps
-	cd web-editor-next && npm run build
+	pnpm --filter saker-web-editor run build
 
 # Desktop (requires web build first)
 desktop: web-build
