@@ -252,6 +252,9 @@ func (rt *Runtime) Close() error {
 				err = errors.Join(err, e)
 			}
 		}
+		if rt.sessionGate != nil {
+			rt.sessionGate.Close()
+		}
 		if rt.registry != nil {
 			rt.registry.Close()
 		}
