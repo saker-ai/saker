@@ -274,14 +274,17 @@ func (e *Executor) runHooks(ctx context.Context, evt events.Event) ([]Result, er
 			}
 		}
 
-		// Async hooks: fire-and-forget
+		// Async hooks: fire-and-forget with bounded timeout
 		if hook.Async {
-			go func(h ShellHook, p []byte, ev events.Event) {
-				_, err := e.executeHook(context.Background(), h, p, ev)
+			asyncTimeout := effectiveTimeout(hook.Timeout, e.timeout)
+			asyncCtx, asyncCancel := context.WithTimeout(context.WithoutCancel(ctx), asyncTimeout)
+			go func(h ShellHook, p []byte, ev events.Event, cancel context.CancelFunc) {
+				defer cancel()
+				_, err := e.executeHook(asyncCtx, h, p, ev)
 				if err != nil {
 					e.report(ev.Type, err)
 				}
-			}(hook, payload, evt)
+			}(hook, payload, evt, asyncCancel)
 			continue
 		}
 

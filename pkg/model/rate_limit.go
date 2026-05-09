@@ -24,30 +24,46 @@ type RateLimitInfo struct {
 	Provider       string          `json:"provider"`
 }
 
-// rateLimitStore holds the most recent rate limit info, safe for concurrent access.
+// rateLimitStore holds the most recent rate limit info per provider,
+// safe for concurrent access. Keyed by provider name so multi-provider
+// setups don't overwrite each other's data.
 var rateLimitStore struct {
 	mu   sync.RWMutex
-	info *RateLimitInfo
+	info map[string]*RateLimitInfo
 }
 
-// GetRateLimitInfo returns the most recently captured rate limit info, or nil.
-func GetRateLimitInfo() *RateLimitInfo {
+func init() {
+	rateLimitStore.info = make(map[string]*RateLimitInfo)
+}
+
+// GetRateLimitInfo returns the most recently captured rate limit info for
+// the given provider, or nil. If provider is empty, returns info for the
+// last provider that wrote data (backward compatible).
+func GetRateLimitInfo(provider string) *RateLimitInfo {
 	rateLimitStore.mu.RLock()
 	defer rateLimitStore.mu.RUnlock()
-	if rateLimitStore.info == nil {
+	if provider != "" {
+		if v, ok := rateLimitStore.info[provider]; ok {
+			cp := *v
+			return &cp
+		}
 		return nil
 	}
-	cp := *rateLimitStore.info
-	return &cp
+	// Backward compatible: return any available info.
+	for _, v := range rateLimitStore.info {
+		cp := *v
+		return &cp
+	}
+	return nil
 }
 
-// updateRateLimitInfo stores new rate limit info.
+// updateRateLimitInfo stores new rate limit info keyed by provider.
 func updateRateLimitInfo(info *RateLimitInfo) {
 	if info == nil {
 		return
 	}
 	rateLimitStore.mu.Lock()
-	rateLimitStore.info = info
+	rateLimitStore.info[info.Provider] = info
 	rateLimitStore.mu.Unlock()
 }
 

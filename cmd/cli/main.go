@@ -1217,7 +1217,16 @@ func runServerMode(stdout, stderr io.Writer, opts api.Options, addr, dataDir, st
 			fmt.Fprintf(stderr, "Warning: failed to generate auth credentials: %v\n", genErr)
 		} else {
 			srvOpts.WebAuth = &config.WebAuthConfig{Username: "admin", Password: hash}
-			fmt.Fprintf(stdout, "Web auth: username=admin password=%s (remote access only)\n", plain)
+			// Write initial password to a file instead of stdout so it
+			// doesn't persist in infrastructure logs.
+			pwFile := filepath.Join(srvOpts.DataDir, "initial-password.txt")
+			if writeErr := os.WriteFile(pwFile, []byte(plain), 0o600); writeErr != nil {
+				fmt.Fprintf(stderr, "Warning: failed to write initial password file: %v\n", writeErr)
+				// Fall back to stdout only if file write fails.
+				fmt.Fprintf(stdout, "Web auth: username=admin password=%s (remote access only)\n", plain)
+			} else {
+				fmt.Fprintf(stdout, "Web auth: username=admin — initial password written to %s (remote access only)\n", pwFile)
+			}
 			// Persist to settings.local.json so the password survives restarts.
 			if saveErr := config.SaveSettingsLocal(opts.ProjectRoot, &config.Settings{WebAuth: srvOpts.WebAuth}); saveErr != nil {
 				fmt.Fprintf(stderr, "Warning: failed to save auth config: %v\n", saveErr)

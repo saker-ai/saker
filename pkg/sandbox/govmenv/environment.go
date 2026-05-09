@@ -167,7 +167,7 @@ func (e *Environment) WriteFile(_ context.Context, ps *sandboxenv.PreparedSessio
 	if err := os.MkdirAll(filepath.Dir(hostPath), 0o755); err != nil {
 		return fmt.Errorf("govmenv: ensure directory: %w", err)
 	}
-	if err := os.WriteFile(hostPath, data, 0o666); err != nil { //nolint:gosec
+	if err := os.WriteFile(hostPath, data, 0o644); err != nil {
 		return fmt.Errorf("govmenv: write file: %w", err)
 	}
 	return nil

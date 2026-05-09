@@ -556,9 +556,11 @@ func (e *Environment) inspectImageWorkdir(ctx context.Context, image string) (st
 
 func (e *Environment) startContainer(ctx context.Context, name, workdir, image string) (string, error) {
 	argv := []string{"run", "-d", "--rm", "--name", name, "-w", workdir}
-	if strings.TrimSpace(e.cfg.NetworkMode) != "" {
-		argv = append(argv, "--network", e.cfg.NetworkMode)
+	network := strings.TrimSpace(e.cfg.NetworkMode)
+	if network == "" {
+		network = "none" // default to no network access (matches govm sandbox behavior)
 	}
+	argv = append(argv, "--network", network)
 	// Sort env keys so identical ExtraEnv maps produce identical argv —
 	// helps test golden output and keeps `docker inspect` diffs stable.
 	if len(e.cfg.ExtraEnv) > 0 {

@@ -22,7 +22,7 @@ import type {
 import { useT, type TKey } from "@/features/i18n";
 import { useSkillhubRpc } from "../shared/useSkillhubRpc";
 import { SkillhubLoginModal } from "../shared/SkillhubLoginModal";
-import { renderMarkdown } from "@/features/chat/markdown";
+import { renderExternalMarkdown } from "@/features/chat/markdown";
 
 interface Props {
   rpc: RPCClient | null;
@@ -359,7 +359,7 @@ function SkillPlazaViewInner({ rpc, config, onConfigChange, onInstalled, onShowT
   const readmeHtml = useMemo(() => {
     if (!detail) return "";
     const text = (detail as { readme?: string }).readme || detail.summary || "";
-    return renderMarkdown(text);
+    return renderExternalMarkdown(text);
   }, [detail]);
 
   const lastSyncTitle = useMemo(() => {

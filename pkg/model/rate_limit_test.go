@@ -116,7 +116,7 @@ func TestRateLimitStore(t *testing.T) {
 	t.Parallel()
 
 	// Initially nil.
-	info := GetRateLimitInfo()
+	info := GetRateLimitInfo("")
 	if info != nil {
 		t.Error("expected nil initially")
 	}
@@ -132,7 +132,7 @@ func TestRateLimitStore(t *testing.T) {
 	}
 	updateRateLimitInfo(testInfo)
 
-	got := GetRateLimitInfo()
+	got := GetRateLimitInfo("")
 	if got == nil {
 		t.Fatal("expected non-nil after update")
 	}
@@ -142,7 +142,7 @@ func TestRateLimitStore(t *testing.T) {
 
 	// Returned value should be a copy.
 	got.RequestsPerMin.Limit = 999
-	got2 := GetRateLimitInfo()
+	got2 := GetRateLimitInfo("")
 	if got2.RequestsPerMin.Limit != 100 {
 		t.Error("store should return copies, not references")
 	}
