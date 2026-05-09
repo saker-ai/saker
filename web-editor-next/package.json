@@ -61,7 +61,7 @@
     "use-deep-compare-effect": "^1.8.1",
     "wavesurfer.js": "^7.9.8",
     "zod": "4.3.6",
-    "zustand": "^5.0.2"
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
