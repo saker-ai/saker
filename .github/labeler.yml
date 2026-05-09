@@ -1,0 +1,55 @@
+# Label PRs based on file paths in the diff
+# Docs: https://github.com/actions/labeler
+
+frontend:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'web/**'
+      - 'web-editor-next/**'
+
+go:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+
+docs:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'docs/**'
+      - 'README.md'
+      - 'README_zh.md'
+      - 'CONTRIBUTING.md'
+      - 'CHANGELOG.md'
+
+ci:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/workflows/**'
+      - '.github/dependabot.yml'
+      - '.github/stale.yml'
+      - '.github/labeler.yml'
+      - 'Makefile'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'go.mod'
+      - 'go.sum'
+      - 'web/package-lock.json'
+      - 'web-editor-next/package-lock.json'
+
+security:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'SECURITY.md'
+      - 'docs/security.md'
+      - 'pkg/sandbox/**'
+
+examples:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'examples/**'

@@ -1,0 +1,228 @@
+/*
+ * 95-auth.css — login / authentication surface.
+ * Sections: .auth-overlay (full-viewport backdrop), auth card frame,
+ * provider buttons (local/LDAP/OIDC), error and inline-validation states.
+ */
+
+/* ── Auth ── */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  animation: authFadeIn 0.25s ease-out;
+}
+
+@keyframes authFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.auth-page {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.auth-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 78%);
+}
+
+.auth-page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 50% 50% at 30% 20%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%),
+    radial-gradient(ellipse 40% 40% at 75% 80%, color-mix(in srgb, var(--accent-secondary) 14%, transparent), transparent 70%);
+}
+
+:root[data-theme="light"] .auth-page::before {
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 0 0 / 0.04) 1px, transparent 1px);
+}
+
+.auth-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 400px;
+  padding: 36px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--bg-secondary) 75%, transparent);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid color-mix(in srgb, var(--accent) 6%, var(--border));
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.5),
+              0 0 0 1px rgb(255 255 255 / 0.02) inset;
+}
+
+.auth-card__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.auth-card__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin: 0;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.auth-card__error {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+  font-size: 0.875rem;
+}
+
+.auth-card__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auth-card__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.auth-card__input {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.auth-card__input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+  outline: none;
+}
+
+.auth-card__submit {
+  margin-top: 8px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.auth-card__submit:hover {
+  opacity: 0.9;
+}
+
+.auth-card__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auth-loading {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-loading__spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-primary);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: auth-spin 0.8s linear infinite;
+}
+
+@keyframes auth-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Tasks responsive ── */
+@media (max-width: 640px) {
+  .settings-failover-model-row select,
+  .settings-failover-model-row input[type="text"] {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+  .task-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .task-card__top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .task-card__info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .task-card__actions {
+    flex-wrap: wrap;
+  }
+
+  .task-card__actions-spacer {
+    display: none;
+  }
+
+  .task-form__schedule-picker {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .task-form__schedule-option {
+    flex: 1;
+    text-align: center;
+  }
+
+  .task-form__inline-group {
+    flex-wrap: wrap;
+  }
+
+  .task-run-item__details {
+    flex-direction: column;
+    gap: 4px;
+  }
+}

@@ -1,0 +1,1400 @@
+/*
+ * 150-skills-shell.css — Skills page shell + canvas reference/table/llm nodes.
+ * Sections: .skills-page top-level layout (shell that 40-skills.css
+ * decorates), .canvas-node-llm / .canvas-node-table / .canvas-node-mask
+ * / .canvas-node-reference / .canvas-node-export (per-node decoration
+ * loaded last to win specificity), .canvas-table-* grid + cells,
+ * .canvas-template-* chips, .canvas-drop-overlay drag affordance.
+ */
+
+/* ===== Skills Page (top-level shell) ===== */
+.skills-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 0;
+}
+.skills-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+}
+.skills-page-tabs {
+  display: inline-flex;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+.skills-page-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.skills-page-tab:hover {
+  color: var(--text-primary);
+}
+.skills-page-tab.active {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.skills-page-header-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.skills-page-body {
+  min-height: 300px;
+}
+
+/* ===== Skillhub Chip ===== */
+.skillhub-chip-wrap {
+  position: relative;
+  display: inline-block;
+}
+.skillhub-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.skillhub-chip:hover {
+  background: var(--bg-tertiary);
+}
+.skillhub-chip-anon {
+  border-color: var(--accent, #4f8cff);
+  color: var(--accent, #4f8cff);
+}
+.skillhub-chip-user {
+  background: var(--accent-soft, rgba(79, 140, 255, 0.12));
+  border-color: var(--accent, #4f8cff);
+  color: var(--accent, #4f8cff);
+}
+.skillhub-chip-offline {
+  cursor: default;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+}
+.skillhub-chip-loading {
+  cursor: default;
+  opacity: 0.5;
+}
+.skillhub-chip-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+.skillhub-chip-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 101;
+  min-width: 220px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 4px;
+}
+.skillhub-chip-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: 0;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-align: left;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.skillhub-chip-menu-item:hover {
+  background: var(--bg-tertiary);
+}
+.skillhub-chip-menu-item-readonly {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.skillhub-chip-menu-value {
+  font-size: 12px;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+/* ===== Skillhub Login Modal ===== */
+.skillhub-login-code-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+}
+.skillhub-login-code {
+  flex: 1;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text-primary);
+  background: transparent;
+}
+.skillhub-login-icon-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none !important;
+}
+.skillhub-login-pending {
+  opacity: 0.7;
+}
+.skillhub-login-success {
+  text-align: center;
+  padding: 16px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--success, #16a34a);
+}
+
+/* ===== Skillhub Section (Settings) ===== */
+.skillhub-section-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.skillhub-section-row input.skills-search-input {
+  min-width: 240px;
+  flex: 1 1 auto;
+}
+
+/* ===== My Skills view =====
+ * The scope filter (all/repo/subscribed/learned) is rendered inline as a
+ * compact <select> via SkillsCatalog's toolbarLeftSlot — see
+ * .my-skills-filter-select below. The previous standalone .my-skills-filter-bar
+ * row was retired in the same pass that compacted the catalog toolbar. */
+.my-skills-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.my-skills-filter-select {
+  /* Sits just before .skills-tabs in the toolbar. Keep height aligned with
+   * .skills-sort-select / .skills-search-input so the row reads as one band. */
+  min-width: 132px;
+}
+
+/* ===== Plaza ===== */
+.plaza-view {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+/* Plaza reuses the .skills-list-toolbar pattern from 40-skills.css for parity
+ * with the mine view. The form below adds a tiny override so the search input
+ * stretches inside the form wrapper. */
+.plaza-list-toolbar .plaza-search {
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex: 1 1 280px;
+  max-width: 480px;
+  min-width: 0;
+}
+.plaza-list-toolbar .plaza-search .skills-search-input {
+  width: 100%;
+}
+.plaza-sync-btn {
+  position: relative;
+}
+.plaza-sync-btn .spin {
+  animation: skillhub-spin 1s linear infinite;
+}
+@keyframes skillhub-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+/* Tiny status pip on the sync button — replaces the standalone last-sync row. */
+.plaza-sync-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 2px;
+  background: var(--text-secondary);
+}
+.plaza-sync-dot.plaza-sync-status-ok { background: #16a34a; }
+.plaza-sync-dot.plaza-sync-status-partial { background: #f59e0b; }
+.plaza-sync-dot.plaza-sync-status-error { background: #c0392b; }
+.plaza-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 2px 0 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.plaza-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+.plaza-card {
+  display: flex !important;
+  flex-direction: column;
+  gap: 8px;
+}
+.plaza-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.85;
+}
+.plaza-card-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.plaza-load-more {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+/* Two-column body layout — mirrors SkillsCatalog's .skills-grid (2fr/1fr).
+ * Cards on the left, persistent detail pane on the right. The detail pane is
+ * sticky so it stays in view while the user scrolls long card lists. */
+.plaza-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  flex: 1;
+}
+.plaza-detail-pane {
+  position: sticky;
+  top: 8px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 32px);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.plaza-detail-placeholder {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+/* Detail card itself stays a vertical flex column inside the sticky pane.
+ * Prior overlay/fixed positioning is gone — sticky parent provides framing. */
+.plaza-detail {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+/* Close button is redundant on desktop (panel is permanent), but kept
+ * available for narrow viewports where the pane stacks under the grid. */
+.plaza-detail-close {
+  display: none;
+}
+.plaza-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+.plaza-detail-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.plaza-detail-slug {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin-top: 2px;
+}
+.plaza-detail-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.plaza-detail-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 12px;
+}
+.plaza-detail-versions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.plaza-detail-version-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  font-size: 12px;
+}
+.plaza-detail-version-tag {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 500;
+}
+.plaza-detail-version-time {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.plaza-detail-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* Public / private visibility chip on plaza cards. */
+.plaza-visibility-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-left: 4px;
+  border: 1px solid var(--border);
+}
+.plaza-visibility-public {
+  color: #0a7c2f;
+  background: rgba(40, 167, 69, 0.08);
+  border-color: rgba(40, 167, 69, 0.3);
+}
+.plaza-visibility-private {
+  color: #b94c00;
+  background: rgba(255, 152, 0, 0.08);
+  border-color: rgba(255, 152, 0, 0.3);
+}
+
+.plaza-last-sync {
+  padding: 4px 12px 8px;
+}
+.plaza-sync-status-ok { color: #0a7c2f; }
+.plaza-sync-status-partial { color: #b94c00; }
+.plaza-sync-status-error { color: #c0392b; }
+
+.plaza-detail-readme {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 8px 10px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+}
+.plaza-detail-readme p { margin: 0 0 8px; }
+.plaza-detail-readme pre,
+.plaza-detail-readme code { font-size: 12px; }
+
+/* ===== Prompt History Dropdown (inside gen nodes) ===== */
+.gen-prompt-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.prompt-history-wrapper {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 5;
+}
+
+.prompt-history-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+
+.prompt-history-btn:hover:not(:disabled) {
+  opacity: 1;
+  background: var(--bg-hover);
+  color: var(--accent);
+}
+
+.prompt-history-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.prompt-history-menu {
+  position: absolute;
+  top: 26px;
+  right: 0;
+  width: 260px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  z-index: 200;
+  padding: 4px;
+}
+
+.prompt-history-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px 6px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.prompt-history-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.prompt-history-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.prompt-history-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.4;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.prompt-history-item:hover {
+  background: var(--bg-hover);
+  color: var(--accent);
+}
+
+/* ===== Collapsed Gen-Node Summary Chips ===== */
+.gen-collapsed-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.gen-collapsed-chip {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+/* ===== Template Panel (side panel) ===== */
+.canvas-template-panel {
+  position: absolute;
+  top: 12px;
+  left: 56px;
+  z-index: 10;
+  width: 300px;
+  max-height: calc(100% - 24px);
+  background: var(--card-bg, var(--bg-secondary));
+  border: 1px solid var(--card-border, var(--border));
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.canvas-template-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.canvas-template-panel-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.canvas-template-panel-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.canvas-template-panel-body {
+  padding: 8px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.canvas-template-empty {
+  padding: 24px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.canvas-template-item {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.canvas-template-item:hover {
+  background: var(--bg-hover);
+  border-color: var(--border);
+}
+
+.canvas-template-apply {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px 0 0 8px;
+  color: var(--text-primary);
+  min-width: 0;
+}
+
+.canvas-template-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.canvas-template-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.canvas-template-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.canvas-template-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.canvas-template-chip {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.canvas-template-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 0 8px 8px 0;
+  transition: color 0.15s, background 0.15s;
+}
+
+.canvas-template-remove:hover {
+  color: var(--danger, #ef4444);
+  background: var(--danger-glow, rgba(239, 68, 68, 0.12));
+}
+
+/* ===== Canvas Drop Overlay (drag files onto canvas) ===== */
+.canvas-drop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(138, 180, 248, 0.08);
+  border: 2px dashed var(--accent);
+  border-radius: 8px;
+  animation: canvas-drop-overlay-fade 180ms ease-out;
+}
+
+.canvas-drop-overlay-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 28px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes canvas-drop-overlay-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===== Edge Label Container Hover (× button visible on hover) ===== */
+.flow-edge-label-container.hovered .flow-edge-delete-btn,
+.flow-edge-label-container.selected .flow-edge-delete-btn {
+  opacity: 1;
+}
+
+.flow-edge-label-container.hovered {
+  pointer-events: all;
+}
+
+/* ===================================================================
+ * Phase 2: Gen History Strip + Lock Toggle + 4 advanced node types
+ * =================================================================== */
+
+/* ---- Lock Toggle (in node header) ---- */
+.canvas-node-lock-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin-left: 4px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: all 0.15s ease;
+}
+.canvas-node-lock-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg);
+}
+.canvas-node-lock-btn.locked {
+  opacity: 1;
+  color: var(--accent);
+}
+
+/* ---- Edit button (in node header, e.g. Sketch re-edit) ---- */
+.canvas-node-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin-left: auto;
+  margin-right: 4px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--muted);
+  opacity: 0.55;
+  transition: all 0.15s ease;
+}
+.canvas-node-edit-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--accent);
+}
+
+/* Visual state for locked nodes */
+.canvas-node.locked {
+  box-shadow: 0 0 0 1px rgba(200, 160, 60, 0.45), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+.canvas-node.locked input,
+.canvas-node.locked textarea,
+.canvas-node.locked select {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* ---- Gen History Strip ---- */
+.gen-history-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  flex-wrap: wrap;
+}
+.gen-history-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: var(--muted);
+  transition: all 0.15s ease;
+  padding: 0;
+}
+.gen-history-dot:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: var(--fg);
+}
+.gen-history-dot.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+.gen-history-dot.error {
+  border-color: rgba(255, 90, 90, 0.6);
+  color: rgba(255, 120, 120, 0.85);
+}
+.gen-history-more {
+  font-size: 10px;
+  color: var(--muted);
+  padding-left: 2px;
+}
+
+/* ---- LLM Node ---- */
+.canvas-node-llm {
+  min-width: 240px;
+  max-width: 280px;
+}
+.canvas-node-llm .llm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px 10px;
+}
+.canvas-node-llm .llm-upstream {
+  font-size: 11px;
+  color: var(--muted);
+  max-height: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 6px 8px;
+  border-radius: 6px;
+  line-height: 1.4;
+}
+.canvas-node-llm .llm-upstream.empty {
+  color: rgba(255, 255, 255, 0.35);
+  font-style: italic;
+}
+.canvas-node-llm .llm-extra-input {
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--fg);
+  outline: none;
+}
+.canvas-node-llm .llm-extra-input:focus {
+  border-color: var(--accent);
+}
+.canvas-node-llm .llm-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.canvas-node-llm .llm-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.canvas-node-llm .llm-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---- Mask Node ---- */
+.canvas-node-mask {
+  min-width: 420px;
+}
+.canvas-node-mask .mask-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px 10px;
+}
+.canvas-node-mask .mask-canvas-wrap {
+  position: relative;
+  width: 400px;
+  height: 300px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.canvas-node-mask .mask-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.6;
+}
+.canvas-node-mask .mask-canvas {
+  position: relative;
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+}
+.canvas-node-mask .mask-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 400px;
+  height: 300px;
+  color: var(--muted);
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+}
+.canvas-node-mask .mask-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.canvas-node-mask .mask-tool-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.canvas-node-mask .mask-tool-btn.active {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+.canvas-node-mask .mask-tool-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.1);
+}
+.canvas-node-mask .mask-width-group {
+  display: inline-flex;
+  gap: 2px;
+}
+.canvas-node-mask .mask-apply-btn {
+  margin-left: auto;
+  padding: 4px 10px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---- Reference Node ---- */
+.canvas-node-reference {
+  min-width: 220px;
+  max-width: 260px;
+}
+.canvas-node-reference .reference-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px 10px;
+}
+.canvas-node-reference .reference-preview {
+  width: 100%;
+  height: 110px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.canvas-node-reference .reference-preview.empty {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: italic;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+}
+.canvas-node-reference .reference-preview-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.canvas-node-reference .reference-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.canvas-node-reference .reference-strength-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.canvas-node-reference .reference-strength-slider {
+  flex: 1;
+  accent-color: var(--accent);
+}
+.canvas-node-reference .reference-strength-val {
+  min-width: 32px;
+  text-align: right;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Export Node ---- */
+.canvas-node-export {
+  min-width: 220px;
+  max-width: 260px;
+}
+.canvas-node-export .export-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px 10px;
+}
+.canvas-node-export .export-preview {
+  width: 100%;
+  height: 110px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.canvas-node-export .export-preview.empty {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: italic;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+}
+.canvas-node-export .export-preview-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.canvas-node-export .export-preview-audio {
+  width: 100%;
+}
+.canvas-node-export .export-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.canvas-node-export .export-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.canvas-node-export .export-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.canvas-node-export .export-status-line {
+  font-size: 10px;
+  color: var(--muted);
+  padding-left: 2px;
+}
+
+/* ── TableNode ── */
+.canvas-node-table {
+  display: flex;
+  flex-direction: column;
+  min-width: 360px;
+}
+.canvas-table-title {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 2px 4px;
+}
+.canvas-table-title:focus {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+.canvas-table-body {
+  padding: 6px 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.canvas-table-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.canvas-table-row {
+  display: flex;
+  background: var(--bg);
+  align-items: stretch;
+  min-height: 28px;
+}
+.canvas-table-head {
+  background: var(--bg-secondary);
+  font-weight: 600;
+}
+.canvas-table-cell {
+  flex: 1 1 0;
+  min-width: 80px;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-right: 1px solid var(--border);
+}
+.canvas-table-cell:last-of-type {
+  border-right: none;
+}
+.canvas-table-headcell {
+  gap: 4px;
+}
+.canvas-table-cell-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 12px;
+  color: var(--text-primary);
+  padding: 2px 4px;
+  min-width: 0;
+}
+.canvas-table-cell-input:focus {
+  background: var(--bg-secondary);
+  border-radius: 3px;
+}
+.canvas-table-cell-multi {
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.4;
+}
+.canvas-table-colname {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 2px 4px;
+  min-width: 0;
+}
+.canvas-table-typebtn,
+.canvas-table-delcol,
+.canvas-table-delrow,
+.canvas-table-addcol {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+}
+.canvas-table-typebtn:hover,
+.canvas-table-delcol:hover,
+.canvas-table-delrow:hover,
+.canvas-table-addcol:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+.canvas-table-addcol {
+  width: 26px;
+  flex: 0 0 26px;
+  border-left: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+.canvas-table-delrow {
+  width: 26px;
+  flex: 0 0 26px;
+  border-left: 1px solid var(--border);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.canvas-table-row:hover .canvas-table-delrow {
+  opacity: 1;
+}
+.canvas-table-empty {
+  padding: 12px 8px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background: var(--bg);
+}
+.canvas-table-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 28px 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg));
+  border: 1px dashed color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-radius: 10px;
+  min-height: 96px;
+}
+.canvas-table-loading small {
+  font-size: 10.5px;
+  color: var(--text-tertiary);
+}
+.canvas-table-loading-spin {
+  animation: canvas-table-spin 1s linear infinite;
+  color: var(--accent);
+}
+@keyframes canvas-table-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.canvas-table-loading-error {
+  background: color-mix(in srgb, var(--danger, #c03c3c) 5%, var(--bg));
+  border-color: color-mix(in srgb, var(--danger, #c03c3c) 35%, var(--border));
+  color: var(--text-primary);
+}
+.canvas-table-loading-error-icon {
+  color: var(--danger, #c03c3c);
+}
+.canvas-table-loading-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.canvas-table-loading-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.canvas-table-loading-actions button:hover {
+  background: var(--bg-hover, var(--bg));
+  border-color: var(--accent);
+}
+.canvas-table-loading-retry {
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg)) !important;
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border)) !important;
+}
+.canvas-table-addrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 11px;
+  align-self: flex-start;
+}
+.canvas-table-addrow:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* ===== Responsive — narrow viewports =====
+ * Toolbar pieces here are sized for desktop. When the catalog toolbar collapses
+ * to a column at <768px (see 40-skills.css), the filter select needs to fill
+ * the available width, and the plaza category pills get a horizontal scroll
+ * lane so they don't push the grid down. */
+@media (max-width: 768px) {
+  .my-skills-filter-select {
+    width: 100%;
+    min-width: 0;
+  }
+  .plaza-list-toolbar .plaza-search {
+    flex: 1 1 auto;
+    max-width: none;
+  }
+  .plaza-categories {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 6px;
+  }
+  .plaza-categories > * {
+    flex: 0 0 auto;
+  }
+  .plaza-grid {
+    grid-template-columns: 1fr;
+  }
+  /* Detail pane stacks under the grid on mobile and drops sticky positioning
+   * so it doesn't clip behind browser chrome. The close button reappears
+   * because the user needs a way to reclaim vertical space. */
+  .plaza-layout {
+    grid-template-columns: 1fr;
+  }
+  .plaza-detail-pane {
+    position: static;
+    max-height: none;
+  }
+  .plaza-detail-close {
+    display: inline-flex;
+  }
+}
+

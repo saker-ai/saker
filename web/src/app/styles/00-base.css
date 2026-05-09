@@ -1,0 +1,454 @@
+/*
+ * 00-base.css — design tokens, base resets, scrollbars.
+ * Sections: :root color palette, html/body resets, link defaults,
+ * scrollbar theming, light-theme overrides (prefers-color-scheme + .theme-light).
+ */
+:root {
+  --bg: #0f0f12;
+  --bg-secondary: #18181c;
+  --bg-tertiary: #25252a;
+  --text: #e8e8e8;
+  --text-muted: #9a9a9e;
+  --text-secondary: #c8c8cc;
+  --text-tertiary: #a4a4a8;
+  --accent: #fb7185; /* Coral — replaces Gemini Blue */
+  --accent-secondary: #f97316;
+  --accent-hover: #fb8595;
+  --accent-glow: rgba(251, 113, 133, 0.18);
+  --accent-gradient: linear-gradient(135deg, #fb7185 0%, #f97316 100%);
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --user-bubble: #25252a;
+  --assistant-bubble: transparent;
+  --danger: #f28b82;
+  --success: #81c995;
+  --warning: #fdd663;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --font-mono: var(--font-mono, "JetBrains Mono"), "SF Mono", monospace;
+  --card-bg: #1e1f20;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --shadow: 0 1px 2px 0 rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15);
+  --shadow-lg: 0 4px 4px 0 rgba(0,0,0,0.3), 0 8px 12px 6px rgba(0,0,0,0.15);
+  --code-bg: #15151a;
+  --bg-hover: #2c2c32;
+  --empty-title-gradient: linear-gradient(135deg, #e8e8e8 0%, #9a9a9e 100%);
+  --z-fab: 20;
+  --z-overlay: 39;
+  --z-panel: 40;
+  --z-nav: 50;
+  --z-tooltip: 100;
+  --z-lightbox: 200;
+  --z-skip: 9999;
+  --bg-primary: var(--bg);
+  --text-primary: var(--text);
+  --border-primary: var(--border);
+}
+
+/* ── Global Enhancements ── */
+.new-chat-btn-wrapper {
+  margin-bottom: 24px;
+  padding: 4px;
+}
+
+.gemini-new-chat-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: none;
+  padding: 12px 16px;
+  border-radius: var(--radius-2xl);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: fit-content;
+  min-width: 140px;
+}
+
+.gemini-new-chat-btn:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  filter: brightness(1.1);
+  box-shadow: var(--shadow);
+}
+
+.thread-group-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  padding: 16px 12px 8px;
+  text-transform: capitalize;
+}
+
+.thread-item {
+  margin: 2px 0;
+  border-radius: var(--radius-2xl) !important;
+  padding: 8px 16px !important;
+  height: 40px !important;
+  background: transparent !important;
+  transition: background 0.16s ease, color 0.16s ease !important;
+}
+
+.thread-item:hover {
+  background: color-mix(in srgb, var(--text) 3%, transparent) !important;
+}
+
+.thread-item.active {
+  background: color-mix(in srgb, var(--accent) 10%, transparent) !important;
+  color: var(--accent) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent) !important;
+}
+
+.thread-item.active .thread-title {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.thread-title {
+  font-size: 14px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: ellipsis;
+}
+
+/* ── Messages (Gemini Style) ── */
+.message {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ── Code Blocks (Gemini Style) ── */
+.code-block-wrapper {
+  background: var(--code-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  margin: 1.5em 0;
+  overflow: visible;
+  position: relative;
+}
+
+.code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.code-block-wrapper pre {
+  padding: 16px;
+  margin: 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.copy-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-tertiary);
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.copy-btn:hover {
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+  color: var(--text-secondary);
+  border-color: var(--text-tertiary);
+}
+
+/* ── Media Previews ── */
+.tool-media {
+  display: inline-flex;
+  width: fit-content;
+  max-width: min(100%, 520px);
+  margin-top: 16px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: none;
+  box-shadow: none;
+  background: color-mix(in srgb, var(--bg) 10%, transparent);
+}
+
+.tool-media img {
+  max-width: 100%;
+  height: auto;
+  max-height: 360px;
+  object-fit: contain;
+  display: block;
+  cursor: zoom-in;
+  transition: opacity 0.2s;
+}
+
+.tool-media img:hover {
+  opacity: 0.9;
+}
+
+.tool-media video {
+  max-width: 100%;
+  max-height: 300px;
+  display: block;
+}
+
+
+
+/* ── Composer Area Fixes ── */
+.gemini-textarea {
+  font-size: 16px !important;
+}
+
+
+body::before {
+  content: "";
+  position: fixed;
+  top: -10%;
+  right: -10%;
+  width: 50vw;
+  height: 50vh;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 6%, transparent) 0%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(80px);
+  animation: spirit-float 20s ease-in-out infinite alternate;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  bottom: -10%;
+  left: -10%;
+  width: 60vw;
+  height: 60vh;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-secondary) 4%, transparent) 0%, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(100px);
+  animation: spirit-float 25s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes spirit-float {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(10%, 10%) scale(1.1); }
+}
+
+/* Light theme variables — shared between explicit attribute and system preference */
+:root[data-theme="light"] {
+  --bg: #fafaf7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f0eee5;
+  --text: #1a1a1a;
+  --text-muted: #6e6b66;
+  --text-secondary: #424035;
+  --text-tertiary: #65625b;
+  --accent: #7c2d12; /* Burnt sienna — replaces Gemini link blue */
+  --accent-hover: #9a3412;
+  --accent-glow: rgba(124, 45, 18, 0.10);
+  --accent-gradient: linear-gradient(135deg, #7c2d12 0%, #c2410c 100%);
+  --border: rgba(0, 0, 0, 0.07);
+  --border-strong: rgba(0, 0, 0, 0.13);
+  --user-bubble: rgba(0, 0, 0, 0.04);
+  --assistant-bubble: #ffffff;
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.07);
+  --card-border-hover: rgba(0, 0, 0, 0.12);
+  --shadow: 0 2px 12px rgba(28, 22, 14, 0.04);
+  --shadow-lg: 0 8px 32px rgba(28, 22, 14, 0.08);
+  --code-bg: #f0eee5;
+  --bg-hover: #ededea;
+  --accent-secondary: #c2410c;
+  --danger: #b91c1c;
+  --success: #15803d;
+  --warning: #a16207;
+  --bg-primary: var(--bg);
+  --text-primary: var(--text);
+  --border-primary: var(--border);
+  --empty-title-gradient: linear-gradient(135deg, #1a1a1a 0%, #6e6b66 100%);
+}
+
+:root[data-theme="light"] body::before,
+:root[data-theme="light"] body::after {
+  display: none;
+}
+
+/* Fallback for no JS / system preference when data-theme not set */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --bg: #fafaf7;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f0eee5;
+    --text: #1a1a1a;
+    --text-muted: #6e6b66;
+    --text-secondary: #424035;
+    --text-tertiary: #65625b;
+    --accent: #7c2d12;
+    --accent-hover: #9a3412;
+    --accent-glow: rgba(124, 45, 18, 0.10);
+    --accent-gradient: linear-gradient(135deg, #7c2d12 0%, #c2410c 100%);
+    --border: rgba(0, 0, 0, 0.07);
+    --border-strong: rgba(0, 0, 0, 0.13);
+    --user-bubble: rgba(0, 0, 0, 0.04);
+    --assistant-bubble: #ffffff;
+    --card-bg: #ffffff;
+    --card-border: rgba(0, 0, 0, 0.07);
+    --card-border-hover: rgba(0, 0, 0, 0.12);
+    --shadow: 0 2px 12px rgba(28, 22, 14, 0.04);
+    --shadow-lg: 0 8px 32px rgba(28, 22, 14, 0.08);
+    --code-bg: #f0eee5;
+    --bg-hover: #ededea;
+    --accent-secondary: #c2410c;
+    --danger: #b91c1c;
+    --success: #15803d;
+    --warning: #a16207;
+    --bg-primary: var(--bg);
+    --text-primary: var(--text);
+    --border-primary: var(--border);
+    --empty-title-gradient: linear-gradient(135deg, #1a1a1a 0%, #6e6b66 100%);
+  }
+  :root:not([data-theme]) body::before,
+  :root:not([data-theme]) body::after {
+    display: none;
+  }
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+html {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ── Skip link ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: var(--z-skip);
+  padding: 8px 16px;
+  background: var(--accent);
+  color: white;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 8px;
+}
+
+/* Thin auto-hide scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+:root[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+}
+:root[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.1); }
+  :root:not([data-theme]) ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.2); }
+}
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+:root[data-theme="light"] * {
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.icon-nav-btn,
+.empty-action-card,
+.starter-chip,
+.thread-item,
+.message-copy-btn,
+.copy-btn,
+.content-toggle-btn,
+.thread-panel-header button,
+.collapse-btn,
+.thread-panel-toggle-btn,
+.composer-send,
+.composer-stop {
+  cursor: pointer;
+}
+
+.icon-btn-accent {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.icon-btn-accent:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+.icon-btn-accent:active {
+  transform: translateY(0);
+}
+.icon-btn-accent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.empty-logo-glow {
+  filter: drop-shadow(0 0 15px var(--accent-glow));
+  animation: logo-float 3s ease-in-out infinite;
+}
+@keyframes logo-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ── App layout ── */
+.app {
+  display: flex;
+  height: 100dvh;
+  height: 100vh; /* fallback */
+  padding-top: 56px; /* leave room for fixed TopBar */
+  box-sizing: border-box;
+}

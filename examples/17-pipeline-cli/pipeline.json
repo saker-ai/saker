@@ -1,0 +1,24 @@
+{
+  "batch": {
+    "steps": [
+      {
+        "name": "extract-frames",
+        "tool": "frame_extractor",
+        "input": [
+          {"source": "generated", "artifact_id": "input_video", "kind": "video"}
+        ]
+      },
+      {
+        "fan_out": {
+          "collection": "frames",
+          "concurrency": 4,
+          "step": {"name": "stylize", "tool": "stylizer"}
+        }
+      },
+      {
+        "name": "compose",
+        "tool": "composer"
+      }
+    ]
+  }
+}

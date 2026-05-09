@@ -1,0 +1,86 @@
+/*
+ * 140-memory.css — Memory section (small shard, ~80 lines).
+ * Sections: .memory-count-badge (entry counter), inline memory list
+ * styling (delete buttons, empty state).
+ */
+
+/* ── Memory Section ── */
+.memory-count-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+  margin-left: auto;
+}
+.memory-entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+}
+.memory-entry {
+  border-radius: 8px;
+  overflow: hidden;
+}
+.memory-entry-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 150ms;
+}
+.memory-entry-header:hover {
+  background: var(--bg-tertiary);
+}
+.memory-entry-toggle {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+.memory-entry-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.memory-entry-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.memory-entry-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.memory-entry-time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.memory-entry-content {
+  padding: 8px 14px 12px 36px;
+  animation: settingsTabFadeIn 150ms ease-out;
+}
+.memory-entry-content pre {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--code-bg, var(--bg-tertiary));
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
