@@ -14,7 +14,7 @@
     "@chenglou/pretext": "^0.0.5",
     "@webav/av-cliper": "^1.2.8",
     "@xyflow/react": "^12.10.2",
-    "ai": "^6.0.149",
+    "ai": "^6.0.177",
     "dompurify": "^3.4.2",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.8.0",
