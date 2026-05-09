@@ -1,0 +1,40 @@
+{
+  "name": "Saker Dev",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": "..",
+    "target": "builder"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.26"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "go.toolsManagement.autoUpdate": true,
+        "go.lintTool": "golangci-lint",
+        "editor.formatOnSave": true,
+        "[go]": {
+          "editor.defaultFormatter": "golang.go"
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        }
+      }
+    }
+  },
+  "postCreateCommand": "go mod download && (cd web && npm ci --no-audit --no-fund) && (cd web-editor-next && npm ci --no-audit --no-fund)",
+  "forwardPorts": [10112, 10111],
+  "workspaceFolder": "/workspace/saker",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/saker,type=bind,consistency=cached"
+}

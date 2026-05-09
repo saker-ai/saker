@@ -549,11 +549,26 @@ func snapshotSandbox(mgr *sandbox.Manager) SandboxReport {
 }
 
 type sessionGate struct {
-	gates sync.Map // map[string]chan struct{}
+	gates  sync.Map // map[string]*gateEntry
+	stopCh chan struct{}
+}
+
+type gateEntry struct {
+	ch        chan struct{}
+	acquiredAt time.Time
 }
 
 func newSessionGate() *sessionGate {
-	return &sessionGate{}
+	sg := &sessionGate{stopCh: make(chan struct{})}
+	go sg.cleanupLoop()
+	return sg
+}
+
+// Close stops the background gate cleanup goroutine.
+func (g *sessionGate) Close() {
+	if g.stopCh != nil {
+		close(g.stopCh)
+	}
 }
 
 func (g *sessionGate) Acquire(ctx context.Context, sessionID string) error {
@@ -561,8 +576,8 @@ func (g *sessionGate) Acquire(ctx context.Context, sessionID string) error {
 		ctx = context.Background()
 	}
 	for {
-		gate := make(chan struct{})
-		existing, loaded := g.gates.LoadOrStore(sessionID, gate)
+		entry := &gateEntry{ch: make(chan struct{}), acquiredAt: time.Now()}
+		existing, loaded := g.gates.LoadOrStore(sessionID, entry)
 		if !loaded {
 			if err := ctx.Err(); err != nil {
 				g.Release(sessionID)
@@ -571,9 +586,9 @@ func (g *sessionGate) Acquire(ctx context.Context, sessionID string) error {
 			return nil
 		}
 
-		held := existing.(chan struct{}) //nolint:errcheck // sync.Map guarantees type safety for stored values
+		held := existing.(*gateEntry) //nolint:errcheck // sync.Map guarantees type safety for stored values
 		select {
-		case <-held:
+		case <-held.ch:
 			continue
 		case <-ctx.Done():
 			return ctx.Err()
@@ -589,5 +604,38 @@ func (g *sessionGate) Release(sessionID string) {
 	if !ok {
 		return
 	}
-	close(existing.(chan struct{})) //nolint:errcheck // sync.Map guarantees type safety for stored values
+	close(existing.(*gateEntry).ch) //nolint:errcheck // sync.Map guarantees type safety for stored values
+}
+
+// cleanupLoop periodically removes abandoned gate entries (held longer than
+// 1 hour) whose holders have likely crashed without releasing.
+func (g *sessionGate) cleanupLoop() {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-g.stopCh:
+			return
+		case <-ticker.C:
+			now := time.Now()
+			cutoff := now.Add(-1 * time.Hour)
+			g.gates.Range(func(key, value any) bool {
+				entry := value.(*gateEntry)
+				// If the channel is already closed (drained), the entry
+				// was abandoned after Release failed to clean it up.
+				select {
+				case <-entry.ch:
+					// Channel closed but entry still present — remove it.
+					g.gates.Delete(key)
+				default:
+					// Channel still open. If held too long, force-release.
+					if entry.acquiredAt.Before(cutoff) {
+						g.gates.Delete(key)
+						close(entry.ch)
+					}
+				}
+				return true
+			})
+		}
+	}
 }

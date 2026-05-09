@@ -1,0 +1,10 @@
+Saker Web Editor
+
+This application contains code derived from OpenCut:
+
+  https://github.com/OpenCut-app/OpenCut
+
+OpenCut is licensed under the MIT License. Saker-specific changes are licensed
+under the Saker project license.
+
+The editor also includes third-party public assets. See ASSET_LICENSES.md.

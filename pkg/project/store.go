@@ -42,7 +42,8 @@ type Store struct {
 	provisioningMu sync.Map // map[string]*provisioningMuEntry
 
 	// stopCh stops the provisioningMu cleanup goroutine.
-	stopCh chan struct{}
+	stopCh   chan struct{}
+	closeOnce sync.Once
 }
 
 // provisioningMuEntry wraps a per-key mutex with a last-access timestamp so
@@ -117,15 +118,21 @@ func (s *Store) Driver() string { return s.driver }
 
 // Close releases the underlying DB connection and stops the background
 // provisioningMu cleanup goroutine (for tests / graceful shutdown).
+// Safe to call multiple times; subsequent calls are no-ops.
 func (s *Store) Close() error {
-	if s.stopCh != nil {
-		close(s.stopCh)
-	}
-	sqlDB, err := s.db.DB()
-	if err != nil {
-		return err
-	}
-	return sqlDB.Close()
+	var err error
+	s.closeOnce.Do(func() {
+		if s.stopCh != nil {
+			close(s.stopCh)
+		}
+		sqlDB, dbErr := s.db.DB()
+		if dbErr != nil {
+			err = dbErr
+			return
+		}
+		err = sqlDB.Close()
+	})
+	return err
 }
 
 // provisioningLock acquires a per-key mutex used by Select-or-Create flows.
