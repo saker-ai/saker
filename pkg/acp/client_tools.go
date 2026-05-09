@@ -336,7 +336,7 @@ func (t *acpBashTool) Execute(ctx context.Context, params map[string]interface{}
 		return nil, errors.New("acp create_terminal returned empty terminal id")
 	}
 	defer func() {
-		releaseCtx, cancelRelease := context.WithTimeout(context.Background(), acpTerminalCleanupTimeout)
+		releaseCtx, cancelRelease := context.WithTimeout(context.WithoutCancel(ctx), acpTerminalCleanupTimeout)
 		defer cancelRelease()
 		_, releaseErr := conn.ReleaseTerminal(releaseCtx, acpproto.ReleaseTerminalRequest{
 			SessionId:  t.sessionID,
@@ -367,7 +367,7 @@ func (t *acpBashTool) Execute(ctx context.Context, params map[string]interface{}
 	})
 	if waitErr != nil {
 		if errors.Is(waitErr, context.DeadlineExceeded) {
-			killCtx, cancelKill := context.WithTimeout(context.Background(), acpTerminalCleanupTimeout)
+			killCtx, cancelKill := context.WithTimeout(context.WithoutCancel(ctx), acpTerminalCleanupTimeout)
 			defer cancelKill()
 			_, killErr := conn.KillTerminalCommand(killCtx, acpproto.KillTerminalCommandRequest{
 				SessionId:  t.sessionID,

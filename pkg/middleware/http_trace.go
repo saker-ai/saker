@@ -204,7 +204,10 @@ func (m *HTTPTraceMiddleware) Wrap(next http.Handler) http.Handler {
 				slog.Error("http trace: write event", "error", err)
 			}
 			if panicVal != nil {
-				panic(panicVal)
+				slog.Error("http trace: handler panicked", "panic", panicVal)
+				if !recorder.wroteHeader {
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				}
 			}
 		}()
 		defer func() {
