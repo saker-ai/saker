@@ -13,6 +13,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -75,8 +76,10 @@ type AuthManager struct {
 
 	// sessionSigningKey is a random 32-byte HMAC key generated on startup.
 	// Using a random key prevents predictability from deriving the key
-	// from the admin password hash.
+	// from the admin password hash. The key is persisted to a file so
+	// existing sessions survive server restarts.
 	sessionSigningKey []byte
+	keyFile           string // path to persisted signing key
 
 	// projectStore lets the auth layer sync identity-provider rows into the
 	// multi-tenant users table on login. nil when running in legacy
@@ -684,14 +687,46 @@ func (a *AuthManager) extractTokenInfo(token string) (username, role string) {
 	return username, role
 }
 
-// signingKey derives an HMAC key from the bcrypt password hash.
-// This is stable across restarts as long as the password config doesn't change.
+// signingKey persists the session signing key so existing sessions survive
+// restarts. On first start a random key is generated and saved; on subsequent
+// starts the saved key is loaded.
 func generateSigningKey() []byte {
 	key := make([]byte, 32)
 	if _, err := rand.Read(key); err != nil {
 		panic(fmt.Sprintf("crypto/rand.Read failed: %v — cannot generate secure signing key, refusing to start", err))
 	}
 	return key
+}
+
+// SetKeyDir persists the session signing key to a file under the given
+// directory. On first start the random key is saved; on subsequent starts
+// the saved key is loaded so existing sessions remain valid.
+func (a *AuthManager) SetKeyDir(dir string) {
+	if dir == "" {
+		return
+	}
+	keyPath := filepath.Join(dir, ".saker_session_key")
+
+	a.mu.Lock()
+	currentKey := a.sessionSigningKey
+	a.keyFile = keyPath
+	a.mu.Unlock()
+
+	// Try to load an existing key file.
+	if data, err := os.ReadFile(keyPath); err == nil && len(data) == 32 {
+		a.mu.Lock()
+		a.sessionSigningKey = data
+		a.mu.Unlock()
+		a.logger.Debug("session key loaded from file", "path", keyPath)
+		return
+	}
+
+	// No existing key file — persist the generated key.
+	if err := os.WriteFile(keyPath, currentKey, 0600); err != nil {
+		a.logger.Warn("failed to persist session key; sessions will invalidate on restart", "path", keyPath, "error", err)
+	} else {
+		a.logger.Debug("session key persisted to file", "path", keyPath)
+	}
 }
 
 func (a *AuthManager) signingKey() []byte {

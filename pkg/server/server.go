@@ -113,6 +113,7 @@ func New(runtime *api.Runtime, opts Options) (*Server, error) {
 	// Same store goes into the auth layer so login flows can upsert user
 	// rows and provision a personal project for the localhost branch.
 	auth.SetProjectStore(opts.ProjectStore)
+	auth.SetKeyDir(opts.DataDir)
 
 	var s *Server
 	s = &Server{

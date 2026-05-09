@@ -1,37 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo, useSyncExternalStore } from "react";
-
-/** Detect if viewport is <=480px (mobile drawer breakpoint). */
-function useIsMobile() {
-  const subscribe = useCallback((cb: () => void) => {
-    const mq = window.matchMedia("(max-width: 480px)");
-    mq.addEventListener("change", cb);
-    return () => mq.removeEventListener("change", cb);
-  }, []);
-  const getSnapshot = useCallback(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(max-width: 480px)").matches;
-  }, []);
-  return useSyncExternalStore(subscribe, getSnapshot, () => false);
-}
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import {
-  Plus,
   PanelLeftClose,
   PanelLeftOpen,
   Menu,
   X,
-  Eye,
-  Sparkles,
-  Video,
-  Image,
-  Mic,
-  Send,
-  Film,
-  Volume2,
-  MessageCircle,
 } from "lucide-react";
 import { RPCClient, resolveWsUrl } from "@/features/rpc/client";
 import { httpRequest, setHTTPProjectIdProvider } from "@/features/rpc/httpRpc";
@@ -54,17 +29,10 @@ import type {
   FailoverConfig,
 } from "@/features/rpc/types";
 import { LoginPage } from "@/features/auth/LoginPage";
-import { ParticleBackground } from "./ParticleBackground";
 import { IconNav, type NavView } from "./IconNav";
-import { ThreadPanel } from "./ThreadPanel";
-import { MessageStream } from "./MessageStream";
 import { Composer, type Attachment } from "./Composer";
-import { ApprovalCard } from "./ApprovalCard";
-import { QuestionCard } from "./QuestionCard";
-import { StatusBar } from "./StatusBar";
 import { SkillsPage } from "@/features/skills";
 import { SettingsPanel } from "./SettingsPanel";
-import { CanvasView } from "@/features/canvas/CanvasView";
 import { useCanvasBridge } from "@/features/canvas/useCanvasBridge";
 import { useCanvasStore, saveToServer } from "@/features/canvas/store";
 import { useT } from "@/features/i18n";
@@ -72,26 +40,10 @@ import { TasksView } from "@/features/tasks/TasksView";
 import { AppsView } from "@/features/apps/AppsView";
 import { useProjectStore, projectIdProvider } from "@/features/project/projectStore";
 import { TopBar } from "./TopBar";
+import { CanvasLayout } from "./CanvasLayout";
+import { ChatMainView } from "./ChatMainView";
+import { useIsMobile, parseHash, type TurnStatus, type AuthProvider } from "./chatUtils";
 
-
-type TurnStatus = "idle" | "running" | "waiting" | "error";
-
-const VALID_VIEWS = new Set<NavView>(["chats", "skills", "tasks", "settings", "canvas", "apps"]);
-
-function parseHash(): { view: NavView; threadId: string } {
-  if (typeof window === "undefined") return { view: "chats", threadId: "" };
-  const raw = window.location.hash.replace("#", "");
-  const [viewPart, ...rest] = raw.split("/");
-  const threadId = rest.join("/");
-  const view = VALID_VIEWS.has(viewPart as NavView) ? (viewPart as NavView) : "chats";
-  return { view, threadId };
-}
-
-function viewFromHash(): NavView {
-  return parseHash().view;
-}
-
-interface AuthProvider { name: string; type: "password" | "redirect"; }
 
 interface ChatAppProps {
   authRequired?: boolean;
@@ -1001,94 +953,32 @@ export function ChatApp({ authRequired, authenticated, onLogin, onLogout, authPr
       />
 
       {activeView === "canvas" ? (
-        <>
-          <ThreadPanel
-            threads={sortedThreads}
-            activeThreadId={activeThreadId}
-            onSelectThread={switchThread}
-            onCreateThread={createThread}
-            onDeleteThread={deleteThread}
-            collapsed={panelCollapsed}
-            connected={wsHealthy}
-          />
-          <div className={`canvas-layout${panelCollapsed ? "" : " panel-expanded"}`}>
-            {/* Canvas area — shrinks when drawer opens */}
-            <div className="canvas-area">
-              <CanvasView />
-              {!canvasChatOpen && !canvasHasNodes && (
-                <div className="composer-area floating-composer">
-                  <StatusBar connected={wsHealthy} turnStatus={turnStatus} />
-                  <Composer
-                    onSend={activeThreadId ? sendMessage : sendWithAutoCreate}
-                    onStop={cancelTurn}
-                    disabled={!wsHealthy || turnStatus === "running"}
-                    running={turnStatus === "running"}
-                    skills={skills}
-                  />
-                </div>
-              )}
-              {/* Floating chat ball */}
-              {!canvasChatOpen && (
-                <button
-                  className="canvas-chat-fab"
-                  onClick={() => { setCanvasChatOpen(true); requestAnimationFrame(() => window.dispatchEvent(new Event("resize"))); }}
-                  aria-label={t("chat.openChat")}
-                >
-                  <MessageCircle size={22} strokeWidth={1.75} />
-                </button>
-              )}
-            </div>
-
-            {/* Right-side chat drawer — same level as canvas */}
-            {canvasChatOpen && (
-              <div className="canvas-chat-drawer">
-                <div className="canvas-chat-drawer-header">
-                  <h4 className="canvas-chat-drawer-title">
-                    {activeThread?.title || t("nav.chats")}
-                  </h4>
-                  <button
-                    className="canvas-chat-drawer-close"
-                    onClick={() => { setCanvasChatOpen(false); requestAnimationFrame(() => window.dispatchEvent(new Event("resize"))); }}
-                    aria-label={t("chat.closeChat")}
-                  >
-                    <X size={18} strokeWidth={2} />
-                  </button>
-                </div>
-                <div className="canvas-chat-drawer-messages">
-                  {!activeThreadId ? (
-                    <div className="canvas-chat-drawer-empty">
-                      <p>{t("chat.selectOrCreate")}</p>
-                    </div>
-                  ) : messages.length === 0 && !streamText && turnStatus === "idle" ? (
-                    <StarterState onSend={sendMessage} />
-                  ) : (
-                    <ChatStream
-                      messages={messages}
-                      streamText={streamText}
-                      streaming={turnStatus === "running"}
-                      toolEvents={toolEvents}
-                      highlightedTurnId={highlightedTurnId}
-                      approvals={approvals}
-                      questions={questions}
-                      onApproval={handleApproval}
-                      onQuestionRespond={handleQuestionRespond}
-                    />
-                  )}
-                </div>
-
-                <div className="composer-area floating-composer">
-                  <Composer
-                    onSend={activeThreadId ? sendMessage : sendWithAutoCreate}
-                    onStop={cancelTurn}
-                    disabled={!wsHealthy || turnStatus === "running"}
-                    running={turnStatus === "running"}
-                    skills={skills}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </>
+        <CanvasLayout
+          sortedThreads={sortedThreads}
+          activeThreadId={activeThreadId}
+          activeThread={activeThread}
+          switchThread={switchThread}
+          createThread={createThread}
+          deleteThread={deleteThread}
+          panelCollapsed={panelCollapsed}
+          wsHealthy={wsHealthy}
+          canvasChatOpen={canvasChatOpen}
+          setCanvasChatOpen={setCanvasChatOpen}
+          canvasHasNodes={canvasHasNodes}
+          messages={messages}
+          streamText={streamText}
+          turnStatus={turnStatus}
+          toolEvents={toolEvents}
+          highlightedTurnId={highlightedTurnId}
+          approvals={approvals}
+          questions={questions}
+          onApproval={handleApproval}
+          onQuestionRespond={handleQuestionRespond}
+          sendMessage={sendMessage}
+          sendWithAutoCreate={sendWithAutoCreate}
+          cancelTurn={cancelTurn}
+          skills={skills}
+        />
       ) : activeView === "apps" ? (
         <AppsView />
       ) : activeView === "tasks" ? (
@@ -1167,84 +1057,31 @@ export function ChatApp({ authRequired, authenticated, onLogin, onLogout, authPr
           </div>
         </div>
       ) : (
-        <>
-          {isMobile && mobileDrawerOpen && (
-            <div
-              className="thread-panel-overlay"
-              onClick={() => setMobileDrawerOpen(false)}
-            />
-          )}
-          <ThreadPanel
-            threads={sortedThreads}
-            activeThreadId={activeThreadId}
-            onSelectThread={(id) => {
-              switchThread(id);
-              if (isMobile) setMobileDrawerOpen(false);
-            }}
-            onCreateThread={() => {
-              createThread();
-              if (isMobile) setMobileDrawerOpen(false);
-            }}
-            onDeleteThread={deleteThread}
-            collapsed={isMobile ? !mobileDrawerOpen : panelCollapsed}
-            connected={wsHealthy}
-            mobileDrawer={isMobile}
-            mobileOpen={mobileDrawerOpen}
-          />
-          <div className="main" id="main-content">
-            {!wsHealthy && (
-              <div className="connection-status" role="alert">
-                {t("chat.disconnected")}
-              </div>
-            )}
-
-            <div
-              className={`messages${
-                activeThreadId &&
-                !(messages.length === 0 && !streamText && turnStatus === "idle")
-                  ? " messages--threaded"
-                  : ""
-              }`}
-            >
-              {!activeThreadId ? (
-                <EmptyState
-                  connected={wsHealthy}
-                  onSend={sendWithAutoCreate}
-                  skills={skills}
-                />
-              ) : messages.length === 0 &&
-                !streamText &&
-                turnStatus === "idle" ? (
-                <StarterState onSend={sendMessage} />
-              ) : (
-                <ChatStream
-                  messages={messages}
-                  streamText={streamText}
-                  streaming={turnStatus === "running"}
-                  toolEvents={toolEvents}
-                  highlightedTurnId={highlightedTurnId}
-                  approvals={approvals}
-                  questions={questions}
-                  onApproval={handleApproval}
-                  onQuestionRespond={handleQuestionRespond}
-                />
-              )}
-            </div>
-
-            {activeThreadId && (
-              <div className="composer-area floating-composer">
-                <StatusBar connected={wsHealthy} turnStatus={turnStatus} />
-                <Composer
-                  onSend={sendMessage}
-                  onStop={cancelTurn}
-                  disabled={!wsHealthy || turnStatus === "running"}
-                  running={turnStatus === "running"}
-                  skills={skills}
-                />
-              </div>
-            )}
-          </div>
-        </>
+        <ChatMainView
+          isMobile={isMobile}
+          mobileDrawerOpen={mobileDrawerOpen}
+          setMobileDrawerOpen={setMobileDrawerOpen}
+          sortedThreads={sortedThreads}
+          activeThreadId={activeThreadId}
+          switchThread={switchThread}
+          createThread={createThread}
+          deleteThread={deleteThread}
+          panelCollapsed={panelCollapsed}
+          wsHealthy={wsHealthy}
+          messages={messages}
+          streamText={streamText}
+          turnStatus={turnStatus}
+          toolEvents={toolEvents}
+          highlightedTurnId={highlightedTurnId}
+          approvals={approvals}
+          questions={questions}
+          onApproval={handleApproval}
+          onQuestionRespond={handleQuestionRespond}
+          sendMessage={sendMessage}
+          sendWithAutoCreate={sendWithAutoCreate}
+          cancelTurn={cancelTurn}
+          skills={skills}
+        />
       )}
       {showLogin && onLogin && (
         <div className="auth-overlay">
@@ -1259,150 +1096,6 @@ export function ChatApp({ authRequired, authenticated, onLogin, onLogout, authPr
           />
         </div>
       )}
-    </div>
-  );
-}
-
-/** Renders the active turn: assistant stream, tool cards, then any pending
- * approval/question prompts. Used by both the main view and the canvas chat
- * drawer — keeping it here avoids drifting two near-identical JSX blocks. */
-function ChatStream({
-  messages,
-  streamText,
-  streaming,
-  toolEvents,
-  highlightedTurnId,
-  approvals,
-  questions,
-  onApproval,
-  onQuestionRespond,
-}: {
-  messages: ThreadItem[];
-  streamText: string;
-  streaming: boolean;
-  toolEvents: StreamEvent[];
-  highlightedTurnId: string | null;
-  approvals: ApprovalRequest[];
-  questions: QuestionRequest[];
-  onApproval: (id: string, decision: "allow" | "deny") => void;
-  onQuestionRespond: (id: string, answers: Record<string, string>) => void;
-}) {
-  return (
-    <>
-      <MessageStream
-        messages={messages}
-        streamText={streamText}
-        streaming={streaming}
-        toolEvents={toolEvents}
-        highlightedTurnId={highlightedTurnId}
-      />
-      {approvals.map((a) => (
-        <ApprovalCard key={a.id} approval={a} onRespond={onApproval} />
-      ))}
-      {questions.map((q) => (
-        <QuestionCard key={q.id} question={q} onRespond={onQuestionRespond} />
-      ))}
-    </>
-  );
-}
-
-/** Empty state when no thread is selected — input-centric layout. */
-function EmptyState({
-  connected,
-  onSend,
-  skills,
-}: {
-  connected: boolean;
-  onSend: (text: string, attachments?: Attachment[]) => void;
-  skills?: SkillInfo[];
-}) {
-  const { t } = useT();
-  const [wsDisplay, setWsDisplay] = useState("");
-  useEffect(() => {
-    setWsDisplay(resolveWsUrl().replace("ws://", "").replace("wss://", "").replace("/ws", ""));
-  }, []);
-
-  const examples = useMemo(() => [
-    { text: t("starter.analyzeImage"), icon: <Eye size={18} /> },
-    { text: t("starter.generateImage"), icon: <Sparkles size={18} /> },
-    { text: t("starter.textToSpeech"), icon: <Volume2 size={18} /> },
-    { text: t("starter.analyzeVideo"), icon: <Film size={18} /> },
-  ], [t]);
-
-  return (
-    <>
-    <ParticleBackground />
-    <div className="empty-state-v3">
-      <motion.div
-        className="hero-section"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0 }}
-      >
-        <h1 className="hero-title">{t("empty.heroTitle")}<span className="hero-brand">Saker</span></h1>
-        <p className="hero-subtitle">{t("empty.heroSubtitle")}</p>
-      </motion.div>
-
-      <motion.div
-        className="home-composer"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
-        <Composer
-          onSend={onSend}
-          disabled={!connected}
-          skills={skills}
-        />
-      </motion.div>
-
-      <motion.div
-        className="home-examples"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        {examples.map((ex, i) => (
-          <button key={i} className="home-example-card" onClick={() => onSend(ex.text)}>
-            <div className="home-example-icon">{ex.icon}</div>
-            <div className="home-example-text">{ex.text}</div>
-          </button>
-        ))}
-      </motion.div>
-
-      {!connected && wsDisplay && (
-        <p className="empty-hint empty-hint--danger">
-          {t("empty.disconnectedFrom")} {wsDisplay}
-        </p>
-      )}
-    </div>
-    </>
-  );
-}
-
-/** Starter prompts when a thread is selected but empty. */
-function StarterState({ onSend }: { onSend: (text: string) => void }) {
-  const { t } = useT();
-  const prompts = useMemo(() => [
-    { text: t("starter.analyzeImage"), icon: <Image size={14} /> },
-    { text: t("starter.generateImage"), icon: <Sparkles size={14} /> },
-    { text: t("starter.textToSpeech"), icon: <Mic size={14} /> },
-    { text: t("starter.analyzeVideo"), icon: <Video size={14} /> },
-  ], [t]);
-  return (
-    <div className="starter-state-v3">
-      <div className="starter-prompts">
-        {prompts.map((p) => (
-          <button
-            key={p.text}
-            className="gemini-pill-chip"
-            onClick={() => onSend(p.text)}
-          >
-            {p.icon}
-            {p.text}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }
