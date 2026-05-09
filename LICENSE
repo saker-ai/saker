@@ -21,7 +21,7 @@ ADDITIONAL TERMS
    (a) Your organization's annual gross revenue does not exceed one million
        Chinese Yuan (1,000,000 CNY, approximately $140,000 USD).
 
-   (b) Your total active user count does not exceed one thousand (1,000)
+   (b) Your total registered user count does not exceed one hundred (100)
        individual end users.
 
    Organizations that exceed EITHER of these limits must obtain a Commercial
@@ -30,16 +30,16 @@ ADDITIONAL TERMS
 
    Non-production use — including evaluation, testing, development, personal
    learning, research, and internal prototyping — is always permitted
-   regardless of revenue or user count, provided such use is not part of a
+   regardless of revenue or registered user count, provided such use is not part of a
    production deployment that generates commercial revenue.
 
    "Annual gross revenue" means the total revenue of the Legal Entity and
    all entities under common control, as defined in Section 1 of the Apache
    License.
 
-   "Active user count" means the total number of individual end users who
-   have accessed or used the Work or Derivative Works within the preceding
-   thirty (30) days, aggregated across all entities under common control.
+   "Registered user count" means the total number of individual end users who
+   have registered accounts on or through the Work or Derivative Works,
+   aggregated across all entities under common control.
 
 
 2. ATTRIBUTION REQUIREMENT

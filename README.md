@@ -195,8 +195,8 @@ Saker is licensed under the **Saker Source License Version 1.0 (SKL-1.0)** — a
 
 **Key points:**
 
-- **Free for small teams and individuals** — organizations with annual gross revenue ≤ 1,000,000 CNY (~$140,000 USD) AND ≤ 1,000 active users may use this software in production without restriction.
-- **Commercial license required** — if your annual gross revenue exceeds 1,000,000 CNY (~$140,000 USD) OR your active user count exceeds 1,000, you must obtain a commercial license before production use. Contact: cinience@hotmail.com
+- **Free for small teams and individuals** — organizations with annual gross revenue ≤ 1,000,000 CNY (~$140,000 USD) AND ≤ 100 registered users may use this software in production without restriction.
+- **Commercial license required** — if your annual gross revenue exceeds 1,000,000 CNY (~$140,000 USD) OR your registered user count exceeds 100, you must obtain a commercial license before production use. Contact: cinience@hotmail.com
 - **Non-production use is always free** — evaluation, testing, development, personal learning, and research are permitted regardless of revenue.
 - **Attribution required for derivative works** — if you build upon this project, you must display "Powered by Saker.cc" in your user interface and documentation.
 
