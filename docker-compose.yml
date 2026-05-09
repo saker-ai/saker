@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  saker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: saker:latest
+    container_name: saker
+    ports:
+      - "10112:10112"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - SAKER_HTTP_ADDR=0.0.0.0:10112
+      - SAKER_MODEL=${SAKER_MODEL:-claude-sonnet-4-5-20250929}
+    volumes:
+      - saker_sessions:/var/saker/sessions
+    read_only: true
+    tmpfs:
+      - /tmp:size=64M
+      - /var/saker/sessions:size=256M,mode=0770
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "2.0"
+        reservations:
+          memory: 512M
+          cpus: "0.5"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:10112/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  saker_sessions:
+    driver: local
