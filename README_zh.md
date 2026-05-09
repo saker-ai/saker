@@ -195,7 +195,7 @@ Saker 使用 **Saker Source License Version 1.0 (SKL-1.0)** — 基于 Apache 2.
 - **小团队和个人免费** — 年营收 ≤ 100万人民币（约 $140,000 USD）且活跃用户数 ≤ 1,000 的组织可无限制地在生产环境使用。
 - **商业授权** — 年营收超过 100万人民币（约 $140,000 USD）或活跃用户数超过 1,000 的组织须先获取商业许可证才能在生产环境使用。联系：cinience@hotmail.com
 - **非生产用途始终免费** — 评估、测试、开发、个人学习、研究不受营收限制。
-- **衍生作品需标注出处** — 基于本项目构建的衍生作品须在用户界面和文档中展示 "Powered by Saker"。
+- **衍生作品需标注出处** — 基于本项目构建的衍生作品须在用户界面和文档中展示 "Powered by Saker.cc"。
 
 上游代码说明保留在 `NOTICE`，依赖和素材许可证清单保留在 [docs/third-party-notices.md](docs/third-party-notices.md)。
 
