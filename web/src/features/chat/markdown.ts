@@ -29,6 +29,21 @@ export function renderMarkdown(text: string): string {
   }
 }
 
+/**
+ * Render externally sourced markdown (e.g. skillhub registry READMEs)
+ * with stricter sanitization that does not allow button or class attributes,
+ * preventing UI injection from untrusted content authors.
+ */
+export function renderExternalMarkdown(text: string): string {
+  if (!text) return "";
+  try {
+    const raw = marked.parse(text, { async: false }) as string;
+    return sanitizeExternalHtml(raw);
+  } catch {
+    return escapeHtml(text).replace(/\n/g, "<br/>");
+  }
+}
+
 function sanitizeHtml(raw: string): string {
   try {
     return DOMPurify.sanitize(raw, {
@@ -36,8 +51,17 @@ function sanitizeHtml(raw: string): string {
       ADD_TAGS: ["button"],
     });
   } catch {
-    // DOMPurify may not be fully initialized outside the browser;
-    // escape all HTML tags rather than returning unsanitized content.
+    return escapeHtml(raw).replace(/\n/g, "<br/>");
+  }
+}
+
+// Stricter sanitization for externally sourced content (skillhub registry,
+// third-party READMEs). Does not allow button or class attributes to prevent
+// UI injection / phishing vectors from untrusted authors.
+export function sanitizeExternalHtml(raw: string): string {
+  try {
+    return DOMPurify.sanitize(raw);
+  } catch {
     return escapeHtml(raw).replace(/\n/g, "<br/>");
   }
 }

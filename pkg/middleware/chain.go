@@ -87,7 +87,11 @@ func (c *Chain) Execute(ctx context.Context, stage Stage, st *State) error {
 	return nil
 }
 
-// runWithTimeout wraps fn with a deadline. NOTE: if fn does not respect ctx.Done(), the goroutine will leak after timeout.
+// runWithTimeout wraps fn with a deadline. The spawned goroutine receives
+// a cancellable context so it can check ctx.Done() and terminate early.
+// If fn does not respect context cancellation, the goroutine may outlive
+// the timeout but the Chain.Close() method waits for all in-flight
+// goroutines to finish.
 func (c *Chain) runWithTimeout(ctx context.Context, fn func(context.Context) error, mw Middleware) error {
 	if c.timeout <= 0 {
 		return fn(ctx)

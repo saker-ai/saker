@@ -45,8 +45,40 @@ func (f *failoverModel) Complete(ctx context.Context, req Request) (*Response, e
 }
 
 func (f *failoverModel) CompleteStream(ctx context.Context, req Request, cb StreamHandler) error {
+	// Use a buffering wrapper so partial stream output from a failed model
+	// is discarded rather than sent to the downstream consumer. On success,
+	// the buffered chunks are flushed to cb in one pass, preventing garbled
+	// output across model retries/failovers.
 	_, err := f.execute(ctx, req, true, cb)
 	return err
+}
+
+// bufferingStreamHandler collects stream results in memory. On flush they are
+// forwarded to the downstream handler; on discard they are silently dropped.
+// This prevents partial output from a failed model attempt from reaching the
+// consumer when failover retries with a different model.
+type bufferingStreamHandler struct {
+	chunks     []StreamResult
+	downstream StreamHandler
+}
+
+func (b *bufferingStreamHandler) Handle(result StreamResult) error {
+	b.chunks = append(b.chunks, result)
+	return nil
+}
+
+func (b *bufferingStreamHandler) Flush() error {
+	for _, chunk := range b.chunks {
+		if err := b.downstream(chunk); err != nil {
+			return err
+		}
+	}
+	b.chunks = nil
+	return nil
+}
+
+func (b *bufferingStreamHandler) Discard() {
+	b.chunks = nil
 }
 
 func (f *failoverModel) execute(ctx context.Context, req Request, stream bool, cb StreamHandler) (*Response, error) {
@@ -58,19 +90,41 @@ func (f *failoverModel) execute(ctx context.Context, req Request, stream bool, c
 	totalModels := len(models)
 	var lastErr error
 
+	// For streaming, wrap cb in a buffering handler so partial output from
+	// a failed model attempt is discarded rather than delivered downstream.
+	var buf *bufferingStreamHandler
+	if stream && cb != nil {
+		buf = &bufferingStreamHandler{downstream: cb}
+	}
+
 	for i := 0; i < totalModels; i++ {
 		idx := (startIdx + i) % totalModels
 		m := models[idx]
 
-		resp, err := f.tryModel(ctx, m, req, stream, cb)
+		streamCb := cb
+		if buf != nil {
+			streamCb = buf.Handle
+		}
+
+		resp, err := f.tryModel(ctx, m, req, stream, streamCb)
 		if err == nil {
-			// Success — pin to this model for future calls.
+			// Success — flush buffered stream output and pin to this model.
+			if buf != nil {
+				if flushErr := buf.Flush(); flushErr != nil {
+					return nil, flushErr
+				}
+			}
 			f.mu.Lock()
 			f.current = idx
 			f.mu.Unlock()
 			return resp, nil
 		}
 		lastErr = err
+
+		// Discard partial stream output from the failed attempt before retrying.
+		if buf != nil {
+			buf.Discard()
+		}
 
 		classified := ClassifyError(err)
 		fromName := modelName(m)

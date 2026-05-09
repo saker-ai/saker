@@ -208,12 +208,3 @@ func ProviderModel(p Provider) (Model, error) {
 	return mdl, nil
 }
 
-// MustProvider materialises a model immediately and panics on failure.
-// Deprecated: Use ProviderModel instead.
-func MustProvider(p Provider) Model {
-	mdl, err := ProviderModel(p)
-	if err != nil {
-		panic(fmt.Errorf("model: MustProvider failed: %w", err))
-	}
-	return mdl
-}

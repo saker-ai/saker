@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -250,7 +251,7 @@ func (s *subscription) invoke(evt Event) {
 		defer close(done)
 		defer func() {
 			if r := recover(); r != nil {
-				_ = r // swallow panics to ensure isolation
+				slog.Warn("event handler panicked", "event", evt.Type, "sub_id", s.id, "panic", r)
 			}
 		}()
 		s.handler(ctx, evt)
@@ -258,7 +259,10 @@ func (s *subscription) invoke(evt Event) {
 	select {
 	case <-done:
 	case <-ctx.Done():
-		// timeout or context cancellation: we stop waiting to unblock dispatch
+		// timeout or context cancellation: we stop waiting to unblock dispatch.
+		// The handler goroutine continues until it finishes or the bus is closed;
+		// bus.Close() cancels the subscription context, which propagates to
+		// handlers that respect ctx.Done().
 	}
 }
 
