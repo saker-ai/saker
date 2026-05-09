@@ -57,22 +57,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "npm"
-          cache-dependency-path: web/package-lock.json
+          cache: "pnpm"
 
-      - name: Install web deps
-        run: npm ci --no-fund
-
-      - name: npm audit (web)
-        run: npm audit --audit-level=moderate || true
+      - name: Install deps
+        run: pnpm install
 
       - name: i18n audit
-        run: npm run audit:i18n
+        working-directory: web
+        run: pnpm run audit:i18n
 
       - name: Frontend tests
+        working-directory: web
         run: |
           set -e
           shopt -s nullglob globstar
@@ -84,7 +86,7 @@ jobs:
           node --test "${files[@]}"
 
       - name: Build
-        run: npm run build
+        run: pnpm --filter saker-web run build
 
       - name: Bundle-size check
         working-directory: .
@@ -98,23 +100,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "npm"
-          cache-dependency-path: web-editor-next/package-lock.json
+          cache: "pnpm"
 
-      - name: Install editor deps
-        run: npm ci --no-fund
-
-      - name: npm audit (editor)
-        run: npm audit --audit-level=moderate || true
+      - name: Install deps
+        run: pnpm install
 
       - name: Lint
-        run: npm run lint
+        run: pnpm --filter saker-web-editor run lint
 
       - name: Build
-        run: npm run build
+        run: pnpm --filter saker-web-editor run build
 
       - name: Bundle-size check
         working-directory: .

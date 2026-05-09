@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.5",
+    "@saker/editor-protocol": "workspace:*",
     "@webav/av-cliper": "^1.2.8",
     "@xyflow/react": "^12.10.2",
     "ai": "^6.0.149",

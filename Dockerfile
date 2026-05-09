@@ -10,19 +10,24 @@ ARG GOARCH=amd64
 
 # --- Stage 1: Frontend build ---
 FROM node:${NODE_VERSION}-alpine AS frontend
+RUN corepack enable && corepack prepare pnpm@10 --activate
 WORKDIR /src
 
-COPY web/package-lock.json web/package.json ./web/
-RUN cd web && npm ci --no-audit --no-fund
+# Copy workspace config and shared packages first for dependency resolution
+COPY pnpm-workspace.yaml package.json ./
+COPY packages/editor-protocol/package.json ./packages/editor-protocol/
+COPY web/package.json ./web/
+COPY web-editor-next/package.json ./web-editor-next/
 
-COPY web-editor-next/package-lock.json web-editor-next/package.json ./web-editor-next/
-RUN cd web-editor-next && npm ci --no-audit --no-fund
+RUN pnpm install --frozen-lockfile
 
+# Copy source and build
+COPY packages/editor-protocol/ ./packages/editor-protocol/
 COPY web/ ./web/
-RUN cd web && npm run build
+RUN pnpm --filter saker-web run build
 
 COPY web-editor-next/ ./web-editor-next/
-RUN cd web-editor-next && npm run build
+RUN pnpm --filter saker-web-editor run build
 
 # --- Stage 2: Go binary with embedded frontend ---
 FROM golang:${GO_VERSION}-alpine AS builder
