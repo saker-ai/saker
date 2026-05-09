@@ -1,0 +1,150 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: latest
+
+      - name: Go vulnerability check
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - name: Go vet
+        run: go vet ./...
+
+      - name: Run tests with race detector
+        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.out
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install web deps
+        run: npm ci --no-fund
+
+      - name: npm audit (web)
+        run: npm audit --audit-level=moderate || true
+
+      - name: i18n audit
+        run: npm run audit:i18n
+
+      - name: Frontend tests
+        run: |
+          set -e
+          shopt -s nullglob globstar
+          files=(src/**/*.test.mts)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "no .test.mts files found, skipping"
+            exit 0
+          fi
+          node --test "${files[@]}"
+
+      - name: Build
+        run: npm run build
+
+      - name: Bundle-size check
+        working-directory: .
+        run: node scripts/check-bundle-size.mjs --dir web/out --baseline web/bundle-size-baseline.json
+
+  web-editor-next:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web-editor-next
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: web-editor-next/package-lock.json
+
+      - name: Install editor deps
+        run: npm ci --no-fund
+
+      - name: npm audit (editor)
+        run: npm audit --audit-level=moderate || true
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Bundle-size check
+        working-directory: .
+        run: node scripts/check-bundle-size.mjs --dir web-editor-next/out --baseline web-editor-next/bundle-size-baseline.json
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - name: Build binary
+        run: go build -o saker ./cmd/cli/
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - name: Build E2E images
+        run: make e2e-build
+
+      - name: Run E2E tests
+        run: make e2e-run
