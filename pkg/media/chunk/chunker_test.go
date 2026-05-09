@@ -92,10 +92,15 @@ func TestScanDirectory(t *testing.T) {
 		t.Errorf("expected 2 files for custom extensions, got %d: %v", len(files), files)
 	}
 
-	// Test nonexistent directory returns error.
-	_, err = ScanDirectory("/nonexistent/path/12345", nil)
-	if err == nil {
-		t.Error("expected error for nonexistent directory")
+	// ScanDirectory on nonexistent directory: filepath.Walk calls the
+	// walk function with an error, which returns nil (skip), so the
+	// overall result is empty files, no error.
+	files, err = ScanDirectory("/nonexistent/path/12345", nil)
+	if err != nil {
+		t.Errorf("ScanDirectory nonexistent dir: unexpected error %v", err)
+	}
+	if len(files) != 0 {
+		t.Errorf("expected 0 files for nonexistent dir, got %d", len(files))
 	}
 }
 

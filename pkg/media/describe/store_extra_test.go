@@ -1,20 +1,23 @@
 package describe
 
 import (
+	"context"
+	"fmt"
 	"math"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
 func TestScoreAnnotation(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name       string
-		ann        Annotation
-		query      string
-		wantZero   bool // expect score == 0
-		wantPositive bool // expect score > 0
+		name         string
+		ann          Annotation
+		query        string
+		wantZero     bool
+		wantPositive bool
 	}{
 		{
 			name:     "empty annotation scores zero",
@@ -27,7 +30,7 @@ func TestScoreAnnotation(t *testing.T) {
 			ann: Annotation{
 				Visual: "A red car driving on a highway",
 			},
-			query:      "red car",
+			query:        "red car",
 			wantPositive: true,
 		},
 		{
@@ -35,7 +38,7 @@ func TestScoreAnnotation(t *testing.T) {
 			ann: Annotation{
 				SearchTags: []string{"red car", "highway"},
 			},
-			query:      "red car",
+			query:        "red car",
 			wantPositive: true,
 		},
 		{
@@ -43,7 +46,7 @@ func TestScoreAnnotation(t *testing.T) {
 			ann: Annotation{
 				Entity: "red sedan",
 			},
-			query:      "red sedan",
+			query:        "red sedan",
 			wantPositive: true,
 		},
 		{
@@ -63,7 +66,7 @@ func TestScoreAnnotation(t *testing.T) {
 				Action:     "running fast",
 				SearchTags: []string{"dog", "park", "running"},
 			},
-			query:      "dog running",
+			query:        "dog running",
 			wantPositive: true,
 		},
 	}
@@ -113,18 +116,17 @@ func TestScoreAnnotationTrackWeights(t *testing.T) {
 
 func TestScoreAnnotationMultipleOccurrences(t *testing.T) {
 	t.Parallel()
-	// Two occurrences of a word should use Log1p(2) not 2*Log1p(1).
+	// Two occurrences of a word should use Log1p(count) not count*Log1p(1).
 	queryTerms := strings.Fields("testword")
 
-	once := Annotation{Visual: "testword"}                     // 1 occurrence
-	twice := Annotation{Visual: "testword testword testword"}  // 3 occurrences
+	once := Annotation{Visual: "testword"}
+	twice := Annotation{Visual: "testword testword testword"}
 
 	onceScore := scoreAnnotation(&once, queryTerms)
 	twiceScore := scoreAnnotation(&twice, queryTerms)
 
-	// weight * Log1p(count), not weight * count * Log1p(1).
 	expectedOnce := 1.5 * math.Log1p(1)
-	expectedTwice := 1.5 * math.Log1p(3) // 3 occurrences
+	expectedTwice := 1.5 * math.Log1p(3)
 	if math.Abs(onceScore-expectedOnce) > 0.01 {
 		t.Errorf("once score = %v, want ~%v", onceScore, expectedOnce)
 	}
@@ -137,7 +139,6 @@ func TestMultiStoreSearch(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
 
-	// Create two JSONL files with different annotations.
 	store1 := NewStore(filepath.Join(dir, "video1.jsonl"))
 	_ = store1.Append(&Annotation{
 		Segment:    Segment{SourceFile: "v1.mp4", StartTime: 0, EndTime: 30},
@@ -152,7 +153,6 @@ func TestMultiStoreSearch(t *testing.T) {
 		SearchTags: []string{"blue bicycle"},
 	})
 
-	// Also create a non-JSONL file that should be ignored.
 	_ = os.WriteFile(filepath.Join(dir, "notes.txt"), []byte("ignore me"), 0o644)
 
 	ms := NewMultiStore(dir)
@@ -230,7 +230,6 @@ func TestAnnotateSegmentNilModel(t *testing.T) {
 
 func TestAnnotateSegmentNoFrames(t *testing.T) {
 	t.Parallel()
-	// A nil model + empty frames should return model error first.
 	a := &Annotator{Model: nil}
 	_, err := a.AnnotateSegment(context.Background(), Segment{}, nil)
 	if err == nil {
@@ -240,9 +239,6 @@ func TestAnnotateSegmentNoFrames(t *testing.T) {
 
 func TestAnnotateSegmentEmptyFrames(t *testing.T) {
 	t.Parallel()
-	// With a model but empty frames, should return "no frames" error.
-	// We use nil model since AnnotateSegment checks model first, but let's
-	// verify the "no frames" check happens after model check.
 	a := &Annotator{Model: nil}
 	_, err := a.AnnotateSegment(context.Background(), Segment{}, []string{})
 	if err == nil {

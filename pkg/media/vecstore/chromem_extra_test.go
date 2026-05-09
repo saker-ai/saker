@@ -2,6 +2,7 @@ package vecstore
 
 import (
 	"context"
+	"strings"
 	"testing"
 )
 
@@ -32,7 +33,6 @@ func TestChromemStore_AddBatch(t *testing.T) {
 		t.Errorf("expected 3 documents after AddBatch, got %d", store.Stats().DocumentCount)
 	}
 
-	// Search should find all batch-added docs.
 	hits, err := store.Search(ctx, []float32{1.0, 0.0, 0.0}, 3)
 	if err != nil {
 		t.Fatalf("search: %v", err)
@@ -68,12 +68,10 @@ func TestChromemStore_DimensionMismatch(t *testing.T) {
 
 	ctx := context.Background()
 
-	// First add with correct dimensions.
 	if err := store.Add(ctx, "d1", []float32{1, 0, 0}, nil); err != nil {
 		t.Fatalf("first add: %v", err)
 	}
 
-	// Second add with wrong dimensions should fail.
 	err = store.Add(ctx, "d2", []float32{1, 0, 0, 0}, nil)
 	if err == nil {
 		t.Error("expected dimension mismatch error")
@@ -91,17 +89,14 @@ func TestChromemStore_AutoDetectDimensions(t *testing.T) {
 
 	ctx := context.Background()
 
-	// First add auto-detects dimensions from the vector.
 	if err := store.Add(ctx, "a1", []float32{1, 0, 0, 0}, nil); err != nil {
 		t.Fatalf("auto-detect add: %v", err)
 	}
 
-	// Second add with same dimensions should succeed.
 	if err := store.Add(ctx, "a2", []float32{0, 1, 0, 0}, nil); err != nil {
 		t.Fatalf("same dims add: %v", err)
 	}
 
-	// Add with different dimensions should fail.
 	err = store.Add(ctx, "a3", []float32{1, 0}, nil)
 	if err == nil {
 		t.Error("expected dimension mismatch after auto-detect")
@@ -118,7 +113,6 @@ func TestChromemStore_SearchNDefaults(t *testing.T) {
 	_ = store.Add(ctx, "s1", []float32{1, 0}, nil)
 	_ = store.Add(ctx, "s2", []float32{0, 1}, nil)
 
-	// n=0 should default to 5, clamped to collection size (2).
 	hits, err := store.Search(ctx, []float32{1, 0}, 0)
 	if err != nil {
 		t.Fatalf("search n=0: %v", err)
@@ -138,7 +132,6 @@ func TestChromemStore_SearchNClamped(t *testing.T) {
 	_ = store.Add(ctx, "c1", []float32{1, 0}, nil)
 	_ = store.Add(ctx, "c2", []float32{0, 1}, nil)
 
-	// n larger than collection size should be clamped.
 	hits, err := store.Search(ctx, []float32{1, 0}, 100)
 	if err != nil {
 		t.Fatalf("search n=100: %v", err)
@@ -220,5 +213,27 @@ func TestStoreStatsStruct(t *testing.T) {
 	}
 	if stats.Backend != "chromem-go" {
 		t.Errorf("StoreStats.Backend = %q, want chromem-go", stats.Backend)
+	}
+}
+
+func TestChromemStore_AddBatchDimensionMismatch(t *testing.T) {
+	store, err := NewChromemStore(ChromemOptions{Dimensions: 3})
+	if err != nil {
+		t.Fatalf("create store: %v", err)
+	}
+
+	ctx := context.Background()
+	ids := []string{"b1", "b2"}
+	vectors := [][]float32{
+		{1, 0, 0},
+		{1, 0, 0, 0}, // wrong dimensions
+	}
+
+	err = store.AddBatch(ctx, ids, vectors, nil)
+	if err == nil {
+		t.Error("expected dimension mismatch error in AddBatch")
+	}
+	if !strings.Contains(err.Error(), "vector 1") {
+		t.Errorf("error should reference vector index, got %q", err.Error())
 	}
 }
