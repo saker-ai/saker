@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"os"
 	"strings"
 	"sync"
@@ -209,13 +208,12 @@ func ProviderModel(p Provider) (Model, error) {
 	return mdl, nil
 }
 
-// MustProvider materialises a model immediately and logs.Fatal on failure.
+// MustProvider materialises a model immediately and panics on failure.
 // Deprecated: Use ProviderModel instead.
 func MustProvider(p Provider) Model {
 	mdl, err := ProviderModel(p)
 	if err != nil {
-		slog.Error("model: MustProvider failed", "error", err)
-		os.Exit(1)
+		panic(fmt.Errorf("model: MustProvider failed: %w", err))
 	}
 	return mdl
 }

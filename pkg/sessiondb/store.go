@@ -9,6 +9,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"log/slog"
 	"strings"
 	"sync"
 	"time"
@@ -114,12 +115,17 @@ func Open(path string) (*Store, error) {
 	}
 
 	// Add hash and pos columns for databases created before these fields existed.
-	// Errors are ignored because the columns may already be present from the schema.
+	// Log errors instead of silently ignoring — "duplicate column" is expected
+	// when the schema already includes these columns; other errors are warnings.
 	for _, m := range []string{
 		"ALTER TABLE messages ADD COLUMN hash TEXT NOT NULL DEFAULT ''",
 		"ALTER TABLE messages ADD COLUMN pos INTEGER NOT NULL DEFAULT 0",
 	} {
-		db.Exec(m) //nolint:errcheck
+		if _, err := db.Exec(m); err != nil {
+			if !strings.Contains(err.Error(), "duplicate column") {
+				slog.Warn("sessiondb: migration warning", "stmt", m, "error", err)
+			}
+		}
 	}
 
 	return &Store{db: db}, nil
