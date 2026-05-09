@@ -33,6 +33,7 @@ type Handler struct {
 	sessions *SessionStore
 	dataDir  string
 	logger   *slog.Logger
+	dispatch map[string]rpcHandler // method → handler (populated by initDispatch)
 
 	mu          sync.RWMutex
 	clients     map[string]*wsClient            // clientID → client
@@ -66,8 +67,8 @@ type Handler struct {
 
 	// Media cache dedup: prevents concurrent downloads of the same URL
 	// and remembers recently failed URLs to avoid retry storms.
-	cacheInflight sync.Map // URL → struct{} (in-flight downloads)
-	cacheFailed   sync.Map // URL → time.Time (failure cooldown until)
+	cacheInflight sync.Map      // URL → struct{} (in-flight downloads)
+	cacheFailed   sync.Map      // URL → time.Time (failure cooldown until)
 	stopCacheCh   chan struct{} // stops cacheFailed cleanup goroutine
 
 	// Settings file mutation lock — serialises load-modify-save cycles
@@ -164,6 +165,7 @@ func newHandler(runtime *api.Runtime, sessions *SessionStore, dataDir string, lo
 		taskTracker: NewTaskTracker(),
 		stopCacheCh: make(chan struct{}),
 	}
+	h.dispatch = h.initDispatch()
 	go h.cacheFailedCleanupLoop()
 	return h
 }
@@ -242,6 +244,185 @@ func (h *Handler) UnregisterClient(clientID string) {
 	}
 }
 
+// rpcHandler is the unified signature for all dispatch table entries.
+// Handlers that don't need ctx or clientID simply ignore those parameters.
+type rpcHandler func(ctx context.Context, clientID string, req Request) Response
+
+// initDispatch builds the method→handler lookup table used by HandleRequest.
+// Each entry adapts the underlying handler's signature to the unified rpcHandler
+// type — handlers that don't need ctx or clientID receive them but ignore them.
+func (h *Handler) initDispatch() map[string]rpcHandler {
+	return map[string]rpcHandler{
+		"initialize": func(_ context.Context, clientID string, req Request) Response {
+			return h.success(req.ID, map[string]any{"clientId": clientID})
+		},
+
+		// Thread
+		"thread/list":        h.adaptCtx(h.handleThreadList),
+		"thread/create":      h.adaptCtx(h.handleThreadCreate),
+		"thread/update":      h.adaptCtx(h.handleThreadUpdate),
+		"thread/delete":      h.adaptCtx(h.handleThreadDelete),
+		"thread/subscribe":   h.handleThreadSubscribe,
+		"thread/unsubscribe": h.adaptClientID(h.handleThreadUnsubscribe),
+		"thread/history":     h.adaptCtx(h.handleThreadHistory),
+
+		// Turn
+		"turn/send":        h.handleTurnSend,
+		"turn/cancel":      h.adaptNone(h.handleTurnCancel),
+		"thread/interrupt": h.adaptNone(h.handleThreadInterrupt),
+
+		// Approval & question
+		"approval/respond": h.adaptNone(h.handleApprovalRespond),
+		"question/respond": h.adaptNone(h.handleQuestionRespond),
+
+		// Skill
+		"skill/list":              h.adaptNone(h.handleSkillList),
+		"skill/remove":            h.adaptNone(h.handleSkillRemove),
+		"skill/promote":           h.adaptNone(h.handleSkillPromote),
+		"skill/content":           h.adaptNone(h.handleSkillContent),
+		"skill/patch":             h.adaptNone(h.handleSkillPatch),
+		"skill/import-preview":    h.adaptNone(h.handleSkillImportPreview),
+		"skill/import":            h.adaptNone(h.handleSkillImport),
+		"skill/analytics":         h.adaptNone(h.handleSkillAnalytics),
+		"skill/analytics/history": h.adaptNone(h.handleSkillAnalyticsHistory),
+
+		// Config & settings
+		"config/get":      h.adaptNone(h.handleConfigGet),
+		"settings/get":    h.adaptNone(h.handleSettingsGet),
+		"settings/update": h.adaptCtx(h.handleSettingsUpdate),
+
+		// Stats & sessions
+		"stats/session":   h.adaptNone(h.handleStatsSession),
+		"stats/total":     h.adaptNone(h.handleStatsTotal),
+		"sessions/search": h.adaptNone(h.handleSessionsSearch),
+		"sessions/list":   h.adaptNone(h.handleSessionsList),
+
+		// Model
+		"model/switch": h.adaptNone(h.handleModelSwitch),
+
+		// Auth & user
+		"auth/update":          h.adaptCtx(h.handleAuthUpdate),
+		"auth/delete":          h.adaptCtx(h.handleAuthDelete),
+		"user/list":            h.adaptCtx(h.handleUserList),
+		"user/create":          h.adaptCtx(h.handleUserCreate),
+		"user/delete":          h.adaptCtx(h.handleUserDelete),
+		"user/me":              h.adaptCtx(h.handleUserMe),
+		"user/update-password": h.adaptCtx(h.handleUserUpdatePassword),
+
+		// Canvas
+		"canvas/save":       h.adaptCtx(h.handleCanvasSave),
+		"canvas/load":       h.adaptCtx(h.handleCanvasLoad),
+		"canvas/text-gen":   h.adaptCtx(h.handleCanvasTextGen),
+		"canvas/execute":    h.adaptCtx(h.handleCanvasExecute),
+		"canvas/run-status": h.adaptCtx(h.handleCanvasRunStatus),
+		"canvas/run-cancel": h.adaptCtx(h.handleCanvasRunCancel),
+
+		// Media
+		"media/cache":    h.adaptNone(h.handleMediaCache),
+		"media/data_url": h.adaptNone(h.handleMediaDataURL),
+
+		// Cron
+		"cron/list":   h.adaptNone(h.handleCronList),
+		"cron/add":    h.adaptNone(h.handleCronAdd),
+		"cron/update": h.adaptNone(h.handleCronUpdate),
+		"cron/remove": h.adaptNone(h.handleCronRemove),
+		"cron/toggle": h.adaptNone(h.handleCronToggle),
+		"cron/run":    h.adaptNone(h.handleCronRun),
+		"cron/runs":   h.adaptNone(h.handleCronRuns),
+		"cron/status": h.adaptNone(h.handleCronStatus),
+
+		// Turns & tools
+		"turns/active":      h.adaptNone(h.handleTurnsActive),
+		"tool/run":          h.adaptCtx(h.handleToolRun),
+		"tool/task-status":  h.adaptNone(h.handleToolTaskStatus),
+		"tool/active-tasks": h.adaptNone(h.handleToolActiveTasks),
+		"tool/schema":       h.adaptNone(h.handleToolSchema),
+
+		// Aigo
+		"aigo/models": func(_ context.Context, _ string, req Request) Response {
+			return h.success(req.ID, h.runtime.AigoModels())
+		},
+		"aigo/providers": func(_ context.Context, _ string, req Request) Response {
+			return h.success(req.ID, h.runtime.AigoProviders())
+		},
+		"aigo/status": func(_ context.Context, _ string, req Request) Response {
+			return h.success(req.ID, h.runtime.AigoProviderStatus())
+		},
+
+		// Monitor
+		"monitor/list":  h.adaptNone(h.handleMonitorList),
+		"monitor/start": h.adaptCtx(h.handleMonitorStart),
+		"monitor/stop":  h.adaptCtx(h.handleMonitorStop),
+
+		// Persona
+		"persona/list":            h.adaptNone(h.handlePersonaList),
+		"persona/save":            h.adaptCtx(h.handlePersonaSave),
+		"persona/delete":          h.adaptCtx(h.handlePersonaDelete),
+		"persona/set-default":     h.adaptCtx(h.handlePersonaSetDefault),
+		"persona/user-list":       h.adaptCtx(h.handleUserPersonaList),
+		"persona/user-save":       h.adaptCtx(h.handleUserPersonaSave),
+		"persona/user-delete":     h.adaptCtx(h.handleUserPersonaDelete),
+		"persona/user-set-active": h.adaptCtx(h.handleUserPersonaSetActive),
+
+		// Channels
+		"channels/list":      h.adaptCtx(h.handleChannelsList),
+		"channels/save":      h.adaptCtx(h.handleChannelsSave),
+		"channels/delete":    h.adaptCtx(h.handleChannelsDelete),
+		"channels/toggle":    h.adaptCtx(h.handleChannelsToggle),
+		"channels/route-set": h.adaptCtx(h.handleChannelsRouteSet),
+
+		// Profile
+		"profile/list": h.adaptCtx(h.handleProfileList),
+
+		// Memory
+		"memory/list":   h.adaptNone(h.handleMemoryList),
+		"memory/read":   h.adaptNone(h.handleMemoryRead),
+		"memory/delete": h.adaptNone(h.handleMemoryDelete),
+
+		// Project
+		"project/list":               h.adaptCtx(h.handleProjectList),
+		"project/create":             h.adaptCtx(h.handleProjectCreate),
+		"project/get":                h.adaptCtx(h.handleProjectGet),
+		"project/update":             h.adaptCtx(h.handleProjectUpdate),
+		"project/delete":             h.adaptCtx(h.handleProjectDelete),
+		"project/transfer":           h.adaptCtx(h.handleProjectTransfer),
+		"project/me":                 h.adaptCtx(h.handleProjectMe),
+		"project/invite":             h.adaptCtx(h.handleProjectInvite),
+		"project/invite/list":        h.adaptCtx(h.handleProjectInviteList),
+		"project/invite/cancel":      h.adaptCtx(h.handleProjectInviteCancel),
+		"project/invite/list-for-me": h.adaptCtx(h.handleProjectInviteListForMe),
+		"project/invite/accept":      h.adaptCtx(h.handleProjectInviteAccept),
+		"project/invite/decline":     h.adaptCtx(h.handleProjectInviteDecline),
+		"project/member/list":        h.adaptCtx(h.handleProjectMemberList),
+		"project/member/update-role": h.adaptCtx(h.handleProjectMemberUpdateRole),
+		"project/member/remove":      h.adaptCtx(h.handleProjectMemberRemove),
+
+		// Team
+		"team/list":        h.adaptCtx(h.handleTeamList),
+		"team/create":      h.adaptCtx(h.handleTeamCreate),
+		"team/delete":      h.adaptCtx(h.handleTeamDelete),
+		"team/member/list": h.adaptCtx(h.handleTeamMemberList),
+	}
+}
+
+// Signature adapters — thin closures that bridge handler methods with fewer
+// parameters to the unified rpcHandler signature.
+
+// adaptCtx wraps a handler(ctx, req) → Response as a rpcHandler.
+func (h *Handler) adaptCtx(fn func(context.Context, Request) Response) rpcHandler {
+	return func(ctx context.Context, _ string, req Request) Response { return fn(ctx, req) }
+}
+
+// adaptNone wraps a handler(req) → Response as a rpcHandler.
+func (h *Handler) adaptNone(fn func(Request) Response) rpcHandler {
+	return func(_ context.Context, _ string, req Request) Response { return fn(req) }
+}
+
+// adaptClientID wraps a handler(clientID, req) → Response as a rpcHandler.
+func (h *Handler) adaptClientID(fn func(string, Request) Response) rpcHandler {
+	return func(_ context.Context, clientID string, req Request) Response { return fn(clientID, req) }
+}
+
 // HandleRequest dispatches a JSON-RPC request to the appropriate handler.
 //
 // Every call emits one structured log line at completion with method, client,
@@ -281,213 +462,12 @@ func (h *Handler) HandleRequest(ctx context.Context, clientID string, req Reques
 			return resp
 		}
 	}
-	switch req.Method {
-	case "initialize":
-		return h.success(req.ID, map[string]any{"clientId": clientID})
-	case "thread/list":
-		return h.handleThreadList(ctx, req)
-	case "thread/create":
-		return h.handleThreadCreate(ctx, req)
-	case "thread/update":
-		return h.handleThreadUpdate(ctx, req)
-	case "thread/delete":
-		return h.handleThreadDelete(ctx, req)
-	case "thread/subscribe":
-		return h.handleThreadSubscribe(ctx, clientID, req)
-	case "thread/unsubscribe":
-		return h.handleThreadUnsubscribe(clientID, req)
-	case "thread/history":
-		return h.handleThreadHistory(ctx, req)
-	case "turn/send":
-		return h.handleTurnSend(ctx, clientID, req)
-	case "turn/cancel":
-		return h.handleTurnCancel(req)
-	case "thread/interrupt":
-		return h.handleThreadInterrupt(req)
-	case "approval/respond":
-		return h.handleApprovalRespond(req)
-	case "question/respond":
-		return h.handleQuestionRespond(req)
-	case "skill/list":
-		return h.handleSkillList(req)
-	case "skill/remove":
-		return h.handleSkillRemove(req)
-	case "skill/promote":
-		return h.handleSkillPromote(req)
-	case "skill/content":
-		return h.handleSkillContent(req)
-	case "skill/patch":
-		return h.handleSkillPatch(req)
-	case "skill/import-preview":
-		return h.handleSkillImportPreview(req)
-	case "skill/import":
-		return h.handleSkillImport(req)
-	case "skill/analytics":
-		return h.handleSkillAnalytics(req)
-	case "skill/analytics/history":
-		return h.handleSkillAnalyticsHistory(req)
-	case "config/get":
-		return h.handleConfigGet(req)
-	case "settings/get":
-		return h.handleSettingsGet(req)
-	case "settings/update":
-		return h.handleSettingsUpdate(ctx, req)
-	case "stats/session":
-		return h.handleStatsSession(req)
-	case "stats/total":
-		return h.handleStatsTotal(req)
-	case "sessions/search":
-		return h.handleSessionsSearch(req)
-	case "sessions/list":
-		return h.handleSessionsList(req)
-	case "model/switch":
-		return h.handleModelSwitch(req)
-	case "auth/update":
-		return h.handleAuthUpdate(ctx, req)
-	case "auth/delete":
-		return h.handleAuthDelete(ctx, req)
-	case "canvas/save":
-		return h.handleCanvasSave(ctx, req)
-	case "canvas/load":
-		return h.handleCanvasLoad(ctx, req)
-	case "canvas/text-gen":
-		return h.handleCanvasTextGen(ctx, req)
-	case "canvas/execute":
-		return h.handleCanvasExecute(ctx, req)
-	case "canvas/run-status":
-		return h.handleCanvasRunStatus(ctx, req)
-	case "canvas/run-cancel":
-		return h.handleCanvasRunCancel(ctx, req)
-	case "media/cache":
-		return h.handleMediaCache(req)
-	case "media/data_url":
-		return h.handleMediaDataURL(req)
-	case "cron/list":
-		return h.handleCronList(req)
-	case "cron/add":
-		return h.handleCronAdd(req)
-	case "cron/update":
-		return h.handleCronUpdate(req)
-	case "cron/remove":
-		return h.handleCronRemove(req)
-	case "cron/toggle":
-		return h.handleCronToggle(req)
-	case "cron/run":
-		return h.handleCronRun(req)
-	case "cron/runs":
-		return h.handleCronRuns(req)
-	case "cron/status":
-		return h.handleCronStatus(req)
-	case "turns/active":
-		return h.handleTurnsActive(req)
-	case "tool/run":
-		return h.handleToolRun(ctx, req)
-	case "tool/task-status":
-		return h.handleToolTaskStatus(req)
-	case "tool/active-tasks":
-		return h.handleToolActiveTasks(req)
-	case "tool/schema":
-		return h.handleToolSchema(req)
-	case "aigo/models":
-		return h.success(req.ID, h.runtime.AigoModels())
-	case "aigo/providers":
-		return h.success(req.ID, h.runtime.AigoProviders())
-	case "aigo/status":
-		return h.success(req.ID, h.runtime.AigoProviderStatus())
-	case "monitor/list":
-		return h.handleMonitorList(req)
-	case "monitor/start":
-		return h.handleMonitorStart(ctx, req)
-	case "monitor/stop":
-		return h.handleMonitorStop(ctx, req)
-	case "user/list":
-		return h.handleUserList(ctx, req)
-	case "user/create":
-		return h.handleUserCreate(ctx, req)
-	case "user/delete":
-		return h.handleUserDelete(ctx, req)
-	case "user/me":
-		return h.handleUserMe(ctx, req)
-	case "user/update-password":
-		return h.handleUserUpdatePassword(ctx, req)
-	case "persona/list":
-		return h.handlePersonaList(req)
-	case "persona/save":
-		return h.handlePersonaSave(ctx, req)
-	case "persona/delete":
-		return h.handlePersonaDelete(ctx, req)
-	case "persona/set-default":
-		return h.handlePersonaSetDefault(ctx, req)
-	case "persona/user-list":
-		return h.handleUserPersonaList(ctx, req)
-	case "persona/user-save":
-		return h.handleUserPersonaSave(ctx, req)
-	case "persona/user-delete":
-		return h.handleUserPersonaDelete(ctx, req)
-	case "persona/user-set-active":
-		return h.handleUserPersonaSetActive(ctx, req)
-	case "channels/list":
-		return h.handleChannelsList(ctx, req)
-	case "channels/save":
-		return h.handleChannelsSave(ctx, req)
-	case "channels/delete":
-		return h.handleChannelsDelete(ctx, req)
-	case "channels/toggle":
-		return h.handleChannelsToggle(ctx, req)
-	case "channels/route-set":
-		return h.handleChannelsRouteSet(ctx, req)
-	case "profile/list":
-		return h.handleProfileList(ctx, req)
-	case "memory/list":
-		return h.handleMemoryList(req)
-	case "memory/read":
-		return h.handleMemoryRead(req)
-	case "memory/delete":
-		return h.handleMemoryDelete(req)
-	case "project/list":
-		return h.handleProjectList(ctx, req)
-	case "project/create":
-		return h.handleProjectCreate(ctx, req)
-	case "project/get":
-		return h.handleProjectGet(ctx, req)
-	case "project/update":
-		return h.handleProjectUpdate(ctx, req)
-	case "project/delete":
-		return h.handleProjectDelete(ctx, req)
-	case "project/transfer":
-		return h.handleProjectTransfer(ctx, req)
-	case "project/me":
-		return h.handleProjectMe(ctx, req)
-	case "project/invite":
-		return h.handleProjectInvite(ctx, req)
-	case "project/invite/list":
-		return h.handleProjectInviteList(ctx, req)
-	case "project/invite/cancel":
-		return h.handleProjectInviteCancel(ctx, req)
-	case "project/invite/list-for-me":
-		return h.handleProjectInviteListForMe(ctx, req)
-	case "project/invite/accept":
-		return h.handleProjectInviteAccept(ctx, req)
-	case "project/invite/decline":
-		return h.handleProjectInviteDecline(ctx, req)
-	case "project/member/list":
-		return h.handleProjectMemberList(ctx, req)
-	case "project/member/update-role":
-		return h.handleProjectMemberUpdateRole(ctx, req)
-	case "project/member/remove":
-		return h.handleProjectMemberRemove(ctx, req)
-	case "team/list":
-		return h.handleTeamList(ctx, req)
-	case "team/create":
-		return h.handleTeamCreate(ctx, req)
-	case "team/delete":
-		return h.handleTeamDelete(ctx, req)
-	case "team/member/list":
-		return h.handleTeamMemberList(ctx, req)
-	default:
-		h.logger.Warn("unknown rpc method", "method", req.Method, "client_id", clientID)
-		return h.methodNotFound(req.ID, req.Method)
+	// Dispatch via the method lookup table.
+	if handler, ok := h.dispatch[req.Method]; ok {
+		return handler(ctx, clientID, req)
 	}
+	h.logger.Warn("unknown rpc method", "method", req.Method, "client_id", clientID)
+	return h.methodNotFound(req.ID, req.Method)
 }
 
 // --- Notification helpers ---

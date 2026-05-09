@@ -296,7 +296,9 @@ func (rt *Runtime) SkillContent(name string) (*SkillContentResult, error) {
 	}
 
 	def := sk.Definition()
-	result, err := sk.Execute(context.Background(), skills.ActivationContext{Prompt: ""})
+	skillCtx, skillCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer skillCancel()
+	result, err := sk.Execute(skillCtx, skills.ActivationContext{Prompt: ""})
 	if err != nil {
 		return nil, fmt.Errorf("load skill content: %w", err)
 	}

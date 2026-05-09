@@ -198,7 +198,7 @@ func (c *Config) applyDefaults() {
 	}
 	if c.MaxIterations <= 0 {
 		// 50 mirrors agent.DefaultSubagentMaxIterations and the CLI flag
-		// default in cmd/cli/eval_terminalbench.go. The previous 30 was an
+		// default in cmd/saker/eval_terminalbench.go. The previous 30 was an
 		// orphan — every public surface (CLI, agent subagents, README) was
 		// already aligned on 50, so this just removes the inconsistency.
 		c.MaxIterations = 50

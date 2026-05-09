@@ -1,4 +1,5 @@
 import type { ApprovalRequest } from "@/features/rpc/types";
+import DOMPurify from "dompurify";
 import { useT } from "@/features/i18n";
 
 interface Props {
@@ -40,12 +41,12 @@ export function ApprovalCard({ approval, onRespond }: Props) {
           <div
             className="approval-params"
             dangerouslySetInnerHTML={{
-              __html: highlightJson(
+              __html: DOMPurify.sanitize(highlightJson(
                 JSON.stringify(approval.tool_params, null, 2)
                   .replace(/&/g, "&amp;")
                   .replace(/</g, "&lt;")
                   .replace(/>/g, "&gt;")
-              ),
+              ), { ALLOWED_TAGS: ["span"] }),
             }}
           />
         )}

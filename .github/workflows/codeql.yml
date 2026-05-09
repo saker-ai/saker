@@ -30,7 +30,7 @@ jobs:
           languages: go
 
       - name: Build
-        run: go build ./cmd/cli/
+        run: go build ./cmd/saker/
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3

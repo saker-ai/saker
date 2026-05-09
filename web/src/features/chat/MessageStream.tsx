@@ -3,6 +3,7 @@
 import { useEffect, useRef, useMemo, useCallback, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Copy, X, ChevronDown, ArrowDown, Brain } from "lucide-react";
+import DOMPurify from "dompurify";
 import type { ThreadItem, StreamEvent } from "@/features/rpc/types";
 import { extractMedia } from "@/features/media/extractMedia";
 import { renderMarkdown } from "./markdown";
@@ -531,7 +532,7 @@ function MessageBubble({
         <div
           ref={contentRef}
           className={`message-content${isLong && collapsed ? " content-collapsed" : ""}`}
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(renderMarkdown(displayContent), { ALLOWED_TAGS: ["strong", "em", "code", "a", "br", "p"] }) }}
         />
         
         {isLong && (

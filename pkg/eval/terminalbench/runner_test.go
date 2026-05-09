@@ -601,7 +601,7 @@ func TestConfigApplyDefaultsAlignsWithCLI(t *testing.T) {
 	t.Parallel()
 
 	// Empty config should land on the same iteration cap that the CLI flag
-	// default (cmd/cli/eval_terminalbench.go:--max-iters) and
+	// default (cmd/saker/eval_terminalbench.go:--max-iters) and
 	// agent.DefaultSubagentMaxIterations both use. Guards against a silent
 	// regression to the old 30 (which mismatched every public surface and
 	// caused premature aborts on multi-step TB2 tasks).

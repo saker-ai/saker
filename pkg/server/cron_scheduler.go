@@ -164,13 +164,17 @@ func (s *Scheduler) executeJob(job *CronJob) {
 	s.tracker.RegisterCron(turnID, job.SessionID, threadTitle, job.Prompt, job.ID)
 	defer s.tracker.Unregister(turnID)
 
-	// Execute the agent turn.
+	// Execute the agent turn with a bounded context.
+	// When job.Timeout is 0 (unset), apply a 10-minute default to
+	// prevent runaway cron jobs from blocking the scheduler.
 	ctx := context.Background()
-	if job.Timeout > 0 {
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, time.Duration(job.Timeout)*time.Second)
-		defer cancel()
+	timeout := time.Duration(job.Timeout) * time.Second
+	if timeout <= 0 {
+		timeout = 10 * time.Minute
 	}
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(ctx, timeout)
+	defer cancel()
 
 	// Inject [SILENT] instruction so the agent can suppress empty reports.
 	prompt := job.Prompt + silentPromptSuffix

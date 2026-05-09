@@ -140,9 +140,9 @@ if needs_rebuild; then
     else
         echo "==> building saker (no binary at $SAKER_BIN)"
     fi
-    mkdir -p "$REPO_ROOT/bin" "$REPO_ROOT/cmd/cli/frontend/dist"
-    touch "$REPO_ROOT/cmd/cli/frontend/dist/.gitkeep"
-    (cd "$REPO_ROOT" && go build -trimpath -o "$SAKER_BIN" ./cmd/cli)
+    mkdir -p "$REPO_ROOT/bin" "$REPO_ROOT/cmd/saker/frontend/dist"
+    touch "$REPO_ROOT/cmd/saker/frontend/dist/.gitkeep"
+    (cd "$REPO_ROOT" && go build -trimpath -o "$SAKER_BIN" ./cmd/saker)
 fi
 
 # --- dataset ---------------------------------------------------------------

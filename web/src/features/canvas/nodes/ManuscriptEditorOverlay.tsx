@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Plus, Trash2, X, RotateCcw, RotateCw, Minimize2, Eye, Pencil, FileCode, Blocks, ImagePlus, Link2, Upload, Sparkles, Table as TableIcon } from "lucide-react";
+import DOMPurify from "dompurify";
 import type { CanvasNodeData, ManuscriptSectionType } from "../types";
 import { useManuscriptDraft } from "../hooks/useManuscriptDraft";
 import { useManuscriptImages } from "../hooks/useManuscriptImages";
@@ -130,7 +131,7 @@ export function ManuscriptEditorOverlay({ nodeId, data, onClose }: ManuscriptEdi
         <div className="manuscript-editor-grid">
           <main className="manuscript-editor-main">
             {previewMode ? (
-              <div className="manuscript-preview message-content" dangerouslySetInnerHTML={{ __html: previewHtml }} />
+              <div className="manuscript-preview message-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(previewHtml) }} />
             ) : editorMode === "markdown" ? (
               <div className="manuscript-markdown-editor">
                 <div className="manuscript-markdown-toolbar">

@@ -303,7 +303,7 @@ func buildMirrorEnv(withDefaults bool, overrides []string) (map[string]string, e
 	return out, nil
 }
 
-// evalMultiValue is the same shape as cmd/cli/main.go::multiValue but kept
+// evalMultiValue is the same shape as cmd/saker/main.go::multiValue but kept
 // local so the eval subcommand can be plucked out without touching main.go's
 // internals.
 type evalMultiValue []string

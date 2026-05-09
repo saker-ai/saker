@@ -183,7 +183,7 @@ func buildTools(stubMode bool) map[string]tool.Tool {
 	// registers these tools automatically. This demo with real tools would
 	// use the runtime directly. For simplicity, the demo supports --stub only
 	// for standalone execution; real mode requires the full runtime.
-	log.Println("Real mode: use 'go run ./cmd/cli --pipeline ...' with ANTHROPIC_API_KEY for real video analysis")
+	log.Println("Real mode: use 'go run ./cmd/saker --pipeline ...' with ANTHROPIC_API_KEY for real video analysis")
 	log.Println("Falling back to stub mode for demo")
 	return map[string]tool.Tool{
 		"video_sampler":    &stubVideoSampler{},

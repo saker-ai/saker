@@ -15,7 +15,7 @@ Saker 是一个 source-available 的创意 Agent 运行时。它把 Go 后端 Ag
 ```mermaid
 graph TB
     subgraph CLI["CLI / Desktop"]
-        CLI_CMD[cmd/cli]
+        CLI_CMD[cmd/saker]
     end
 
     subgraph Runtime["Go Runtime (pkg/)"]

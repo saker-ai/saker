@@ -70,15 +70,15 @@ jobs:
 
       - name: Embed frontend into Go binary
         run: |
-          rm -rf cmd/cli/frontend/dist/_next
-          mkdir -p cmd/cli/frontend/dist
-          cp -r web/out/* cmd/cli/frontend/dist/
-          rm -rf cmd/cli/editor/dist/_next
-          mkdir -p cmd/cli/editor/dist
-          cp -r web-editor-next/out/* cmd/cli/editor/dist/
-          find cmd/cli/editor/dist -maxdepth 2 -name '__next.*.txt' -delete 2>/dev/null || true
-          touch cmd/cli/frontend/dist/.gitkeep
-          touch cmd/cli/editor/dist/.gitkeep
+          rm -rf cmd/saker/frontend/dist/_next
+          mkdir -p cmd/saker/frontend/dist
+          cp -r web/out/* cmd/saker/frontend/dist/
+          rm -rf cmd/saker/editor/dist/_next
+          mkdir -p cmd/saker/editor/dist
+          cp -r web-editor-next/out/* cmd/saker/editor/dist/
+          find cmd/saker/editor/dist -maxdepth 2 -name '__next.*.txt' -delete 2>/dev/null || true
+          touch cmd/saker/frontend/dist/.gitkeep
+          touch cmd/saker/editor/dist/.gitkeep
 
       - name: Build binary
         env:
@@ -91,7 +91,7 @@ jobs:
           if [ "$GOOS" = "windows" ]; then
             BINARY=saker.exe
           fi
-          go build -ldflags "-s -w -X main.version=${VERSION}" -trimpath -o ${BINARY} ./cmd/cli/
+          go build -ldflags "-s -w -X main.version=${VERSION}" -trimpath -o ${BINARY} ./cmd/saker/
 
       - name: Package
         run: |
