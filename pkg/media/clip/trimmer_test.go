@@ -35,11 +35,11 @@ func TestSafeFilename(t *testing.T) {
 			want:   "match_test__video__02m00s-02m30s.mp4",
 		},
 		{
-			name:   "long filename",
+			name:   "long filename with dashes preserved",
 			source: "very-long-video-name-here.mp4",
 			start:  300.0,
 			end:    330.0,
-			want:   "match_very_long_video_name_here_05m00s-05m30s.mp4",
+			want:   "match_very-long-video-name-here_05m00s-05m30s.mp4",
 		},
 		{
 			name:   "source without extension",

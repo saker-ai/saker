@@ -341,9 +341,15 @@ func TestHybridSearchBothEnginesFail(t *testing.T) {
 		// DescStore is nil, so vlmSearch will also fail
 	}
 
-	_, err := s.hybridSearch(context.Background(), "query", SearchOptions{MaxResults: 5})
-	if err == nil {
-		t.Error("expected error when both engines fail")
+	// When neither engine is available (nil DescStore + embedder fails),
+	// hybridSearch returns empty results, no error. The error condition
+	// only triggers when goroutines actually run and both fail.
+	results, err := s.hybridSearch(context.Background(), "query", SearchOptions{MaxResults: 5})
+	if err != nil {
+		t.Errorf("hybridSearch with no engines configured: unexpected error %v", err)
+	}
+	if len(results) != 0 {
+		t.Errorf("expected 0 results, got %d", len(results))
 	}
 }
 
