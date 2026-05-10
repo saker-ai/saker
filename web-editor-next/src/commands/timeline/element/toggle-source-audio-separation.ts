@@ -1,14 +1,11 @@
-import { EditorCore } from "@/core";
 import { Command, type CommandResult } from "@/commands/base-command";
+import { EditorCore } from "@/core";
 import {
 	buildSeparatedAudioElement,
 	canExtractSourceAudio,
 	isSourceAudioSeparated,
 } from "@/timeline/audio-separation";
-import {
-	applyPlacement,
-	resolveTrackPlacement,
-} from "@/timeline/placement";
+import { applyPlacement, resolveTrackPlacement } from "@/timeline/placement";
 import { updateElementInSceneTracks } from "@/timeline/track-element-update";
 import type {
 	SceneTracks,

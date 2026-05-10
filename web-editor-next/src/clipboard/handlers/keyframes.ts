@@ -1,13 +1,13 @@
 import { getKeyframeById } from "@/animation";
 import type { SelectedKeyframeRef } from "@/animation/types";
-import type { TimelineElement } from "@/timeline";
 import { PasteKeyframesCommand } from "@/commands/timeline";
+import type { TimelineElement } from "@/timeline";
+import { type MediaTime, roundMediaTime, subMediaTime } from "@/wasm";
 import type {
 	ClipboardHandler,
 	KeyframeClipboardCurvePatch,
 	KeyframeClipboardItem,
 } from "../types";
-import { roundMediaTime, subMediaTime, type MediaTime } from "@/wasm";
 
 function resolveSingleSourceElement({
 	selectedKeyframes,

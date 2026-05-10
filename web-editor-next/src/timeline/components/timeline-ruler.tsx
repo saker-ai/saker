@@ -1,12 +1,12 @@
-import { type JSX, useLayoutEffect, useRef } from "react";
-import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
-import { mediaTimeToSeconds } from "opencut-wasm";
-import { TICKS_PER_SECOND } from "@/wasm";
-import { TIMELINE_RULER_HEIGHT_PX } from "./layout";
-import { DEFAULT_FPS } from "@/fps/defaults";
 import { useEditor } from "@/editor/use-editor";
-import { getRulerConfig, shouldShowLabel } from "@/timeline/ruler-utils";
+import { DEFAULT_FPS } from "@/fps/defaults";
 import { useScrollPosition } from "@/timeline/hooks/use-scroll-position";
+import { getRulerConfig, shouldShowLabel } from "@/timeline/ruler-utils";
+import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
+import { TICKS_PER_SECOND } from "@/wasm";
+import { mediaTimeToSeconds } from "opencut-wasm";
+import { type JSX, useLayoutEffect, useRef } from "react";
+import { TIMELINE_RULER_HEIGHT_PX } from "./layout";
 import { TimelineTick } from "./timeline-tick";
 
 interface TimelineRulerProps {
@@ -130,7 +130,6 @@ export function TimelineRuler({
 			onKeyDown={() => {}}
 		>
 			<div
-				role="none"
 				ref={rulerRef}
 				className="relative cursor-default select-none"
 				style={{

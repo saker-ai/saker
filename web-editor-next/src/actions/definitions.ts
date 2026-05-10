@@ -1,7 +1,4 @@
-import type {
-	KeybindingConfig,
-	ShortcutKey,
-} from "@/actions/keybinding";
+import type { KeybindingConfig, ShortcutKey } from "@/actions/keybinding";
 import type { TActionWithOptionalArgs } from "./types";
 
 export type TActionCategory =
@@ -177,7 +174,9 @@ const ACTION_DEFAULT_SHORTCUTS = {
 	"duplicate-selected": ["ctrl+d"],
 	undo: ["ctrl+z"],
 	redo: ["ctrl+shift+z", "ctrl+y"],
-} as const satisfies Partial<Record<TActionWithOptionalArgs, readonly ShortcutKey[]>>;
+} as const satisfies Partial<
+	Record<TActionWithOptionalArgs, readonly ShortcutKey[]>
+>;
 
 const ACTION_DEFAULT_SHORTCUTS_BY_ACTION: Partial<
 	Record<TAction, readonly ShortcutKey[]>

@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState, type PointerEvent } from "react";
-import { useShiftKey } from "@/hooks/use-shift-key";
 import { getBezierPoint } from "@/animation/bezier";
 import type { NormalizedCubicBezier } from "@/animation/types";
+import { useShiftKey } from "@/hooks/use-shift-key";
 import { cn } from "@/utils/ui";
+import { type PointerEvent, useRef, useState } from "react";
 
 const GRAPH_WIDTH = 140;
 const GRAPH_HEIGHT = 94;
@@ -62,8 +62,24 @@ function curvePath({ curve }: { curve: NormalizedCubicBezier }) {
 	const points: string[] = [];
 	for (let i = 0; i <= CURVE_SEGMENTS; i++) {
 		const progress = i / CURVE_SEGMENTS;
-		const x = toSvgX({ value: getBezierPoint({ progress, p0: 0, p1: curve[0], p2: curve[2], p3: 1 }) });
-		const y = toSvgY({ value: getBezierPoint({ progress, p0: 0, p1: curve[1], p2: curve[3], p3: 1 }) });
+		const x = toSvgX({
+			value: getBezierPoint({
+				progress,
+				p0: 0,
+				p1: curve[0],
+				p2: curve[2],
+				p3: 1,
+			}),
+		});
+		const y = toSvgY({
+			value: getBezierPoint({
+				progress,
+				p0: 0,
+				p1: curve[1],
+				p2: curve[3],
+				p3: 1,
+			}),
+		});
 		points.push(`${x},${y}`);
 	}
 	return `M${points.join("L")}`;

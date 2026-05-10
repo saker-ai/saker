@@ -1,34 +1,31 @@
-import type { ParamDefinition } from "@/params";
+import { setMaskLocalCenter, toGlobalMaskSnapLines } from "@/masks/geometry";
+import {
+	getBoxMaskHandlePositions,
+	getBoxMaskRectOverlay,
+} from "@/masks/handle-positions";
+import { computeFeatherUpdate } from "@/masks/param-update";
 import type {
 	MaskDefinition,
 	MaskParamUpdateArgs,
 	TextMask,
 	TextMaskParams,
 } from "@/masks/types";
-import { DEFAULTS } from "@/timeline/defaults";
-import { MIN_FONT_SIZE, MAX_FONT_SIZE } from "@/text/typography";
+import type { ParamDefinition } from "@/params";
+import {
+	type ScaleEdgePreference,
+	snapPosition,
+	snapRotation,
+	snapScale,
+} from "@/preview/preview-snap";
+import { getTextVisualRect } from "@/text/layout";
+import { getTextMeasurementContext } from "@/text/measure-element";
 import {
 	drawMeasuredTextLayout,
 	measureTextLayout,
 	strokeMeasuredTextLayout,
 } from "@/text/primitives";
-import { getTextMeasurementContext } from "@/text/measure-element";
-import { getTextVisualRect } from "@/text/layout";
-import {
-	getBoxMaskHandlePositions,
-	getBoxMaskRectOverlay,
-} from "@/masks/handle-positions";
-import { computeFeatherUpdate } from "@/masks/param-update";
-import {
-	setMaskLocalCenter,
-	toGlobalMaskSnapLines,
-} from "@/masks/geometry";
-import {
-	snapPosition,
-	snapRotation,
-	snapScale,
-	type ScaleEdgePreference,
-} from "@/preview/preview-snap";
+import { MAX_FONT_SIZE, MIN_FONT_SIZE } from "@/text/typography";
+import { DEFAULTS } from "@/timeline/defaults";
 
 const PERCENTAGE_DISPLAY = {
 	displayMultiplier: 100,

@@ -1,11 +1,11 @@
 import type { EditorCore } from "@/core";
 import {
+	type MediaTime,
+	ZERO_MEDIA_TIME,
 	addMediaTime,
 	clampMediaTime,
-	type MediaTime,
 	mediaTimeFromSeconds,
 	roundFrameTime,
-	ZERO_MEDIA_TIME,
 } from "@/wasm";
 
 export class PlaybackManager {
@@ -176,21 +176,21 @@ export class PlaybackManager {
 	}
 
 	private notify(): void {
-		this.listeners.forEach((fn) => {
+		for (const fn of this.listeners) {
 			fn();
-		});
+		}
 	}
 
 	private notifyUpdate(time: MediaTime): void {
-		this.updateListeners.forEach((fn) => {
+		for (const fn of this.updateListeners) {
 			fn(time);
-		});
+		}
 	}
 
 	private notifySeek(time: MediaTime): void {
-		this.seekListeners.forEach((fn) => {
+		for (const fn of this.seekListeners) {
 			fn(time);
-		});
+		}
 	}
 
 	private startTimer(): void {
@@ -227,9 +227,9 @@ export class PlaybackManager {
 			this.pause();
 			this.currentTime = maxTime;
 			this.notify();
-		this.notifySeek(maxTime);
-		this.dispatchSeekEvent(maxTime);
-		return;
+			this.notifySeek(maxTime);
+			this.dispatchSeekEvent(maxTime);
+			return;
 		}
 
 		this.currentTime = newTime;

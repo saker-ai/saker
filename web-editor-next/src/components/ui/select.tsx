@@ -1,12 +1,12 @@
 "use client";
 
-import * as React from "react";
-import { Select as SelectPrimitive } from "radix-ui";
-import { Check } from "lucide-react";
-import { ArrowUpIcon, ArrowDownIcon } from "@hugeicons/core-free-icons";
-import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/utils/ui";
+import { ArrowDownIcon, ArrowUpIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { type VariantProps, cva } from "class-variance-authority";
+import { Check } from "lucide-react";
+import { Select as SelectPrimitive } from "radix-ui";
+import * as React from "react";
 import { useOverlayOpenChange } from "./use-overlay-open-change";
 
 function Select({

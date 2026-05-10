@@ -1,15 +1,8 @@
 "use client";
 
-import type { ParamDefinition, NumberParamDefinition } from "@/params";
-import {
-	formatNumberForDisplay,
-	getFractionDigitsForStep,
-	snapToStep,
-} from "@/utils/math";
 import { SectionField } from "@/components/section";
-import { NumberField } from "@/components/ui/number-field";
-import { Switch } from "@/components/ui/switch";
 import { ColorPicker } from "@/components/ui/color-picker";
+import { NumberField } from "@/components/ui/number-field";
 import {
 	Select,
 	SelectContent,
@@ -17,6 +10,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import type { NumberParamDefinition, ParamDefinition } from "@/params";
+import {
+	formatNumberForDisplay,
+	getFractionDigitsForStep,
+	snapToStep,
+} from "@/utils/math";
 import { usePropertyDraft } from "../hooks/use-property-draft";
 import { KeyframeToggle } from "./keyframe-toggle";
 
@@ -154,9 +154,7 @@ function NumberParamField({
 		);
 
 	const previewFromDisplay = (displayVal: number) => {
-		const clamped = clampDisplayValue(
-			snapToStep({ value: displayVal, step }),
-		);
+		const clamped = clampDisplayValue(snapToStep({ value: displayVal, step }));
 		onPreview(clamped / displayMultiplier);
 	};
 
@@ -168,7 +166,7 @@ function NumberParamField({
 			maxFractionDigits,
 		}),
 		parse: (input) => {
-			const parsed = parseFloat(input);
+			const parsed = Number.parseFloat(input);
 			if (Number.isNaN(parsed)) return null;
 			return clampDisplayValue(snapToStep({ value: parsed, step }));
 		},

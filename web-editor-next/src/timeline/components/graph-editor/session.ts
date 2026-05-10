@@ -1,7 +1,7 @@
 import {
 	getCurveHandlesForNormalizedCubicBezier,
-	getEditableScalarChannels,
 	getEasingModeForKind,
+	getEditableScalarChannels,
 	getNormalizedCubicBezierForScalarSegment,
 	getScalarKeyframeContext,
 	updateScalarKeyframeCurve,

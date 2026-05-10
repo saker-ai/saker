@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import type {
 	BoxSelectionSnapshot,
 	ResolveIntersections,
 } from "@/selection/types";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface SelectionBoxState<TId> extends BoxSelectionSnapshot<TId> {
 	startPos: { x: number; y: number };

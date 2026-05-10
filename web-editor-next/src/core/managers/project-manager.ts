@@ -1,34 +1,37 @@
+import { DEFAULT_BACKGROUND_COLOR } from "@/background/color";
+import { DEFAULT_CANVAS_SIZE } from "@/canvas/sizes";
+import { UpdateProjectSettingsCommand } from "@/commands/project";
 import type { EditorCore } from "@/core";
+import type { ExportOptions, ExportResult, ExportState } from "@/export";
+import { loadFonts } from "@/fonts/google-fonts";
+import { DEFAULT_FPS } from "@/fps/defaults";
+import { getRaisedProjectFpsForImportedMedia } from "@/fps/utils";
+import type { MediaAsset } from "@/media/types";
 import type {
 	TProject,
 	TProjectMetadata,
+	TProjectSettings,
 	TProjectSortKey,
 	TProjectSortOption,
-	TProjectSettings,
 	TTimelineViewState,
 } from "@/project/types";
-import type { ExportOptions, ExportResult, ExportState } from "@/export";
-import { storageService } from "@/services/storage/service";
-import { toast } from "sonner";
-import { generateUUID } from "@/utils/id";
-import { UpdateProjectSettingsCommand } from "@/commands/project";
-import { DEFAULT_BACKGROUND_COLOR } from "@/background/color";
-import { DEFAULT_CANVAS_SIZE } from "@/canvas/sizes";
-import { DEFAULT_FPS } from "@/fps/defaults";
-import { buildDefaultScene, getProjectDurationFromScenes } from "@/timeline/scenes";
-import { buildScene } from "@/services/renderer/scene-builder";
 import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
+import { buildScene } from "@/services/renderer/scene-builder";
 import {
 	CURRENT_PROJECT_VERSION,
+	type MigrationProgress,
 	loadMigrations,
 	runStorageMigrations,
-	type MigrationProgress,
 } from "@/services/storage/migrations";
-import { loadFonts } from "@/fonts/google-fonts";
+import { storageService } from "@/services/storage/service";
 import { DEFAULTS } from "@/timeline/defaults";
 import { getElementFontFamilies } from "@/timeline/element-utils";
-import { getRaisedProjectFpsForImportedMedia } from "@/fps/utils";
-import type { MediaAsset } from "@/media/types";
+import {
+	buildDefaultScene,
+	getProjectDurationFromScenes,
+} from "@/timeline/scenes";
+import { generateUUID } from "@/utils/id";
+import { toast } from "sonner";
 
 export interface MigrationState {
 	isMigrating: boolean;
@@ -700,8 +703,8 @@ export class ProjectManager {
 	}
 
 	private notify(): void {
-		this.listeners.forEach((fn) => {
+		for (const fn of this.listeners) {
 			fn();
-		});
+		}
 	}
 }

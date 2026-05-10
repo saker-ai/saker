@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { useTheme } from "next-themes";
+import { useEffect } from "react";
 
 // Themes whose color scheme is dark. Mirrors web/src/features/chat/
 // ThemeProvider.tsx THEME_SCHEME and the inline boot script in app/layout.tsx.

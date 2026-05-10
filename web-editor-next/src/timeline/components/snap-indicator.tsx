@@ -1,11 +1,11 @@
 "use client";
 
+import {
+	TIMELINE_INDICATOR_LINE_WIDTH_PX,
+	getCenteredLineLeft,
+} from "@/timeline";
 import { useSnapIndicatorPosition } from "@/timeline/hooks/use-snap-indicator-position";
 import type { SnapPoint } from "@/timeline/snapping";
-import {
-	getCenteredLineLeft,
-	TIMELINE_INDICATOR_LINE_WIDTH_PX,
-} from "@/timeline";
 import { TIMELINE_LAYERS } from "./layers";
 interface SnapIndicatorProps {
 	snapPoint: SnapPoint | null;

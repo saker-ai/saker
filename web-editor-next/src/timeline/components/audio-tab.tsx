@@ -1,5 +1,19 @@
+import { resolveNumberAtTime } from "@/animation/values";
+import { KeyframeToggle } from "@/components/editor/panels/properties/components/keyframe-toggle";
+import { useElementPlayhead } from "@/components/editor/panels/properties/hooks/use-element-playhead";
+import { useKeyframedNumberProperty } from "@/components/editor/panels/properties/hooks/use-keyframed-number-property";
+import {
+	Section,
+	SectionContent,
+	SectionField,
+	SectionFields,
+	SectionHeader,
+	SectionTitle,
+} from "@/components/section";
 import { Button } from "@/components/ui/button";
 import { NumberField } from "@/components/ui/number-field";
+import { useEditor } from "@/editor/use-editor";
+import type { AudioElement, VideoElement } from "@/timeline";
 import { VOLUME_DB_MAX, VOLUME_DB_MIN } from "@/timeline/audio-constants";
 import { isSourceAudioSeparated } from "@/timeline/audio-separation";
 import { DEFAULTS } from "@/timeline/defaults";
@@ -10,22 +24,8 @@ import {
 	isNearlyEqual,
 	snapToStep,
 } from "@/utils/math";
-import type { AudioElement, VideoElement } from "@/timeline";
-import { resolveNumberAtTime } from "@/animation/values";
-import { useEditor } from "@/editor/use-editor";
-import { useElementPlayhead } from "@/components/editor/panels/properties/hooks/use-element-playhead";
-import { useKeyframedNumberProperty } from "@/components/editor/panels/properties/hooks/use-keyframed-number-property";
-import { KeyframeToggle } from "@/components/editor/panels/properties/components/keyframe-toggle";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { VolumeHighIcon } from "@hugeicons/core-free-icons";
-import {
-	Section,
-	SectionContent,
-	SectionField,
-	SectionFields,
-	SectionHeader,
-	SectionTitle,
-} from "@/components/section";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 const VOLUME_STEP = 0.1;
 const VOLUME_FRACTION_DIGITS = getFractionDigitsForStep({ step: VOLUME_STEP });
@@ -60,7 +60,7 @@ export function AudioTab({
 			fractionDigits: VOLUME_FRACTION_DIGITS,
 		}),
 		parse: (input) => {
-			const parsed = parseFloat(input);
+			const parsed = Number.parseFloat(input);
 			if (Number.isNaN(parsed)) {
 				return null;
 			}

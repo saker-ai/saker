@@ -1,5 +1,5 @@
-import { snapToStep } from "@/utils/math";
 import type { ParamDefinition } from "@/params";
+import { snapToStep } from "@/utils/math";
 import type { DynamicAnimationPathValue, NumericSpec } from "./types";
 
 export function getAnimationParamValueKind({

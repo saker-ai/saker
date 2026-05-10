@@ -1,5 +1,15 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
 import {
 	Sheet,
 	SheetContent,
@@ -8,22 +18,12 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Check, ListCheck, Trash2 } from "lucide-react";
-import { cn } from "@/utils/ui";
-import { useState } from "react";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogDescription,
-	DialogFooter,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { canDeleteScene, getMainScene } from "@/timeline/scenes";
-import { toast } from "sonner";
 import { useEditor } from "@/editor/use-editor";
+import { canDeleteScene, getMainScene } from "@/timeline/scenes";
+import { cn } from "@/utils/ui";
+import { Check, ListCheck, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function ScenesView({ children }: { children: React.ReactNode }) {
 	const editor = useEditor();

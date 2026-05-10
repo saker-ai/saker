@@ -1,12 +1,16 @@
 "use client";
 
-import Image from "next/image";
-import { useMemo, useState } from "react";
-import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
+import { invokeAction } from "@/actions";
+import {
+	type MediaSortKey,
+	type MediaSortOrder,
+	type MediaViewMode,
+	useAssetsPanelStore,
+} from "@/components/editor/panels/assets/assets-panel-store";
 import { MediaDragOverlay } from "@/components/editor/panels/assets/drag-overlay";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
+import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -25,39 +29,35 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { DEFAULT_NEW_ELEMENT_DURATION } from "@/timeline/creation";
-import { mediaTimeFromSeconds, type MediaTime } from "@/wasm";
 import { useEditor } from "@/editor/use-editor";
-import { useFileUpload } from "@/media/use-file-upload";
-import { invokeAction } from "@/actions";
 import { processMediaAssets } from "@/media/processing";
+import type { MediaAsset } from "@/media/types";
 import { showMediaUploadToast } from "@/media/upload-toast";
+import { useFileUpload } from "@/media/use-file-upload";
 import {
 	SelectableItem,
 	SelectableSurface,
 	useSelection,
 	useSelectionScope,
 } from "@/selection";
-import { buildElementFromMedia } from "@/timeline/element-utils";
-import {
-	type MediaSortKey,
-	type MediaSortOrder,
-	type MediaViewMode,
-	useAssetsPanelStore,
-} from "@/components/editor/panels/assets/assets-panel-store";
 import { MASKABLE_ELEMENT_TYPES } from "@/timeline";
-import type { MediaAsset } from "@/media/types";
+import { DEFAULT_NEW_ELEMENT_DURATION } from "@/timeline/creation";
+import { buildElementFromMedia } from "@/timeline/element-utils";
 import { cn } from "@/utils/ui";
+import { type MediaTime, mediaTimeFromSeconds } from "@/wasm";
 import {
 	CloudUploadIcon,
 	GridViewIcon,
-	LeftToRightListDashIcon,
-	SortingOneNineIcon,
 	Image02Icon,
+	LeftToRightListDashIcon,
 	MusicNote03Icon,
+	SortingOneNineIcon,
 	Video01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
+import Image from "next/image";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 export function MediaView() {
 	const editor = useEditor();

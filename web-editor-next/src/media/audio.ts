@@ -1,29 +1,26 @@
+import { applyAudioMasteringToBuffer } from "@/media/audio-mastering";
+import { mediaSupportsAudio } from "@/media/media-utils";
+import type { MediaAsset } from "@/media/types";
+import { type SampleBucket, computeRmsBuckets } from "@/media/waveform-summary";
+import { getSourceTimeAtClipTime, renderRetimedBuffer } from "@/retime";
+import { shouldMaintainPitch } from "@/retime/rate";
 import type {
 	AudioElement,
-	VideoElement,
 	LibraryAudioElement,
 	RetimeConfig,
 	SceneTracks,
+	VideoElement,
 } from "@/timeline";
-import { shouldMaintainPitch } from "@/retime/rate";
-import type { MediaAsset } from "@/media/types";
-import { applyAudioMasteringToBuffer } from "@/media/audio-mastering";
+import { canTrackHaveAudio } from "@/timeline";
+import { doesElementHaveEnabledAudio } from "@/timeline/audio-separation";
 import type { AudioCapableElement } from "@/timeline/audio-state";
 import {
 	hasAnimatedVolume,
 	resolveEffectiveAudioGain,
 } from "@/timeline/audio-state";
-import { doesElementHaveEnabledAudio } from "@/timeline/audio-separation";
 import { canElementHaveAudio, hasMediaId } from "@/timeline/element-utils";
-import { canTrackHaveAudio } from "@/timeline";
-import { mediaSupportsAudio } from "@/media/media-utils";
-import { getSourceTimeAtClipTime, renderRetimedBuffer } from "@/retime";
-import { Input, ALL_FORMATS, BlobSource, AudioBufferSink } from "mediabunny";
 import { TICKS_PER_SECOND } from "@/wasm";
-import {
-	computeRmsBuckets,
-	type SampleBucket,
-} from "@/media/waveform-summary";
+import { ALL_FORMATS, AudioBufferSink, BlobSource, Input } from "mediabunny";
 
 const MAX_AUDIO_CHANNELS = 2;
 const EXPORT_SAMPLE_RATE = 44100;

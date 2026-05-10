@@ -1,26 +1,26 @@
-import type { MouseEvent as ReactMouseEvent } from "react";
-import type { FrameRate } from "opencut-wasm";
-import {
-	mediaTime,
-	snapSeekMediaTime,
-	TICKS_PER_SECOND,
-	type MediaTime,
-} from "@/wasm";
-import {
-	buildTimelineSnapPoints,
-	getTimelineSnapThresholdInTicks,
-	resolveTimelineSnap,
-} from "@/timeline/snapping";
-import { getBookmarkSnapPoints } from "@/timeline/bookmarks/index";
-import { getElementEdgeSnapPoints } from "@/timeline/element-snap-source";
-import { getAnimationKeyframeSnapPointsForTimeline } from "@/timeline/animation-snap-points";
 import {
 	getCenteredLineLeft,
 	timelineTimeToPixels,
 	timelineTimeToSnappedPixels,
 } from "@/timeline";
-import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
 import type { Bookmark, SceneTracks } from "@/timeline";
+import { getAnimationKeyframeSnapPointsForTimeline } from "@/timeline/animation-snap-points";
+import { getBookmarkSnapPoints } from "@/timeline/bookmarks/index";
+import { getElementEdgeSnapPoints } from "@/timeline/element-snap-source";
+import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
+import {
+	buildTimelineSnapPoints,
+	getTimelineSnapThresholdInTicks,
+	resolveTimelineSnap,
+} from "@/timeline/snapping";
+import {
+	type MediaTime,
+	TICKS_PER_SECOND,
+	mediaTime,
+	snapSeekMediaTime,
+} from "@/wasm";
+import type { FrameRate } from "opencut-wasm";
+import type { MouseEvent as ReactMouseEvent } from "react";
 
 // --- Session ---
 

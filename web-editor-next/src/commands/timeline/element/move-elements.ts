@@ -1,18 +1,18 @@
 import {
 	Command,
-	createElementSelectionResult,
 	type CommandResult,
+	createElementSelectionResult,
 } from "@/commands/base-command";
 import { EditorCore } from "@/core";
 import type { SceneTracks, TimelineElement, TimelineTrack } from "@/timeline";
-import {
-	buildEmptyTrack,
-	validateElementTrackCompatibility,
-} from "@/timeline/placement";
 import type {
 	PlannedElementMove,
 	PlannedTrackCreation,
 } from "@/timeline/group-move";
+import {
+	buildEmptyTrack,
+	validateElementTrackCompatibility,
+} from "@/timeline/placement";
 import { findTrackInSceneTracks } from "@/timeline/track-element-update";
 
 export class MoveElementCommand extends Command {

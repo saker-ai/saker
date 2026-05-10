@@ -5,11 +5,11 @@ import {
 import type { MediaAssetData } from "@/services/storage/types";
 import { StorageMigration, type StorageMigrationRunArgs } from "./base";
 import type { MigrationResult, ProjectRecord } from "./transformers/types";
-import {
-	transformProjectV1ToV2,
-	type V1ToV2Context,
-} from "./transformers/v1-to-v2";
 import { isRecord } from "./transformers/utils";
+import {
+	type V1ToV2Context,
+	transformProjectV1ToV2,
+} from "./transformers/v1-to-v2";
 
 interface LegacyTimelineData {
 	tracks: unknown[];

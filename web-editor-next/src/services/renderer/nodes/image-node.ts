@@ -1,6 +1,6 @@
 import {
-	VisualNode,
 	type ResolvedVisualSourceNodeState,
+	VisualNode,
 	type VisualNodeParams,
 } from "./visual-node";
 

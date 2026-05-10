@@ -73,18 +73,12 @@ function getUniqueBindingKeyframeMatches({
 
 	for (const match of sortedMatches) {
 		const previousMatch = uniqueMatches[uniqueMatches.length - 1];
-		if (
-			!previousMatch ||
-			previousMatch.keyframe.time !== match.keyframe.time
-		) {
+		if (!previousMatch || previousMatch.keyframe.time !== match.keyframe.time) {
 			uniqueMatches.push(match);
 			continue;
 		}
 
-		if (
-			previousMatch.componentIndex !== 0 &&
-			match.componentIndex === 0
-		) {
+		if (previousMatch.componentIndex !== 0 && match.componentIndex === 0) {
 			uniqueMatches[uniqueMatches.length - 1] = match;
 		}
 	}
@@ -98,9 +92,7 @@ function getPreferredBindingKeyframeMatch({
 	matches: BindingKeyframeMatch[];
 }): BindingKeyframeMatch | null {
 	return (
-		matches.find((match) => match.componentIndex === 0) ??
-		matches[0] ??
-		null
+		matches.find((match) => match.componentIndex === 0) ?? matches[0] ?? null
 	);
 }
 

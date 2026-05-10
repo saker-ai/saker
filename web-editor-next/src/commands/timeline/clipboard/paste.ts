@@ -1,24 +1,24 @@
+import { cloneAnimations } from "@/animation";
+import type { ElementClipboardItem } from "@/clipboard";
 import {
 	Command,
-	createElementSelectionResult,
 	type CommandResult,
+	createElementSelectionResult,
 } from "@/commands/base-command";
 import { EditorCore } from "@/core";
 import type { SceneTracks, TimelineElement } from "@/timeline";
-import type { ElementClipboardItem } from "@/clipboard";
-import { generateUUID } from "@/utils/id";
 import {
 	applyPlacement,
-	resolveTrackPlacement,
 	enforceMainTrackStart,
+	resolveTrackPlacement,
 } from "@/timeline/placement";
-import { cloneAnimations } from "@/animation";
+import { generateUUID } from "@/utils/id";
 import {
-	addMediaTime,
 	type MediaTime,
+	ZERO_MEDIA_TIME,
+	addMediaTime,
 	maxMediaTime,
 	subMediaTime,
-	ZERO_MEDIA_TIME,
 } from "@/wasm";
 
 export class PasteCommand extends Command {

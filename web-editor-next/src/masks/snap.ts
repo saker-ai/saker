@@ -1,17 +1,17 @@
-import type { ElementBounds } from "@/preview/element-bounds";
 import { MIN_MASK_DIMENSION } from "@/masks/dimensions";
+import type { RectangleMaskParams, SplitMaskParams } from "@/masks/types";
+import type { ElementBounds } from "@/preview/element-bounds";
 import {
+	type ScaleEdgePreference,
+	type SnapLine,
 	snapPosition,
 	snapRotation,
 	snapScale,
 	snapScaleAxes,
-	type ScaleEdgePreference,
-	type SnapLine,
 } from "@/preview/preview-snap";
-import type { RectangleMaskParams, SplitMaskParams } from "@/masks/types";
 import {
-	isRectangleMaskParams,
 	getMaskSnapGeometry,
+	isRectangleMaskParams,
 	setMaskLocalCenter,
 	toGlobalMaskSnapLines,
 } from "./geometry";

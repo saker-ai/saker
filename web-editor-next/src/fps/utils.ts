@@ -1,5 +1,5 @@
-import type { FrameRate } from "opencut-wasm";
 import type { MediaAsset } from "@/media/types";
+import type { FrameRate } from "opencut-wasm";
 
 type MediaAssetFpsInput = Pick<MediaAsset, "type" | "fps">;
 
@@ -28,7 +28,8 @@ export function frameRatesEqual(a: FrameRate, b: FrameRate): boolean {
 
 export function floatToFrameRate(fps: number): FrameRate {
 	const standard = STANDARD_FRAME_RATES.find(
-		(candidate) => Math.abs(fps - candidate.value) <= STANDARD_FRAME_RATE_TOLERANCE,
+		(candidate) =>
+			Math.abs(fps - candidate.value) <= STANDARD_FRAME_RATE_TOLERANCE,
 	);
 	if (standard) return standard.rate;
 
@@ -87,7 +88,10 @@ export function getRaisedProjectFpsForImportedMedia({
 
 	const currentFpsFloat = frameRateToFloat(currentFps);
 
-	if (highestImportedVideoFps === null || highestImportedVideoFps <= currentFpsFloat) {
+	if (
+		highestImportedVideoFps === null ||
+		highestImportedVideoFps <= currentFpsFloat
+	) {
 		return null;
 	}
 

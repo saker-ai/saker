@@ -1,5 +1,5 @@
-import { useRef } from "react";
 import { useEditor } from "@/editor/use-editor";
+import { useRef } from "react";
 
 export function useMenuPreview() {
 	const editor = useEditor();

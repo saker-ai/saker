@@ -1,8 +1,8 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { isGuideId, type GuideId } from "@/guides";
+import { type GuideId, isGuideId } from "@/guides";
 import { DEFAULT_GRID_CONFIG } from "@/guides/grid";
 import type { GridConfig } from "@/guides/types";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 type PreviewOverlaysState = Record<string, boolean>;
 

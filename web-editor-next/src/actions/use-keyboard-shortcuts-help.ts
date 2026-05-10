@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
-import { useKeybindingsStore } from "@/actions/keybindings-store";
 import { ACTIONS, type TActionWithOptionalArgs } from "@/actions";
+import { useKeybindingsStore } from "@/actions/keybindings-store";
 import {
 	getPlatformAlternateKey,
 	getPlatformSpecialKey,
 } from "@/utils/platform";
+import { useMemo } from "react";
 
 export interface KeyboardShortcut {
 	id: string;

@@ -1,6 +1,7 @@
 {
   "name": "saker-web",
   "version": "0.1.0",
+  "type": "module",
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -8,7 +9,7 @@
     "build": "next build",
     "start": "next start -p 10111",
     "audit:i18n": "node scripts/audit-i18n.mjs",
-    "test": "node --experimental-strip-types --test src/features/editor-runtime/webavCompose.test.mts src/features/editor-bridge/protocol.test.mts"
+    "test": "tsx --test src/features/editor-runtime/webavCompose.test.mts src/features/editor-bridge/protocol.test.mts src/features/skills/shared/useSkillhubRpc.test.mts"
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.5",
@@ -32,6 +33,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.0"
   },
   "overrides": {

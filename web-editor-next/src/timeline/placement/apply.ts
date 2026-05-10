@@ -9,10 +9,10 @@ import type {
 	TimelineTrack,
 	VideoTrack,
 } from "@/timeline";
+import { updateTrackInSceneTracks } from "@/timeline/track-element-update";
 import { generateUUID } from "@/utils/id";
 import { buildEmptyTrack } from "./track-factory";
 import type { PlacementResult } from "./types";
-import { updateTrackInSceneTracks } from "@/timeline/track-element-update";
 
 export function applyPlacement({
 	tracks,

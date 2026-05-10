@@ -1,7 +1,7 @@
+import type { CustomMaskPathPoint } from "@/masks/custom-path";
+import type { ParamDefinition } from "@/params";
 import type { ElementBounds } from "@/preview/element-bounds";
 import type { SnapLine } from "@/preview/preview-snap";
-import type { ParamDefinition } from "@/params";
-import type { CustomMaskPathPoint } from "@/masks/custom-path";
 import type {
 	TextDecoration,
 	TextFontStyle,

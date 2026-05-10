@@ -31,8 +31,8 @@ export class DiagnosticsManager {
 	}
 
 	notify(): void {
-		this.listeners.forEach((listener) => {
+		for (const listener of this.listeners) {
 			listener();
-		});
+		}
 	}
 }

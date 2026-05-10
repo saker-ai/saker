@@ -1,4 +1,3 @@
-import type { EditorCore } from "@/core";
 import type {
 	AnimationInterpolation,
 	AnimationPath,
@@ -7,11 +6,8 @@ import type {
 	SelectedKeyframeRef,
 } from "@/animation/types";
 import type { Command } from "@/commands/base-command";
-import type {
-	CreateTimelineElement,
-	ElementRef,
-	TrackType,
-} from "@/timeline";
+import type { EditorCore } from "@/core";
+import type { CreateTimelineElement, ElementRef, TrackType } from "@/timeline";
 import type { MediaTime } from "@/wasm";
 
 export interface ElementClipboardItem {

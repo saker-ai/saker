@@ -1,10 +1,10 @@
 "use client";
 
-import { forwardRef, useCallback } from "react";
-import { useSelectionContext } from "@/selection/context";
 import { SELECTABLE_ITEM_ATTRIBUTE } from "@/selection/attributes";
+import { useSelectionContext } from "@/selection/context";
 import type { SelectableItemProps } from "@/selection/types";
 import { cn } from "@/utils/ui";
+import { forwardRef, useCallback } from "react";
 
 function setForwardedRef<T>(ref: React.ForwardedRef<T>, value: T | null) {
 	if (typeof ref === "function") {

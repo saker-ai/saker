@@ -1,33 +1,33 @@
-import { DEFAULT_NEW_ELEMENT_DURATION } from "@/timeline/creation";
-import {
-	MASKABLE_ELEMENT_TYPES,
-	RETIMABLE_ELEMENT_TYPES,
-	VISUAL_ELEMENT_TYPES,
-	type CreateEffectElement,
-	type CreateGraphicElement,
-	type CreateTimelineElement,
-	type CreateVideoElement,
-	type CreateImageElement,
-	type CreateStickerElement,
-	type CreateUploadAudioElement,
-	type CreateLibraryAudioElement,
-	type TextBackground,
-	type TextElement,
-	type SceneTracks,
-	type TimelineElement,
-	type AudioElement,
-	type VideoElement,
-	type ImageElement,
-	type MaskableElement,
-	type RetimableElement,
-	type VisualElement,
-	type UploadAudioElement,
-} from "@/timeline";
-import { DEFAULTS } from "@/timeline/defaults";
-import type { MediaType } from "@/media/types";
 import { buildDefaultEffectInstance } from "@/effects";
 import { buildDefaultGraphicInstance } from "@/graphics";
+import type { MediaType } from "@/media/types";
 import type { ParamValues } from "@/params";
+import {
+	type AudioElement,
+	type CreateEffectElement,
+	type CreateGraphicElement,
+	type CreateImageElement,
+	type CreateLibraryAudioElement,
+	type CreateStickerElement,
+	type CreateTimelineElement,
+	type CreateUploadAudioElement,
+	type CreateVideoElement,
+	type ImageElement,
+	MASKABLE_ELEMENT_TYPES,
+	type MaskableElement,
+	RETIMABLE_ELEMENT_TYPES,
+	type RetimableElement,
+	type SceneTracks,
+	type TextBackground,
+	type TextElement,
+	type TimelineElement,
+	type UploadAudioElement,
+	VISUAL_ELEMENT_TYPES,
+	type VideoElement,
+	type VisualElement,
+} from "@/timeline";
+import { DEFAULT_NEW_ELEMENT_DURATION } from "@/timeline/creation";
+import { DEFAULTS } from "@/timeline/defaults";
 import { capitalizeFirstLetter } from "@/utils/string";
 import { type MediaTime, ZERO_MEDIA_TIME } from "@/wasm";
 

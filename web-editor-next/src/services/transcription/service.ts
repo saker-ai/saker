@@ -1,13 +1,13 @@
-import type {
-	TranscriptionLanguage,
-	TranscriptionResult,
-	TranscriptionProgress,
-	TranscriptionModelId,
-} from "@/transcription/types";
 import {
 	DEFAULT_TRANSCRIPTION_MODEL,
 	TRANSCRIPTION_MODELS,
 } from "@/transcription/models";
+import type {
+	TranscriptionLanguage,
+	TranscriptionModelId,
+	TranscriptionProgress,
+	TranscriptionResult,
+} from "@/transcription/types";
 import type { WorkerMessage, WorkerResponse } from "./worker";
 
 type ProgressCallback = (progress: TranscriptionProgress) => void;

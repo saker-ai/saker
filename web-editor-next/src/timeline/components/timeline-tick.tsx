@@ -1,8 +1,8 @@
 "use client";
 
-import type { FrameRate } from "opencut-wasm";
 import { timelineTimeToSnappedPixels } from "@/timeline";
 import { formatRulerLabel } from "@/timeline/ruler-utils";
+import type { FrameRate } from "opencut-wasm";
 
 interface TimelineTickProps {
 	time: number;

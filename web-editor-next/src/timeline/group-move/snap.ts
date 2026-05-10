@@ -1,15 +1,15 @@
 import type { SceneTracks } from "@/timeline";
+import { getAnimationKeyframeSnapPointsForTimeline } from "@/timeline/animation-snap-points";
+import { getElementEdgeSnapPoints } from "@/timeline/element-snap-source";
+import { getPlayheadSnapPoints } from "@/timeline/playhead-snap-source";
 import {
+	type SnapPoint,
 	buildTimelineSnapPoints,
 	getTimelineSnapThresholdInTicks,
 	resolveTimelineSnap,
-	type SnapPoint,
 } from "@/timeline/snapping";
-import { getElementEdgeSnapPoints } from "@/timeline/element-snap-source";
-import { getPlayheadSnapPoints } from "@/timeline/playhead-snap-source";
-import { getAnimationKeyframeSnapPointsForTimeline } from "@/timeline/animation-snap-points";
+import { type MediaTime, addMediaTime, subMediaTime } from "@/wasm";
 import type { MoveGroup } from "./types";
-import { addMediaTime, type MediaTime, subMediaTime } from "@/wasm";
 
 export function snapGroupEdges({
 	group,
@@ -43,7 +43,7 @@ export function snapGroupEdges({
 	});
 	const maxSnapDistance = getTimelineSnapThresholdInTicks({ zoomLevel });
 
-	let closestSnapDistance = Infinity;
+	let closestSnapDistance = Number.POSITIVE_INFINITY;
 	let snappedAnchorStartTime = anchorStartTime;
 	let snapPoint: SnapPoint | null = null;
 

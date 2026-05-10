@@ -27,10 +27,10 @@ describe("V22 to V23 Migration", () => {
 				scenes: [
 					{
 						id: "scene-1",
-					bookmarks: [
-						{ time: 2.5, duration: 0.75, note: "Marker", color: "#ff0000" },
-						{ time: 4.5 },
-					],
+						bookmarks: [
+							{ time: 2.5, duration: 0.75, note: "Marker", color: "#ff0000" },
+							{ time: 4.5 },
+						],
 						tracks: [
 							{
 								id: "track-1",
@@ -136,7 +136,10 @@ describe("V22 to V23 Migration", () => {
 		expect(element.sourceDuration).toBe(750_000);
 
 		const animations = element.animations as Record<string, unknown>;
-		const channels = animations.channels as Record<string, Record<string, unknown>>;
+		const channels = animations.channels as Record<
+			string,
+			Record<string, unknown>
+		>;
 		expect(channels["opacity:value"]).toEqual({
 			kind: "scalar",
 			keys: [

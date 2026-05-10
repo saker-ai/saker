@@ -1,11 +1,8 @@
-import { EditorCore } from "@/core";
-import {
-	hasKeyframesForPath,
-	removeElementKeyframe,
-} from "@/animation";
-import { Command, type CommandResult } from "@/commands/base-command";
-import { updateElementInSceneTracks } from "@/timeline";
+import { hasKeyframesForPath, removeElementKeyframe } from "@/animation";
 import type { AnimationPath, AnimationValue } from "@/animation/types";
+import { Command, type CommandResult } from "@/commands/base-command";
+import { EditorCore } from "@/core";
+import { updateElementInSceneTracks } from "@/timeline";
 import type { SceneTracks, TimelineElement } from "@/timeline";
 import { resolveAnimationTarget } from "@/timeline/animation-targets";
 

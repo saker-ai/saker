@@ -1,7 +1,20 @@
 "use client";
 
-import { Button } from "../ui/button";
+import { ShortcutsDialog } from "@/actions/components/shortcuts-dialog";
+import { useEditor } from "@/editor/use-editor";
+import { FeedbackPopover } from "@/feedback/components/feedback-popover";
+import { DeleteProjectDialog } from "@/project/components/delete-project-dialog";
+import { RenameProjectDialog } from "@/project/components/rename-project-dialog";
+import { DEFAULT_LOGO_URL } from "@/site/brand";
+import { cn } from "@/utils/ui";
+import { CommandIcon, Logout05Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { ThemeToggle } from "../theme-toggle";
+import { Button } from "../ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -9,20 +22,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { RenameProjectDialog } from "@/project/components/rename-project-dialog";
-import { DeleteProjectDialog } from "@/project/components/delete-project-dialog";
-import { useRouter } from "next/navigation";
 import { ExportButton } from "./export-button";
-import { FeedbackPopover } from "@/feedback/components/feedback-popover";
-import { ThemeToggle } from "../theme-toggle";
-import { DEFAULT_LOGO_URL } from "@/site/brand";
-import { toast } from "sonner";
-import { useEditor } from "@/editor/use-editor";
-import { CommandIcon, Logout05Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ShortcutsDialog } from "@/actions/components/shortcuts-dialog";
-import Image from "next/image";
-import { cn } from "@/utils/ui";
 
 export function EditorHeader() {
 	return (

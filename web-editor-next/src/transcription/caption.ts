@@ -1,8 +1,8 @@
-import type { TranscriptionSegment, CaptionChunk } from "@/transcription/types";
 import {
 	DEFAULT_WORDS_PER_CAPTION,
 	MIN_CAPTION_DURATION_SECONDS,
 } from "@/transcription/caption-defaults";
+import type { CaptionChunk, TranscriptionSegment } from "@/transcription/types";
 
 export function buildCaptionChunks({
 	segments,

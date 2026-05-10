@@ -1,7 +1,7 @@
 import type { ParamDefinition } from "@/params";
 import { applyAlignedStroke } from "../stroke";
-import { STROKE_ALIGN_PARAM, type GraphicStrokeAlign } from "./shared";
 import type { GraphicDefinition } from "../types";
+import { type GraphicStrokeAlign, STROKE_ALIGN_PARAM } from "./shared";
 
 interface EllipseParams {
 	fill: string;

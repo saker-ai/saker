@@ -2,10 +2,10 @@ import type { GuideDefinition } from "@/guides/types";
 import { gridGuide } from "./definitions/grid";
 // import { customGuide } from "./definitions/custom";
 import {
-	tiktokGuide,
 	igReelsGuide,
-	ytShortsGuide,
 	spotlightGuide,
+	tiktokGuide,
+	ytShortsGuide,
 } from "./definitions/platforms";
 
 export type { GuideDefinition, GuideRenderProps } from "@/guides/types";

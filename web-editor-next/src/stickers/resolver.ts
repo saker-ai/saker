@@ -1,7 +1,7 @@
+import type { StickerResolveOptions } from "@/stickers/types";
+import { registerDefaultStickerProviders } from "./providers";
 import { stickersRegistry } from "./registry";
 import { parseStickerId } from "./sticker-id";
-import { registerDefaultStickerProviders } from "./providers";
-import type { StickerResolveOptions } from "@/stickers/types";
 
 export function resolveStickerId({
 	stickerId,

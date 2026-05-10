@@ -117,6 +117,6 @@ function migrateTrack({ track }: { track: unknown }): unknown {
 	}
 
 	const nextTrack = { ...track };
-	delete nextTrack.isMain;
+	nextTrack.isMain = undefined;
 	return nextTrack;
 }

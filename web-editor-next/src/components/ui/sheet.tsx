@@ -1,10 +1,10 @@
 "use client";
 
-import * as React from "react";
-import { Dialog as SheetPrimitive } from "radix-ui";
-import { cva, type VariantProps } from "class-variance-authority";
-import { X } from "lucide-react";
 import { cn } from "@/utils/ui";
+import { type VariantProps, cva } from "class-variance-authority";
+import { X } from "lucide-react";
+import { Dialog as SheetPrimitive } from "radix-ui";
+import * as React from "react";
 import { useOverlayOpenChange } from "./use-overlay-open-change";
 
 function Sheet({

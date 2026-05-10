@@ -1,31 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import type { ParamValues } from "@/params";
-import type { Effect } from "@/effects/types";
-import type { EffectElement, VisualElement } from "@/timeline";
-import { effectsRegistry } from "@/effects";
-import { useEditor } from "@/editor/use-editor";
-import { useElementPreview } from "@/timeline/hooks/use-element-preview";
+import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
+import { PropertyParamField } from "@/components/editor/panels/properties/components/property-param-field";
 import {
 	Section,
 	SectionContent,
+	SectionFields,
 	SectionHeader,
 	SectionTitle,
-	SectionFields,
 } from "@/components/section";
-import { PropertyParamField } from "@/components/editor/panels/properties/components/property-param-field";
 import { Button } from "@/components/ui/button";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { Separator } from "@/components/ui/separator";
+import { useEditor } from "@/editor/use-editor";
+import { effectsRegistry } from "@/effects";
+import type { Effect } from "@/effects/types";
+import type { ParamValues } from "@/params";
+import type { EffectElement, VisualElement } from "@/timeline";
+import { useElementPreview } from "@/timeline/hooks/use-element-preview";
+import { cn } from "@/utils/ui";
 import {
 	Delete02Icon,
+	MagicWand05Icon,
 	ViewIcon,
 	ViewOffSlashIcon,
-	MagicWand05Icon,
 } from "@hugeicons/core-free-icons";
-import { cn } from "@/utils/ui";
-import { Separator } from "@/components/ui/separator";
-import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useState } from "react";
 
 export function StandaloneEffectTab({
 	element,

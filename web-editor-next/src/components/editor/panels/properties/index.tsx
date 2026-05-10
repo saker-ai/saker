@@ -1,7 +1,7 @@
 "use client";
 
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Tooltip,
 	TooltipContent,
@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/tooltip";
 import { useEditor } from "@/editor/use-editor";
 import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
-import { usePropertiesStore } from "./stores/properties-store";
-import { getPropertiesConfig } from "./registry";
 import { cn } from "@/utils/ui";
 import { EmptyView } from "./empty-view";
+import { getPropertiesConfig } from "./registry";
+import { usePropertiesStore } from "./stores/properties-store";
 
 export function PropertiesPanel() {
 	const editor = useEditor();

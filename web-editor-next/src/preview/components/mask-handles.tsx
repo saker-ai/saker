@@ -1,23 +1,23 @@
 "use client";
 
+import { useMaskHandles } from "@/masks/use-mask-handles";
 import { PEN_CURSOR } from "@/preview/components/cursors";
 import { usePreviewViewport } from "@/preview/components/preview-viewport";
-import { useMaskHandles } from "@/masks/use-mask-handles";
 import type { SnapLine } from "@/preview/preview-snap";
 import {
-	CornerHandle,
-	CircleHandle,
+	BoundingBoxOutline,
 	CanvasPathOutline,
+	CircleHandle,
+	CornerHandle,
 	EdgeHandle,
 	IconHandle,
 	LineOverlay,
-	BoundingBoxOutline,
 	ShapeOutline,
 } from "./handle-primitives";
 
 const CUSTOM_MASK_ANCHOR_SIZE = 7;
 const CUSTOM_MASK_TANGENT_SIZE = 6;
-import { Rotate01Icon, FeatherIcon } from "@hugeicons/core-free-icons";
+import { FeatherIcon, Rotate01Icon } from "@hugeicons/core-free-icons";
 
 export function MaskHandles({
 	onSnapLinesChange,

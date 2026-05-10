@@ -1,17 +1,3 @@
-import type { EditorCore } from "@/core";
-import type { Bookmark, SceneTracks, TScene } from "@/timeline";
-import { storageService } from "@/services/storage/service";
-import {
-	getMainScene,
-	ensureMainScene,
-	canDeleteScene,
-	findCurrentScene,
-} from "@/timeline/scenes";
-import {
-	getBookmarkAtTime,
-	getFrameTime,
-	isBookmarkAtTime,
-} from "@/timeline/bookmarks/index";
 import {
 	CreateSceneCommand,
 	DeleteSceneCommand,
@@ -21,6 +7,20 @@ import {
 	ToggleBookmarkCommand,
 	UpdateBookmarkCommand,
 } from "@/commands/scene";
+import type { EditorCore } from "@/core";
+import { storageService } from "@/services/storage/service";
+import type { Bookmark, SceneTracks, TScene } from "@/timeline";
+import {
+	getBookmarkAtTime,
+	getFrameTime,
+	isBookmarkAtTime,
+} from "@/timeline/bookmarks/index";
+import {
+	canDeleteScene,
+	ensureMainScene,
+	findCurrentScene,
+	getMainScene,
+} from "@/timeline/scenes";
 import type { MediaTime } from "@/wasm";
 
 export class ScenesManager {
@@ -285,9 +285,9 @@ export class ScenesManager {
 	}
 
 	private notify(): void {
-		this.listeners.forEach((fn) => {
+		for (const fn of this.listeners) {
 			fn();
-		});
+		}
 	}
 
 	updateSceneTracks({ tracks }: { tracks: SceneTracks }): void {

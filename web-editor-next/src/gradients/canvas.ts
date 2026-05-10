@@ -1,7 +1,7 @@
 import type {
-	GradientAst,
 	Color,
 	ColorStop,
+	GradientAst,
 	GradientOrientation,
 } from "./parser";
 import { parseGradient } from "./parser";

@@ -1,11 +1,11 @@
 "use client";
 
-import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
-import { TimelineElement } from "./timeline-element";
 import type { TimelineTrack } from "@/timeline";
 import type { TimelineElement as TimelineElementType } from "@/timeline";
-import { TIMELINE_LAYERS } from "./layers";
 import type { ElementDragView } from "@/timeline";
+import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
+import { TIMELINE_LAYERS } from "./layers";
+import { TimelineElement } from "./timeline-element";
 
 interface TimelineTrackContentProps {
 	track: TimelineTrack;
@@ -62,7 +62,6 @@ export function TimelineTrackContent({
 					onTrackMouseDown?.(event);
 				}}
 			/>
-			{/* biome-ignore lint/a11y/noStaticElementInteractions: empty track area is a pointer-only seek surface */}
 			<div
 				className="relative h-full min-w-full"
 				style={{ zIndex: TIMELINE_LAYERS.trackContent }}

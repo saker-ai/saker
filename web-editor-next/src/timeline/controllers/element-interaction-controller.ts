@@ -1,35 +1,35 @@
-import type { MouseEvent as ReactMouseEvent } from "react";
-import {
-	buildMoveGroup,
-	resolveGroupMove,
-	snapGroupEdges,
-	type GroupMoveResult,
-	type MoveGroup,
-} from "@/timeline/group-move";
-import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
-import {
-	maxMediaTime,
-	type MediaTime,
-	mediaTime,
-	roundFrameTime,
-	subMediaTime,
-	TICKS_PER_SECOND,
-	ZERO_MEDIA_TIME,
-} from "@/wasm";
-import { TIMELINE_DRAG_THRESHOLD_PX } from "@/timeline/components/interaction";
-import type { FrameRate } from "opencut-wasm";
-import { computeDropTarget } from "@/timeline/components/drop-target";
-import { getMouseTimeFromClientX } from "@/timeline/drag-utils";
-import { generateUUID } from "@/utils/id";
-import type { SnapPoint } from "@/timeline/snapping";
 import type {
 	DropTarget,
-	ElementRef,
 	ElementDragView,
+	ElementRef,
 	SceneTracks,
 	TimelineElement,
 	TimelineTrack,
 } from "@/timeline";
+import { computeDropTarget } from "@/timeline/components/drop-target";
+import { TIMELINE_DRAG_THRESHOLD_PX } from "@/timeline/components/interaction";
+import { getMouseTimeFromClientX } from "@/timeline/drag-utils";
+import {
+	type GroupMoveResult,
+	type MoveGroup,
+	buildMoveGroup,
+	resolveGroupMove,
+	snapGroupEdges,
+} from "@/timeline/group-move";
+import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
+import type { SnapPoint } from "@/timeline/snapping";
+import { generateUUID } from "@/utils/id";
+import {
+	type MediaTime,
+	TICKS_PER_SECOND,
+	ZERO_MEDIA_TIME,
+	maxMediaTime,
+	mediaTime,
+	roundFrameTime,
+	subMediaTime,
+} from "@/wasm";
+import type { FrameRate } from "opencut-wasm";
+import type { MouseEvent as ReactMouseEvent } from "react";
 
 const MOUSE_BUTTON_RIGHT = 2;
 

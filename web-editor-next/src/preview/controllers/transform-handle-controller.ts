@@ -1,28 +1,26 @@
-import type { PointerEvent as ReactPointerEvent } from "react";
-import type { MediaAsset } from "@/media/types";
-import {
-	getVisibleElementsWithBounds,
-	type Corner,
-	type Edge,
-	type ElementBounds,
-	type ElementWithBounds,
-} from "@/preview/element-bounds";
-import {
-	MIN_SCALE,
-	SNAP_THRESHOLD_SCREEN_PIXELS,
-	snapRotation,
-	snapScale,
-	snapScaleAxes,
-	type ScaleEdgePreference,
-	type SnapLine,
-} from "@/preview/preview-snap";
-import { isVisualElement } from "@/timeline/element-utils";
 import {
 	getElementLocalTime,
 	hasKeyframesForPath,
 	setChannel,
 } from "@/animation";
 import type { ElementAnimations } from "@/animation/types";
+import type { MediaAsset } from "@/media/types";
+import {
+	type Corner,
+	type Edge,
+	type ElementBounds,
+	type ElementWithBounds,
+	getVisibleElementsWithBounds,
+} from "@/preview/element-bounds";
+import {
+	MIN_SCALE,
+	SNAP_THRESHOLD_SCREEN_PIXELS,
+	type ScaleEdgePreference,
+	type SnapLine,
+	snapRotation,
+	snapScale,
+	snapScaleAxes,
+} from "@/preview/preview-snap";
 import type { Transform } from "@/rendering";
 import { resolveTransformAtTime } from "@/rendering/animation-values";
 import type {
@@ -31,6 +29,8 @@ import type {
 	TimelineElement,
 	VisualElement,
 } from "@/timeline";
+import { isVisualElement } from "@/timeline/element-utils";
+import type { PointerEvent as ReactPointerEvent } from "react";
 
 type Point = { readonly x: number; readonly y: number };
 type CanvasSize = { readonly width: number; readonly height: number };
@@ -669,12 +669,12 @@ export class TransformHandleController {
 			? {
 					x: {
 						snappedScale: proposedScaleX,
-						snapDistance: Infinity,
+						snapDistance: Number.POSITIVE_INFINITY,
 						activeLines: [] as SnapLine[],
 					},
 					y: {
 						snappedScale: proposedScaleY,
-						snapDistance: Infinity,
+						snapDistance: Number.POSITIVE_INFINITY,
 						activeLines: [] as SnapLine[],
 					},
 				}

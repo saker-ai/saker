@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 
 // Server-side redirect() drops the query string, which would lose any pending
 // ?import=... bridge payload. Do a client-side replace instead so the import

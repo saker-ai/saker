@@ -5,8 +5,8 @@ import { buildWaveformSourceKey } from "@/media/waveform-summary";
 import { storageService } from "@/services/storage/service";
 import { videoCache } from "@/services/video-cache/service";
 import { waveformCache } from "@/services/waveform-cache/service";
-import { hasMediaId } from "@/timeline/element-utils";
 import type { SceneTracks } from "@/timeline";
+import { hasMediaId } from "@/timeline/element-utils";
 
 export class RemoveMediaAssetCommand extends Command {
 	private savedAssets: MediaAsset[] | null = null;

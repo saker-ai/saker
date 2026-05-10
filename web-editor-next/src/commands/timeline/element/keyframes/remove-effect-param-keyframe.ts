@@ -1,9 +1,9 @@
-import { EditorCore } from "@/core";
-import { Command, type CommandResult } from "@/commands/base-command";
 import { removeEffectParamKeyframe } from "@/animation/effect-param-channel";
+import { Command, type CommandResult } from "@/commands/base-command";
+import { EditorCore } from "@/core";
 import { updateElementInSceneTracks } from "@/timeline";
-import { isVisualElement } from "@/timeline/element-utils";
 import type { SceneTracks } from "@/timeline";
+import { isVisualElement } from "@/timeline/element-utils";
 
 export class RemoveEffectParamKeyframeCommand extends Command {
 	private savedState: SceneTracks | null = null;

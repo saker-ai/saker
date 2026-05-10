@@ -1,4 +1,4 @@
-import { cva, type VariantProps } from "class-variance-authority";
+import { type VariantProps, cva } from "class-variance-authority";
 import { Tooltip as TooltipPrimitive } from "radix-ui";
 import * as React from "react";
 
@@ -62,10 +62,7 @@ const TooltipContent = React.forwardRef<
 				className="absolute top-1/2 left-[-6px] -translate-y-1/2"
 				aria-hidden="true"
 			>
-				<path
-					d="M6 0L0 5L6 10V0Z"
-					className="fill-popover"
-				/>
+				<path d="M6 0L0 5L6 10V0Z" className="fill-popover" />
 			</svg>
 		)}
 		{props.children}

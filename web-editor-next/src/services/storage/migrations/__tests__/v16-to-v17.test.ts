@@ -98,9 +98,14 @@ describe("V16 to V17 Migration", () => {
 		expect(result.project.version).toBe(17);
 
 		const migratedMasks = (
-			((result.project.scenes as Array<{ tracks: Array<{ elements: Array<{ masks: Array<{ params: Record<string, unknown> }> }> }> }>)[0]
-				.tracks[0].elements[0].masks)
-		);
+			result.project.scenes as Array<{
+				tracks: Array<{
+					elements: Array<{
+						masks: Array<{ params: Record<string, unknown> }>;
+					}>;
+				}>;
+			}>
+		)[0].tracks[0].elements[0].masks;
 
 		expect(migratedMasks[0].params.strokeAlign).toBe("center");
 		expect(migratedMasks[1].params.strokeAlign).toBe("outside");

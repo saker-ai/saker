@@ -2,8 +2,8 @@
 
 import { createAudioContext } from "@/media/audio";
 import {
-	buildSourceWaveformSummary,
 	type SourceWaveformSummary,
+	buildSourceWaveformSummary,
 } from "@/media/waveform-summary";
 
 interface GetSourceWaveformSummaryArgs {

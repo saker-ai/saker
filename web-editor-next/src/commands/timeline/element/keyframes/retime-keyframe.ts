@@ -1,16 +1,16 @@
-import { EditorCore } from "@/core";
 import { retimeElementKeyframe } from "@/animation";
-import { Command, type CommandResult } from "@/commands/base-command";
-import { updateElementInSceneTracks } from "@/timeline";
 import type { AnimationPath } from "@/animation/types";
+import { Command, type CommandResult } from "@/commands/base-command";
+import { EditorCore } from "@/core";
+import { updateElementInSceneTracks } from "@/timeline";
 import type { SceneTracks } from "@/timeline";
+import { resolveAnimationTarget } from "@/timeline/animation-targets";
 import {
 	type MediaTime,
+	ZERO_MEDIA_TIME,
 	maxMediaTime,
 	minMediaTime,
-	ZERO_MEDIA_TIME,
 } from "@/wasm";
-import { resolveAnimationTarget } from "@/timeline/animation-targets";
 
 export class RetimeKeyframeCommand extends Command {
 	private savedState: SceneTracks | null = null;

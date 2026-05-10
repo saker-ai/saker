@@ -1,8 +1,8 @@
-import { toast } from "sonner";
 import { getMediaTypeFromFile } from "@/media/media-utils";
+import type { MediaAsset } from "@/media/types";
 import { formatStorageBytes } from "@/services/storage/quota";
 import { storageService } from "@/services/storage/service";
-import type { MediaAsset } from "@/media/types";
+import { toast } from "sonner";
 import { readVideoFile } from "./mediabunny";
 import type { VideoFileData } from "./mediabunny";
 import { renderThumbnailDataUrl } from "./thumbnail";
@@ -152,9 +152,7 @@ export async function processMediaAssets({
 					}
 				} catch (error) {
 					const message =
-						error instanceof Error
-							? error.message
-							: "Could not process video";
+						error instanceof Error ? error.message : "Could not process video";
 
 					toast.error(`Couldn't process ${file.name}`, {
 						description: message,

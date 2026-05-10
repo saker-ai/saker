@@ -1,13 +1,13 @@
-import type { FrameRate } from "opencut-wasm";
-import type { AnyBaseNode } from "./nodes/base-node";
-import { buildFrameDescriptor } from "./compositor/frame-descriptor";
-import { wasmCompositor } from "./compositor/wasm-compositor";
-import { resolveRenderTree } from "./resolve";
 import {
 	measureSpanAsync,
 	measureSpanSync,
 	onRenderPerfFrameComplete,
 } from "@/diagnostics/render-perf";
+import type { FrameRate } from "opencut-wasm";
+import { buildFrameDescriptor } from "./compositor/frame-descriptor";
+import { wasmCompositor } from "./compositor/wasm-compositor";
+import type { AnyBaseNode } from "./nodes/base-node";
+import { resolveRenderTree } from "./resolve";
 
 export type CanvasRendererParams = {
 	width: number;

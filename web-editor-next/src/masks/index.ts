@@ -1,6 +1,6 @@
 import type { Mask, MaskDefaultContext, MaskType } from "@/masks/types";
-import { masksRegistry } from "./registry";
 import { generateUUID } from "@/utils/id";
+import { masksRegistry } from "./registry";
 
 export { masksRegistry } from "./registry";
 export { registerDefaultMasks } from "./definitions";

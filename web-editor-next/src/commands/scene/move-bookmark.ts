@@ -1,8 +1,8 @@
 import { Command, type CommandResult } from "@/commands/base-command";
 import { EditorCore } from "@/core";
 import type { TScene } from "@/timeline";
-import { updateSceneInArray } from "@/timeline/scenes";
 import { getFrameTime, moveBookmarkInArray } from "@/timeline/bookmarks/index";
+import { updateSceneInArray } from "@/timeline/scenes";
 import type { MediaTime } from "@/wasm";
 
 export class MoveBookmarkCommand extends Command {

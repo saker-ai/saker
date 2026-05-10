@@ -1,10 +1,11 @@
-import type { SceneTracks, TrackType, TimelineTrack } from "@/timeline";
+import type { SceneTracks, TimelineTrack, TrackType } from "@/timeline";
+import { ZERO_MEDIA_TIME } from "@/wasm";
+import { getTrackTypeForElementType } from "./compatibility";
 import {
 	getDefaultInsertIndexForTrack,
 	getHighestInsertIndexForTrack,
 	resolvePreferredNewTrackPlacement,
 } from "./insert-index";
-import { getTrackTypeForElementType } from "./compatibility";
 import { enforceMainTrackStart } from "./main-track";
 import { canPlaceTimeSpansOnTrack } from "./overlap";
 import type {
@@ -13,7 +14,6 @@ import type {
 	PlacementSubject,
 	PlacementTimeSpan,
 } from "./types";
-import { ZERO_MEDIA_TIME } from "@/wasm";
 
 type ResolveTrackPlacementParams = PlacementSubject & {
 	tracks: SceneTracks;

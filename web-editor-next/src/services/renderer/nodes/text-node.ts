@@ -1,9 +1,9 @@
-import { BaseNode } from "./base-node";
-import type { TextElement } from "@/timeline";
 import type { EffectPass } from "@/effects/types";
 import type { Transform } from "@/rendering";
-import { drawMeasuredTextLayout } from "@/text/primitives";
 import type { MeasuredTextElement } from "@/text/measure-element";
+import { drawMeasuredTextLayout } from "@/text/primitives";
+import type { TextElement } from "@/timeline";
+import { BaseNode } from "./base-node";
 
 export type TextNodeParams = TextElement & {
 	canvasCenter: { x: number; y: number };

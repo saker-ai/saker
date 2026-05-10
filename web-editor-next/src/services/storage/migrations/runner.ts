@@ -65,7 +65,9 @@ export async function runStorageMigrations({
 	// no chain import needed.
 	const needsMigration = projects.some((project) => {
 		if (typeof project !== "object" || project === null) return false;
-		return getProjectVersion({ project: project as ProjectRecord }) < LATEST_VERSION;
+		return (
+			getProjectVersion({ project: project as ProjectRecord }) < LATEST_VERSION
+		);
 	});
 	if (!needsMigration) {
 		return { migratedCount: 0 };

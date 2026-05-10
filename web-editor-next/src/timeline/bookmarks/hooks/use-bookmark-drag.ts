@@ -1,26 +1,26 @@
-import {
-	useState,
-	useCallback,
-	useEffect,
-	useRef,
-	type RefObject,
-} from "react";
 import { useEditor } from "@/editor/use-editor";
 import { useShiftKey } from "@/hooks/use-shift-key";
+import type { Bookmark } from "@/timeline";
+import { getAnimationKeyframeSnapPointsForTimeline } from "@/timeline/animation-snap-points";
 import { TIMELINE_DRAG_THRESHOLD_PX } from "@/timeline/components/interaction";
 import { getMouseTimeFromClientX } from "@/timeline/drag-utils";
+import { getElementEdgeSnapPoints } from "@/timeline/element-snap-source";
+import { getPlayheadSnapPoints } from "@/timeline/playhead-snap-source";
 import {
+	type SnapPoint,
 	buildTimelineSnapPoints,
 	getTimelineSnapThresholdInTicks,
 	resolveTimelineSnap,
-	type SnapPoint,
 } from "@/timeline/snapping";
+import { type MediaTime, ZERO_MEDIA_TIME, roundFrameTime } from "@/wasm";
+import {
+	type RefObject,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { getBookmarkSnapPoints } from "../snap-source";
-import { getElementEdgeSnapPoints } from "@/timeline/element-snap-source";
-import { getPlayheadSnapPoints } from "@/timeline/playhead-snap-source";
-import { getAnimationKeyframeSnapPointsForTimeline } from "@/timeline/animation-snap-points";
-import type { Bookmark } from "@/timeline";
-import { roundFrameTime, type MediaTime, ZERO_MEDIA_TIME } from "@/wasm";
 
 export interface BookmarkDragState {
 	isDragging: boolean;
@@ -162,8 +162,7 @@ export function useBookmarkDrag({
 					zoomLevel,
 					scrollLeft,
 				});
-				const clampedTime =
-					mouseTime > duration ? duration : mouseTime;
+				const clampedTime = mouseTime > duration ? duration : mouseTime;
 				const frameSnappedTime = roundFrameTime({
 					time: clampedTime,
 					fps: activeProject.settings.fps,
@@ -194,8 +193,7 @@ export function useBookmarkDrag({
 				zoomLevel,
 				scrollLeft,
 			});
-			const clampedTime =
-				mouseTime > duration ? duration : mouseTime;
+			const clampedTime = mouseTime > duration ? duration : mouseTime;
 			const frameSnappedTime = roundFrameTime({
 				time: clampedTime,
 				fps: activeProject.settings.fps,

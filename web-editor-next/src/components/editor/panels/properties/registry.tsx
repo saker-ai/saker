@@ -1,5 +1,17 @@
-import type { ReactNode } from "react";
+import { OcShapesIcon } from "@/components/icons";
+import {
+	ClipEffectsTab,
+	StandaloneEffectTab,
+} from "@/effects/components/effects-tab";
+import { GraphicTab } from "@/graphics/components/graphic-tab";
+import { MasksTab } from "@/masks/components/masks-tab";
+import type { MediaAsset } from "@/media/types";
+import { BlendingTab } from "@/rendering/components/blending-tab";
+import { TransformTab } from "@/rendering/components/transform-tab";
+import { SpeedTab } from "@/speed/components/speed-tab";
+import { TextTab } from "@/text/components/text-tab";
 import type {
+	AudioElement,
 	EffectElement,
 	GraphicElement,
 	ImageElement,
@@ -7,30 +19,21 @@ import type {
 	RetimableElement,
 	StickerElement,
 	TextElement,
-	VisualElement,
-	VideoElement,
-	AudioElement,
 	TimelineElement,
+	VideoElement,
+	VisualElement,
 } from "@/timeline";
-import type { MediaAsset } from "@/media/types";
-import { HugeiconsIcon } from "@hugeicons/react";
-import {
-	TextFontIcon,
-	ArrowExpandIcon,
-	RainDropIcon,
-	MusicNote03Icon,
-	MagicWand05Icon,
-	DashboardSpeed02Icon,
-} from "@hugeicons/core-free-icons";
-import { TransformTab } from "@/rendering/components/transform-tab";
-import { BlendingTab } from "@/rendering/components/blending-tab";
 import { AudioTab } from "@/timeline/components/audio-tab";
-import { TextTab } from "@/text/components/text-tab";
-import { ClipEffectsTab, StandaloneEffectTab } from "@/effects/components/effects-tab";
-import { MasksTab } from "@/masks/components/masks-tab";
-import { SpeedTab } from "@/speed/components/speed-tab";
-import { GraphicTab } from "@/graphics/components/graphic-tab";
-import { OcShapesIcon } from "@/components/icons";
+import {
+	ArrowExpandIcon,
+	DashboardSpeed02Icon,
+	MagicWand05Icon,
+	MusicNote03Icon,
+	RainDropIcon,
+	TextFontIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import type { ReactNode } from "react";
 
 export type TabContentProps = {
 	trackId: string;
@@ -150,7 +153,9 @@ function buildGraphicTab({
 		id: "graphic",
 		label: "Graphic",
 		icon: <OcShapesIcon size={16} />,
-		content: ({ trackId }) => <GraphicTab element={element} trackId={trackId} />,
+		content: ({ trackId }) => (
+			<GraphicTab element={element} trackId={trackId} />
+		),
 	};
 }
 

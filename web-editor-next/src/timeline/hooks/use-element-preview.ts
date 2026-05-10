@@ -1,5 +1,5 @@
 import { useEditor } from "@/editor/use-editor";
-import { findTrackInSceneTracks, type TimelineElement } from "@/timeline";
+import { type TimelineElement, findTrackInSceneTracks } from "@/timeline";
 
 /**
  * Subscribes to render tracks and returns the live (preview-aware) version of
@@ -25,8 +25,9 @@ export function useElementPreview<T extends TimelineElement>({
 		(findTrackInSceneTracks({
 			tracks: previewTracks ?? editor.scenes.getActiveScene().tracks,
 			trackId,
-		})?.elements.find((element) => element.id === elementId) as T | undefined) ??
-		fallback;
+		})?.elements.find((element) => element.id === elementId) as
+			| T
+			| undefined) ?? fallback;
 
 	const previewUpdates = (updates: Partial<TimelineElement>) =>
 		editor.timeline.previewElements({

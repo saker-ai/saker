@@ -1,15 +1,15 @@
-import { computeFeatherUpdate } from "../param-update";
-import type {
-	MaskDefinition,
-	MaskParamUpdateArgs,
-	SplitMaskParams,
-} from "@/masks/types";
-import { halfPlaneSign, lineEdgeIntersection } from "../utils";
 import {
 	getLineMaskHandlePositions,
 	getLineMaskOverlay,
 } from "@/masks/handle-positions";
 import { snapMaskInteraction } from "@/masks/snap";
+import type {
+	MaskDefinition,
+	MaskParamUpdateArgs,
+	SplitMaskParams,
+} from "@/masks/types";
+import { computeFeatherUpdate } from "../param-update";
+import { halfPlaneSign, lineEdgeIntersection } from "../utils";
 
 // cos(π/2) returns ~6e-17 in JS, not 0. Values below this threshold are snapped
 // to exactly 0 to prevent opposite-sign float noise on canvas corners that lie

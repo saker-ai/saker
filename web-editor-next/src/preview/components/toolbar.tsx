@@ -1,30 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useEditor } from "@/editor/use-editor";
-import { formatTimecode } from "opencut-wasm";
 import { invokeAction } from "@/actions";
 import { EditableTimecode } from "@/components/editable-timecode";
 import { Button } from "@/components/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectSeparator,
+	SelectTrigger,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { useEditor } from "@/editor/use-editor";
+import { usePreviewStore } from "@/preview/preview-store";
+import { PREVIEW_ZOOM_PRESETS } from "@/preview/zoom";
+import type { MediaTime } from "@/wasm";
 import {
 	FullScreenIcon,
 	PauseIcon,
 	PlayIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Separator } from "@/components/ui/separator";
-import {
-	Select,
-	SelectTrigger,
-	SelectContent,
-	SelectItem,
-	SelectSeparator,
-} from "@/components/ui/select";
-import { PREVIEW_ZOOM_PRESETS } from "@/preview/zoom";
-import { usePreviewViewport } from "./preview-viewport";
+import { formatTimecode } from "opencut-wasm";
+import { useEffect, useState } from "react";
 import { GridPopover } from "./guide-popover";
-import { usePreviewStore } from "@/preview/preview-store";
-import type { MediaTime } from "@/wasm";
+import { usePreviewViewport } from "./preview-viewport";
 
 export function PreviewToolbar({
 	onToggleFullscreen,

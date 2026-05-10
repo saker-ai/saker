@@ -1,14 +1,14 @@
+import { createTimelineAudioBuffer } from "@/media/audio";
+import type { MediaAsset } from "@/media/types";
+import type { SceneTracks } from "@/timeline";
+import { TICKS_PER_SECOND } from "@/wasm";
 import {
-	Input,
 	ALL_FORMATS,
 	BlobSource,
-	VideoSampleSink,
+	Input,
 	type VideoCodec,
+	VideoSampleSink,
 } from "mediabunny";
-import { createTimelineAudioBuffer } from "@/media/audio";
-import type { SceneTracks } from "@/timeline";
-import type { MediaAsset } from "@/media/types";
-import { TICKS_PER_SECOND } from "@/wasm";
 import { renderThumbnailDataUrl } from "./thumbnail";
 
 export type VideoFileData = {

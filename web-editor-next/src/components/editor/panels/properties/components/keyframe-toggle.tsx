@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { KeyframeIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@/utils/ui";
+import { KeyframeIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 export function KeyframeToggle({
 	isActive,

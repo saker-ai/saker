@@ -103,7 +103,7 @@ export function parseAss({ input }: { input: string }): ParseSubtitleResult {
 
 			const key = rawKey.trim().toLowerCase();
 			const value = rest.join(":").trim();
-			const parsedValue = parseFloat(value);
+			const parsedValue = Number.parseFloat(value);
 
 			if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
 				continue;
@@ -366,19 +366,19 @@ function mapAssStyleToSubtitleStyle({
 	style: SubtitleStyleOverrides;
 	hasUnsupportedFeatures: boolean;
 } {
-	const fontSize = parseFloat(style.fontsize ?? "");
+	const fontSize = Number.parseFloat(style.fontsize ?? "");
 	const primaryColor = parseAssColor({ input: style.primarycolour });
 	const backColor = parseAssColor({ input: style.backcolour });
 	const bold = parseAssBoolean({ input: style.bold });
 	const italic = parseAssBoolean({ input: style.italic });
 	const underline = parseAssBoolean({ input: style.underline });
 	const strikeOut = parseAssBoolean({ input: style.strikeout });
-	const borderStyle = parseFloat(style.borderstyle ?? "");
-	const spacing = parseFloat(style.spacing ?? "");
-	const alignment = parseFloat(style.alignment ?? "");
-	const marginLeft = parseFloat(style.marginl ?? "");
-	const marginRight = parseFloat(style.marginr ?? "");
-	const marginVertical = parseFloat(style.marginv ?? "");
+	const borderStyle = Number.parseFloat(style.borderstyle ?? "");
+	const spacing = Number.parseFloat(style.spacing ?? "");
+	const alignment = Number.parseFloat(style.alignment ?? "");
+	const marginLeft = Number.parseFloat(style.marginl ?? "");
+	const marginRight = Number.parseFloat(style.marginr ?? "");
+	const marginVertical = Number.parseFloat(style.marginv ?? "");
 	// Store as a ratio of playResY so the builder can convert to app units
 	// without the parser needing to know the app's coordinate system.
 	const fontSizeRatioOfPlayHeight = Number.isFinite(fontSize)
@@ -439,13 +439,13 @@ function mapAssStyleToSubtitleStyle({
 	const hasUnsupportedFeatures =
 		Math.round(borderStyle) !== 1 && Math.round(borderStyle) !== 3
 			? true
-			: (parseFloat(style.outline ?? "") || 0) > 0 ||
-				(parseFloat(style.shadow ?? "") || 0) > 0 ||
-				(parseFloat(style.angle ?? "") || 0) !== 0 ||
-				(Number.isFinite(parseFloat(style.scalex ?? "")) &&
-					parseFloat(style.scalex ?? "") !== 100) ||
-				(Number.isFinite(parseFloat(style.scaley ?? "")) &&
-					parseFloat(style.scaley ?? "") !== 100) ||
+			: (Number.parseFloat(style.outline ?? "") || 0) > 0 ||
+				(Number.parseFloat(style.shadow ?? "") || 0) > 0 ||
+				(Number.parseFloat(style.angle ?? "") || 0) !== 0 ||
+				(Number.isFinite(Number.parseFloat(style.scalex ?? "")) &&
+					Number.parseFloat(style.scalex ?? "") !== 100) ||
+				(Number.isFinite(Number.parseFloat(style.scaley ?? "")) &&
+					Number.parseFloat(style.scaley ?? "") !== 100) ||
 				Boolean(underline && strikeOut);
 
 	return {

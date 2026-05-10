@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
-import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
-import { effectsRegistry, EFFECT_TARGET_ELEMENT_TYPES } from "@/effects";
-import { effectPreviewService } from "@/services/renderer/effect-preview";
+import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { useEditor } from "@/editor/use-editor";
-import { buildEffectElement } from "@/timeline/element-utils";
+import { EFFECT_TARGET_ELEMENT_TYPES, effectsRegistry } from "@/effects";
 import type { EffectDefinition } from "@/effects/types";
+import { effectPreviewService } from "@/services/renderer/effect-preview";
+import { buildEffectElement } from "@/timeline/element-utils";
+import { useCallback, useEffect, useRef } from "react";
 
 export function EffectsView() {
 	const effects = effectsRegistry.getAll();

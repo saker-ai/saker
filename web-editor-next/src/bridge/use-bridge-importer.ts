@@ -228,7 +228,7 @@ export function useBridgeImporter(): void {
 		if (!search.includes("import=")) return;
 
 		const payload = readImportFromQuery(`?${search}`);
-		if (!payload || payload.assets.length === 0) {
+		if (!payload || !payload.assets || payload.assets.length === 0) {
 			consumedRef.current = true;
 			const next = new URLSearchParams(search);
 			next.delete("import");

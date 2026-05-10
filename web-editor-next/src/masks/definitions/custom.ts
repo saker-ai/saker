@@ -1,7 +1,20 @@
-import { generateUUID } from "@/utils/id";
-import type { ParamDefinition } from "@/params";
-import { PEN_CURSOR } from "@/preview/components/cursors";
-import type { ElementBounds } from "@/preview/element-bounds";
+import {
+	type CustomMaskPathPoint,
+	buildCustomMaskPath2D,
+	buildCustomMaskSvgPath,
+	customMaskCanvasPointToLocal,
+	findClosestPointOnCustomMaskSegment,
+	getCustomMaskCanvasGeometry,
+	getCustomMaskCanvasSegments,
+	getCustomMaskLocalBounds,
+	getCustomMaskSegmentCount,
+	insertPointIntoCustomMaskSegment,
+	parseCustomMaskHandleId,
+	recenterCustomMaskPath,
+} from "@/masks/custom-path";
+import { setMaskLocalCenter, toGlobalMaskSnapLines } from "@/masks/geometry";
+import { getBoxMaskHandlePositions } from "@/masks/handle-positions";
+import { computeFeatherUpdate } from "@/masks/param-update";
 import type {
 	CustomMask,
 	CustomMaskParams,
@@ -10,31 +23,11 @@ import type {
 	MaskOverlay,
 	MaskParamUpdateArgs,
 } from "@/masks/types";
-import {
-	buildCustomMaskPath2D,
-	buildCustomMaskSvgPath,
-	customMaskCanvasPointToLocal,
-	findClosestPointOnCustomMaskSegment,
-	getCustomMaskCanvasSegments,
-	getCustomMaskCanvasGeometry,
-	getCustomMaskLocalBounds,
-	getCustomMaskSegmentCount,
-	insertPointIntoCustomMaskSegment,
-	parseCustomMaskHandleId,
-	recenterCustomMaskPath,
-	type CustomMaskPathPoint,
-} from "@/masks/custom-path";
-import { getBoxMaskHandlePositions } from "@/masks/handle-positions";
-import { computeFeatherUpdate } from "@/masks/param-update";
-import {
-	setMaskLocalCenter,
-	toGlobalMaskSnapLines,
-} from "@/masks/geometry";
-import {
-	snapPosition,
-	snapRotation,
-	snapScale,
-} from "@/preview/preview-snap";
+import type { ParamDefinition } from "@/params";
+import { PEN_CURSOR } from "@/preview/components/cursors";
+import type { ElementBounds } from "@/preview/element-bounds";
+import { snapPosition, snapRotation, snapScale } from "@/preview/preview-snap";
+import { generateUUID } from "@/utils/id";
 
 const PERCENTAGE_DISPLAY = {
 	displayMultiplier: 100,
@@ -164,7 +157,7 @@ function getCustomMaskDisplayHandles({
 		);
 	}
 
-	geometry.anchors.forEach((point) => {
+	for (const point of geometry.anchors) {
 		handles.push({
 			id: `point:${point.id}:anchor`,
 			x: point.anchor.x,
@@ -172,7 +165,7 @@ function getCustomMaskDisplayHandles({
 			cursor: params.closed ? "move" : "pointer",
 			kind: "point",
 		});
-	});
+	}
 
 	return {
 		handles,

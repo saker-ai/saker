@@ -1,29 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import type { KeyboardEvent, MouseEvent } from "react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import type { EditorCore } from "@/core";
-import { MigrationDialog } from "@/project/components/migration-dialog";
-import { StoragePersistenceDialog } from "@/services/storage/components/storage-persistence-dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useEditor } from "@/editor/use-editor";
-import { useProjectsStore } from "./store";
-import type {
-	TProjectMetadata,
-	TProjectSortKey,
-	TProjectSortOption,
-} from "@/project/types";
-import { formatTimecode, mediaTimeToSeconds } from "opencut-wasm";
-import { formatDate } from "@/utils/date";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { OcVideoIcon } from "@/components/icons";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -32,22 +9,9 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import {
-	Calendar04Icon,
-	GridViewIcon,
-	LeftToRightListDashIcon,
-	PlusSignIcon,
-	Search01Icon,
-	Video01Icon,
-	MoreHorizontalIcon,
-	Delete02Icon,
-	Copy01Icon,
-	Edit03Icon,
-	ArrowDown02Icon,
-	InformationCircleIcon,
-} from "@hugeicons/core-free-icons";
-import { OcVideoIcon } from "@/components/icons";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -62,10 +26,46 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { EditorCore } from "@/core";
+import { useEditor } from "@/editor/use-editor";
 import { DeleteProjectDialog } from "@/project/components/delete-project-dialog";
+import { MigrationDialog } from "@/project/components/migration-dialog";
 import { ProjectInfoDialog } from "@/project/components/project-info-dialog";
 import { RenameProjectDialog } from "@/project/components/rename-project-dialog";
+import type {
+	TProjectMetadata,
+	TProjectSortKey,
+	TProjectSortOption,
+} from "@/project/types";
+import { StoragePersistenceDialog } from "@/services/storage/components/storage-persistence-dialog";
+import { formatDate } from "@/utils/date";
 import { cn } from "@/utils/ui";
+import {
+	ArrowDown02Icon,
+	Calendar04Icon,
+	Copy01Icon,
+	Delete02Icon,
+	Edit03Icon,
+	GridViewIcon,
+	InformationCircleIcon,
+	LeftToRightListDashIcon,
+	MoreHorizontalIcon,
+	PlusSignIcon,
+	Search01Icon,
+	Video01Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { formatTimecode, mediaTimeToSeconds } from "opencut-wasm";
+import type { KeyboardEvent, MouseEvent } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useProjectsStore } from "./store";
 
 const formatProjectDuration = ({
 	duration,

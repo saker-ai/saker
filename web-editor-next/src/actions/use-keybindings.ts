@@ -1,8 +1,8 @@
-import { useEffect } from "react";
 import { invokeAction } from "@/actions";
-import { useEditor } from "@/editor/use-editor";
 import { useKeybindingsStore } from "@/actions/keybindings-store";
+import { useEditor } from "@/editor/use-editor";
 import { isTypableDOMElement } from "@/utils/browser";
+import { useEffect } from "react";
 
 /**
  * a composable that hooks to the caller component's

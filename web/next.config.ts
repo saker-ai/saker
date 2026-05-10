@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   // so unused icons don't get bundled. @xyflow/react is the heaviest single
   // dep on the canvas page; tree-shaking its barrel knocks the largest chunk
   // down materially.
+  transpilePackages: ["@saker/editor-protocol"],
   experimental: {
     optimizePackageImports: [
       "@xyflow/react",

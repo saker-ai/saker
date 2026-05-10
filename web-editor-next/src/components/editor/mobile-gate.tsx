@@ -1,10 +1,10 @@
 "use client";
 
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
-import { useRouter } from "next/navigation";
 
 const STORAGE_KEY = "mobile-acknowledged";
 
@@ -51,9 +51,9 @@ export function MobileGate({ children }: MobileGateProps) {
 						Desktop only (for now)
 					</h1>
 					<p className="text-muted-foreground text-sm leading-relaxed">
-						The editor isn't optimized for mobile or tablet yet — the layout
-						and gestures rely on a pointer. Open this page on a desktop for
-						the full experience.
+						The editor isn't optimized for mobile or tablet yet — the layout and
+						gestures rely on a pointer. Open this page on a desktop for the full
+						experience.
 					</p>
 				</div>
 				<div className="flex items-center gap-3">

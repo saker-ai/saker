@@ -1,32 +1,29 @@
 "use client";
 
-import type { MaskableElement } from "@/timeline";
-import type { Mask, MaskType, TextMask } from "@/masks/types";
-import type { NumberParamDefinition, SelectParamDefinition } from "@/params";
-import { masksRegistry, buildDefaultMaskInstance } from "@/masks";
-import { useEditor } from "@/editor/use-editor";
-import { useElementPreview } from "@/timeline/hooks/use-element-preview";
-import { useMenuPreview } from "@/editor/use-menu-preview";
-import { getVisibleElementsWithBounds } from "@/preview/element-bounds";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { usePropertyDraft } from "@/components/editor/panels/properties/hooks/use-property-draft";
 import {
-	ArrowExpandIcon,
-	Delete02Icon,
-	FeatherIcon,
-	PlusSignIcon,
-	RotateClockwiseIcon,
-	TextFontIcon,
-} from "@hugeicons/core-free-icons";
-import { useMemo, useState } from "react";
+	OcMirrorIcon,
+	OcShapesIcon,
+	OcTextHeightIcon,
+	OcTextWidthIcon,
+} from "@/components/icons";
+import {
+	Section,
+	SectionContent,
+	SectionField,
+	SectionFields,
+	SectionHeader,
+	SectionTitle,
+} from "@/components/section";
 import { Button } from "@/components/ui/button";
 import { ColorPicker } from "@/components/ui/color-picker";
-import { FontPicker } from "@/components/ui/font-picker";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { FontPicker } from "@/components/ui/font-picker";
 import { NumberField } from "@/components/ui/number-field";
 import {
 	Select,
@@ -41,28 +38,31 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useEditor } from "@/editor/use-editor";
+import { useMenuPreview } from "@/editor/use-menu-preview";
+import { buildDefaultMaskInstance, masksRegistry } from "@/masks";
+import type { Mask, MaskType, TextMask } from "@/masks/types";
+import type { NumberParamDefinition, SelectParamDefinition } from "@/params";
+import { getVisibleElementsWithBounds } from "@/preview/element-bounds";
+import type { MaskableElement } from "@/timeline";
+import { useElementPreview } from "@/timeline/hooks/use-element-preview";
 import {
 	clamp,
 	formatNumberForDisplay,
 	getFractionDigitsForStep,
 	snapToStep,
 } from "@/utils/math";
-import {
-	Section,
-	SectionContent,
-	SectionField,
-	SectionFields,
-	SectionHeader,
-	SectionTitle,
-} from "@/components/section";
-import { usePropertyDraft } from "@/components/editor/panels/properties/hooks/use-property-draft";
-import {
-	OcMirrorIcon,
-	OcShapesIcon,
-	OcTextHeightIcon,
-	OcTextWidthIcon,
-} from "@/components/icons";
 import { cn } from "@/utils/ui";
+import {
+	ArrowExpandIcon,
+	Delete02Icon,
+	FeatherIcon,
+	PlusSignIcon,
+	RotateClockwiseIcon,
+	TextFontIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useMemo, useState } from "react";
 
 type MasksTabProps = {
 	element: MaskableElement;
@@ -780,7 +780,7 @@ function MaskNumberField({
 			maxFractionDigits,
 		}),
 		parse: (input) => {
-			const parsed = parseFloat(input);
+			const parsed = Number.parseFloat(input);
 			if (Number.isNaN(parsed)) return null;
 			return (
 				clampDisplay(snapToStep({ value: parsed, step })) / displayMultiplier

@@ -1,14 +1,17 @@
-import { useEditor } from "@/editor/use-editor";
 import {
 	getKeyframeAtTime,
 	hasKeyframesForPath,
 	upsertElementKeyframe,
 } from "@/animation";
-import type { AnimationPropertyPath, ElementAnimations } from "@/animation/types";
+import type {
+	AnimationPropertyPath,
+	ElementAnimations,
+} from "@/animation/types";
+import { useEditor } from "@/editor/use-editor";
 import type { TimelineElement } from "@/timeline";
 import { snapToStep } from "@/utils/math";
-import { usePropertyDraft } from "./use-property-draft";
 import type { MediaTime } from "@/wasm";
+import { usePropertyDraft } from "./use-property-draft";
 
 export function useKeyframedNumberProperty({
 	trackId,
@@ -35,15 +38,19 @@ export function useKeyframedNumberProperty({
 	valueAtPlayhead: number;
 	step?: number;
 	buildBaseUpdates: ({ value }: { value: number }) => Partial<TimelineElement>;
-	buildAdditionalKeyframes?: ({
-		value,
-	}: { value: number }) => Array<{ propertyPath: AnimationPropertyPath; value: number }>;
+	buildAdditionalKeyframes?: ({ value }: { value: number }) => Array<{
+		propertyPath: AnimationPropertyPath;
+		value: number;
+	}>;
 }) {
 	const editor = useEditor();
 	const snapValue = (value: number) =>
 		step != null ? snapToStep({ value, step }) : value;
 
-	const hasAnimatedKeyframes = hasKeyframesForPath({ animations, propertyPath });
+	const hasAnimatedKeyframes = hasKeyframesForPath({
+		animations,
+		propertyPath,
+	});
 	const keyframeAtTime = isPlayheadWithinElementRange
 		? getKeyframeAtTime({ animations, propertyPath, time: localTime })
 		: null;
@@ -55,7 +62,8 @@ export function useKeyframedNumberProperty({
 	const previewValue = ({ value }: { value: number }) => {
 		const nextValue = snapValue(value);
 		if (shouldUseAnimatedChannel) {
-			const additionalKeyframes = buildAdditionalKeyframes?.({ value: nextValue }) ?? [];
+			const additionalKeyframes =
+				buildAdditionalKeyframes?.({ value: nextValue }) ?? [];
 			const updatedAnimations = [
 				{ propertyPath, value: nextValue },
 				...additionalKeyframes,
@@ -137,10 +145,17 @@ export function useKeyframedNumberProperty({
 	const commitValue = ({ value }: { value: number }) => {
 		const nextValue = snapValue(value);
 		if (shouldUseAnimatedChannel) {
-			const additionalKeyframes = buildAdditionalKeyframes?.({ value: nextValue }) ?? [];
+			const additionalKeyframes =
+				buildAdditionalKeyframes?.({ value: nextValue }) ?? [];
 			editor.timeline.upsertKeyframes({
 				keyframes: [
-					{ trackId, elementId, propertyPath, time: localTime, value: nextValue },
+					{
+						trackId,
+						elementId,
+						propertyPath,
+						time: localTime,
+						value: nextValue,
+					},
 					...additionalKeyframes.map((keyframe) => ({
 						trackId,
 						elementId,

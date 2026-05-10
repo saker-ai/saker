@@ -15,9 +15,7 @@ interface LinearRgba {
 }
 
 function srgbToLinear({ value }: { value: number }): number {
-	return value <= 0.04045
-		? value / 12.92
-		: Math.pow((value + 0.055) / 1.055, 2.4);
+	return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
 }
 
 function parseColorToLinearRgba({
@@ -162,7 +160,8 @@ function migrateElementAnimations({ element }: { element: unknown }): unknown {
 
 	const migratedAnimations = migrateLegacyAnimations({ animations });
 	if (!migratedAnimations) {
-		const { animations: _unusedAnimations, ...elementWithoutAnimations } = element;
+		const { animations: _unusedAnimations, ...elementWithoutAnimations } =
+			element;
 		return elementWithoutAnimations;
 	}
 
@@ -468,8 +467,7 @@ function getLegacyScalarKeyframes<TValue>({
 				id: keyframe.id,
 				time: keyframe.time,
 				value: keyframe.value,
-				interpolation:
-					keyframe.interpolation === "hold" ? "hold" : "linear",
+				interpolation: keyframe.interpolation === "hold" ? "hold" : "linear",
 			},
 		];
 	});
@@ -494,7 +492,8 @@ function getLegacyDiscreteKeyframes({
 			typeof keyframe.id !== "string" ||
 			typeof keyframe.time !== "number" ||
 			!Number.isFinite(keyframe.time) ||
-			(typeof keyframe.value !== "string" && typeof keyframe.value !== "boolean")
+			(typeof keyframe.value !== "string" &&
+				typeof keyframe.value !== "boolean")
 		) {
 			return [];
 		}
@@ -528,8 +527,7 @@ function toScalarKeyframe({
 		id: keyframe.id,
 		time: keyframe.time,
 		value: keyframe.value,
-		segmentToNext:
-			keyframe.interpolation === "hold" ? "step" : "linear",
+		segmentToNext: keyframe.interpolation === "hold" ? "step" : "linear",
 		tangentMode: "flat",
 	};
 }

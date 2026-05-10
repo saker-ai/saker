@@ -1,6 +1,43 @@
 "use client";
 
+import { invokeAction } from "@/actions";
+import { OcShapesIcon, OcVideoIcon } from "@/components/icons";
+import {
+	ContextMenu,
+	ContextMenuContent,
+	ContextMenuItem,
+	ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useEditor } from "@/editor/use-editor";
+import { useBoxSelect } from "@/selection/hooks/use-box-select";
+import { SelectionBox } from "@/selection/selection-box";
+import type { DropTarget, ElementDragView } from "@/timeline";
+import type { TimelineTrack } from "@/timeline";
+import {
+	canTrackBeHidden,
+	canTrackHaveAudio,
+	getTimelinePaddingPx,
+	getTimelineZoomMin,
+} from "@/timeline";
+import {
+	TimelineBookmarksRow,
+	useBookmarkDrag,
+} from "@/timeline/bookmarks/index";
+import { useElementInteraction } from "@/timeline/hooks/element/use-element-interaction";
+import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
+import { useEdgeAutoScroll } from "@/timeline/hooks/use-edge-auto-scroll";
+import { useInitialScrollBottom } from "@/timeline/hooks/use-initial-scroll-bottom";
+import { useTimelineDragDrop } from "@/timeline/hooks/use-timeline-drag-drop";
+import { useTimelinePlayhead } from "@/timeline/hooks/use-timeline-playhead";
+import { useTimelineResize } from "@/timeline/hooks/use-timeline-resize";
+import { useTimelineSeek } from "@/timeline/hooks/use-timeline-seek";
+import { useTimelineZoom } from "@/timeline/hooks/use-timeline-zoom";
+import { timelineTimeToPixels } from "@/timeline/pixel-utils";
+import type { SnapPoint } from "@/timeline/snapping";
+import { useTimelineStore } from "@/timeline/timeline-store";
+import { cn } from "@/utils/ui";
+import type { MediaTime } from "@/wasm";
 import {
 	Delete02Icon,
 	MagicWand05Icon,
@@ -13,78 +50,41 @@ import {
 	VolumeOffIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
-import { OcShapesIcon, OcVideoIcon } from "@/components/icons";
 import {
-	ContextMenu,
-	ContextMenuContent,
-	ContextMenuItem,
-	ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import { useTimelineZoom } from "@/timeline/hooks/use-timeline-zoom";
-import {
+	type ReactNode,
 	useCallback,
 	useEffect,
 	useMemo,
 	useRef,
 	useState,
-	type ReactNode,
 } from "react";
-import type { MediaTime } from "@/wasm";
-import type { ElementDragView, DropTarget } from "@/timeline";
-import { TimelineTrackContent } from "./timeline-track";
-import { TimelinePlayhead } from "./timeline-playhead";
-import { SelectionBox } from "@/selection/selection-box";
-import { useBoxSelect } from "@/selection/hooks/use-box-select";
-import { SnapIndicator } from "./snap-indicator";
-import type { SnapPoint } from "@/timeline/snapping";
-import type { TimelineTrack } from "@/timeline";
+import { DragLine } from "./drag-line";
 import {
-	TIMELINE_SCROLLBAR_SIZE_PX,
-	TIMELINE_CONTENT_TOP_PADDING_PX,
-	TIMELINE_TRACK_GAP_PX,
-	TIMELINE_TRACK_LABELS_COLUMN_WIDTH_PX,
-	KEYFRAME_LANE_HEIGHT_PX,
-} from "./layout";
-import { useElementInteraction } from "@/timeline/hooks/element/use-element-interaction";
-import {
-	canTrackHaveAudio,
-	canTrackBeHidden,
-	getTimelineZoomMin,
-	getTimelinePaddingPx,
-} from "@/timeline";
-import { timelineTimeToPixels } from "@/timeline/pixel-utils";
-import {
-	getTrackHeight,
-	getCumulativeHeightBefore,
-	getTotalTracksHeight,
-} from "./track-layout";
-import { SELECTED_TRACK_ROW_CLASS } from "./theme";
-import {
-	computeTrackExpansionHeight,
-	getTrackExpandedRows,
-	getPropertyLabel,
 	type ExpandedRow,
+	computeTrackExpansionHeight,
+	getPropertyLabel,
+	getTrackExpandedRows,
 } from "./expanded-layout";
 import { TIMELINE_HORIZONTAL_WHEEL_STEP_PX } from "./interaction";
-import { TimelineToolbar } from "./timeline-toolbar";
-import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
-import { useTimelineSeek } from "@/timeline/hooks/use-timeline-seek";
-import { useTimelineDragDrop } from "@/timeline/hooks/use-timeline-drag-drop";
-import { TimelineRuler } from "./timeline-ruler";
 import {
-	TimelineBookmarksRow,
-	useBookmarkDrag,
-} from "@/timeline/bookmarks/index";
-import { useEdgeAutoScroll } from "@/timeline/hooks/use-edge-auto-scroll";
-import { useInitialScrollBottom } from "@/timeline/hooks/use-initial-scroll-bottom";
-import { useTimelineResize } from "@/timeline/hooks/use-timeline-resize";
-import { useTimelineStore } from "@/timeline/timeline-store";
-import { useEditor } from "@/editor/use-editor";
-import { useTimelinePlayhead } from "@/timeline/hooks/use-timeline-playhead";
-import { DragLine } from "./drag-line";
-import { invokeAction } from "@/actions";
+	KEYFRAME_LANE_HEIGHT_PX,
+	TIMELINE_CONTENT_TOP_PADDING_PX,
+	TIMELINE_SCROLLBAR_SIZE_PX,
+	TIMELINE_TRACK_GAP_PX,
+	TIMELINE_TRACK_LABELS_COLUMN_WIDTH_PX,
+} from "./layout";
 import { resolveTimelineElementIntersections } from "./selection-hit-testing";
-import { cn } from "@/utils/ui";
+import { SnapIndicator } from "./snap-indicator";
+import { SELECTED_TRACK_ROW_CLASS } from "./theme";
+import { TimelinePlayhead } from "./timeline-playhead";
+import { TimelineRuler } from "./timeline-ruler";
+import { TimelineToolbar } from "./timeline-toolbar";
+import { TimelineTrackContent } from "./timeline-track";
+import {
+	getCumulativeHeightBefore,
+	getTotalTracksHeight,
+	getTrackHeight,
+} from "./track-layout";
 
 const TRACKS_CONTAINER_MAX_HEIGHT = 800;
 const FALLBACK_CONTAINER_WIDTH = 1000;
@@ -290,12 +290,12 @@ export function Timeline() {
 
 	const { dragView, handleElementMouseDown, handleElementClick } =
 		useElementInteraction({
-		zoomLevel,
-		tracksContainerRef,
-		tracksScrollRef,
-		snappingEnabled,
-		onSnapPointChange: handleSnapPointChange,
-	});
+			zoomLevel,
+			tracksContainerRef,
+			tracksScrollRef,
+			snappingEnabled,
+			onSnapPointChange: handleSnapPointChange,
+		});
 	const isElementDragging = dragView.kind === "dragging";
 
 	const {
@@ -509,7 +509,6 @@ export function Timeline() {
 							className="flex min-h-full flex-col"
 							style={{ width: `${dynamicTimelineWidth}px` }}
 						>
-							{/* biome-ignore lint/a11y/noStaticElementInteractions: canvas seek surface; keyboard seeking is handled by the global keybindings system */}
 							{/* biome-ignore lint/a11y/useKeyWithClickEvents: canvas seek surface; keyboard seeking is handled by the global keybindings system */}
 							<div
 								className="relative shrink-0"
@@ -778,8 +777,8 @@ function TimelineTrackRows({
 	const draggingElementIds = useMemo(
 		() =>
 			dragView.kind === "dragging"
-			? dragView.memberTimeOffsets
-			: (null as ReadonlyMap<string, MediaTime> | null),
+				? dragView.memberTimeOffsets
+				: (null as ReadonlyMap<string, MediaTime> | null),
 		[dragView],
 	);
 	const sortedTracks = useMemo(() => {
@@ -891,7 +890,6 @@ function TimelineGutter({
 	onMouseDown: (event: React.MouseEvent) => void;
 	onClick: (event: React.MouseEvent) => void;
 }) {
-	// biome-ignore lint/a11y/noStaticElementInteractions: canvas seek surface; keyboard seeking is handled by the global keybindings system
 	// biome-ignore lint/a11y/useKeyWithClickEvents: canvas seek surface; keyboard seeking is handled by the global keybindings system
 	return <div className="flex-1" onMouseDown={onMouseDown} onClick={onClick} />;
 }

@@ -1,4 +1,9 @@
 import {
+	incrementCounter,
+	isRenderPerfEnabled,
+	recordWasmFrameProfile,
+} from "@/diagnostics/render-perf";
+import {
 	getCompositorCanvas,
 	getLastFrameProfile,
 	initCompositor,
@@ -7,11 +12,6 @@ import {
 	resizeCompositor,
 	uploadTexture,
 } from "opencut-wasm";
-import {
-	incrementCounter,
-	isRenderPerfEnabled,
-	recordWasmFrameProfile,
-} from "@/diagnostics/render-perf";
 import type {
 	ExternalTextureDescriptor,
 	FrameDescriptor,

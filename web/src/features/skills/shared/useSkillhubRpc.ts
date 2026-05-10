@@ -16,6 +16,20 @@ import type {
   SkillhubCategoryList,
 } from "@/features/rpc/types";
 
+type RawSkillhubConfig = Omit<SkillhubConfig, "subscriptions"> & {
+  subscriptions?: unknown;
+};
+
+export function normalizeSkillhubConfig(config: SkillhubConfig): SkillhubConfig {
+  const raw = config as RawSkillhubConfig;
+  return {
+    ...config,
+    subscriptions: Array.isArray(raw.subscriptions)
+      ? raw.subscriptions.filter((slug): slug is string => typeof slug === "string")
+      : [],
+  };
+}
+
 // useSkillhubRpc wraps `skillhub/*` JSON-RPC methods with a tiny typed surface.
 // `null` rpc = render-only (offline / not yet connected); calls reject.
 export function useSkillhubRpc(rpc: RPCClient | null) {
@@ -29,9 +43,10 @@ export function useSkillhubRpc(rpc: RPCClient | null) {
 
   return useMemo(
     () => ({
-      getConfig: () => call<SkillhubConfig>("skillhub/config/get"),
+      getConfig: () => call<SkillhubConfig>("skillhub/config/get").then(normalizeSkillhubConfig),
       updateConfig: (patch: Partial<SkillhubConfig>) =>
-        call<SkillhubConfig>("skillhub/config/update", patch as Record<string, unknown>),
+        call<SkillhubConfig>("skillhub/config/update", patch as Record<string, unknown>)
+          .then(normalizeSkillhubConfig),
       loginStart: (registry?: string) =>
         call<SkillhubDeviceLogin>("skillhub/login/start", registry ? { registry } : undefined),
       loginPoll: (sessionId: string) =>
@@ -39,7 +54,7 @@ export function useSkillhubRpc(rpc: RPCClient | null) {
       loginCancel: (sessionId: string) =>
         call<{ ok: boolean }>("skillhub/login/cancel", { sessionId }),
       categories: () => call<SkillhubCategoryList>("skillhub/categories"),
-      logout: () => call<SkillhubConfig>("skillhub/logout"),
+      logout: () => call<SkillhubConfig>("skillhub/logout").then(normalizeSkillhubConfig),
       search: (q: string, limit = 20) => call<SkillhubSearchResult>("skillhub/search", { q, limit }),
       list: (params: { category?: string; sort?: string; cursor?: string; limit?: number } = {}) =>
         call<SkillhubListResult>("skillhub/list", params as Record<string, unknown>),
@@ -99,7 +114,7 @@ export function useSkillhubConfig(rpc: RPCClient | null): {
     setLoading(true);
     setError(null);
     try {
-      const cfg = await api.getConfig();
+      const cfg = normalizeSkillhubConfig(await api.getConfig());
       // Only update state when config actually changed — avoids cascading
       // re-renders in SkillsPage / SkillPlazaView when the data is identical.
       setConfig((prev) => {

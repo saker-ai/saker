@@ -1,68 +1,68 @@
-import type { EditorCore } from "@/core";
-import type { ElementBounds } from "@/preview/element-bounds";
-import type { ParamValues } from "@/params";
+import {
+	getElementLocalTime,
+	resolveAnimationPathValueAtTime,
+} from "@/animation";
 import type {
-	SceneTracks,
-	TrackType,
-	TimelineTrack,
-	TimelineElement,
+	AnimationInterpolation,
+	AnimationPath,
+	AnimationValue,
+	AnimationValueForPath,
+	ScalarCurveKeyframePatch,
+} from "@/animation/types";
+import { BatchCommand } from "@/commands";
+import {
+	AddClipEffectCommand,
+	AddTrackCommand,
+	DeleteCustomMaskPointsCommand,
+	DeleteElementsCommand,
+	DuplicateElementsCommand,
+	InsertCustomMaskPointCommand,
+	InsertElementCommand,
+	MoveElementCommand,
+	RemoveClipEffectCommand,
+	RemoveEffectParamKeyframeCommand,
+	RemoveKeyframeCommand,
+	RemoveMaskCommand,
+	RemoveTrackCommand,
+	ReorderClipEffectsCommand,
+	RetimeKeyframeCommand,
+	SplitElementsCommand,
+	ToggleClipEffectCommand,
+	ToggleMaskInvertedCommand,
+	ToggleSourceAudioSeparationCommand,
+	ToggleTrackMuteCommand,
+	ToggleTrackVisibilityCommand,
+	TracksSnapshotCommand,
+	UpdateClipEffectParamsCommand,
+	UpdateElementsCommand,
+	UpdateScalarKeyframeCurveCommand,
+	UpsertEffectParamKeyframeCommand,
+	UpsertKeyframeCommand,
+} from "@/commands/timeline";
+import type { InsertElementParams } from "@/commands/timeline/element/insert-element";
+import type { EditorCore } from "@/core";
+import type { ParamValues } from "@/params";
+import type { ElementBounds } from "@/preview/element-bounds";
+import type {
 	RetimeConfig,
+	SceneTracks,
+	TimelineElement,
+	TimelineTrack,
+	TrackType,
 } from "@/timeline";
 import { calculateTotalDuration } from "@/timeline";
+import { resolveAnimationTarget } from "@/timeline/animation-targets";
 import { TimelineDragSource } from "@/timeline/drag-source";
-import { findTrackInSceneTracks } from "@/timeline/track-element-update";
-import { lastFrameMediaTime, type MediaTime, ZERO_MEDIA_TIME } from "@/wasm";
 import {
 	canElementBeHidden,
 	canElementHaveAudio,
 } from "@/timeline/element-utils";
 import type {
-	AnimationPath,
-	AnimationInterpolation,
-	AnimationValue,
-	AnimationValueForPath,
-	ScalarCurveKeyframePatch,
-} from "@/animation/types";
-import {
-	getElementLocalTime,
-	resolveAnimationPathValueAtTime,
-} from "@/animation";
-import { resolveAnimationTarget } from "@/timeline/animation-targets";
-import { BatchCommand } from "@/commands";
-import {
-	AddTrackCommand,
-	RemoveTrackCommand,
-	ToggleTrackMuteCommand,
-	ToggleTrackVisibilityCommand,
-	InsertElementCommand,
-	DeleteElementsCommand,
-	DuplicateElementsCommand,
-	UpdateElementsCommand,
-	SplitElementsCommand,
-	MoveElementCommand,
-	TracksSnapshotCommand,
-	UpsertKeyframeCommand,
-	RemoveKeyframeCommand,
-	RetimeKeyframeCommand,
-	UpdateScalarKeyframeCurveCommand,
-	AddClipEffectCommand,
-	DeleteCustomMaskPointsCommand,
-	InsertCustomMaskPointCommand,
-	RemoveClipEffectCommand,
-	UpdateClipEffectParamsCommand,
-	ToggleClipEffectCommand,
-	ReorderClipEffectsCommand,
-	RemoveMaskCommand,
-	ToggleMaskInvertedCommand,
-	UpsertEffectParamKeyframeCommand,
-	RemoveEffectParamKeyframeCommand,
-	ToggleSourceAudioSeparationCommand,
-} from "@/commands/timeline";
-import type { InsertElementParams } from "@/commands/timeline/element/insert-element";
-import type {
 	PlannedElementMove,
 	PlannedTrackCreation,
 } from "@/timeline/group-move";
+import { findTrackInSceneTracks } from "@/timeline/track-element-update";
+import { type MediaTime, ZERO_MEDIA_TIME, lastFrameMediaTime } from "@/wasm";
 
 export class TimelineManager {
 	private listeners = new Set<() => void>();
@@ -875,9 +875,9 @@ export class TimelineManager {
 	}
 
 	private notify(): void {
-		this.listeners.forEach((fn) => {
+		for (const fn of this.listeners) {
 			fn();
-		});
+		}
 	}
 
 	private getElementByRef({

@@ -1,5 +1,11 @@
-import { Button } from "@/components/ui/button";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
+import {
+	Section,
+	SectionContent,
+	SectionField,
+	SectionFields,
+} from "@/components/section";
+import { Button } from "@/components/ui/button";
 import {
 	Select,
 	SelectContent,
@@ -7,31 +13,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useReducer, useRef, useState } from "react";
-import { extractTimelineAudio } from "@/media/mediabunny";
-import { useEditor } from "@/editor/use-editor";
-import { TRANSCRIPTION_DIAGNOSTICS_SCOPE } from "@/transcription/diagnostics";
-import { DEFAULT_TRANSCRIPTION_SAMPLE_RATE } from "@/transcription/audio";
-import { TRANSCRIPTION_LANGUAGES } from "@/transcription/supported-languages";
-import type {
-	CaptionChunk,
-	TranscriptionLanguage,
-	TranscriptionProgress,
-} from "@/transcription/types";
-import { transcriptionService } from "@/services/transcription/service";
-import { decodeAudioToFloat32 } from "@/media/audio";
-import { buildCaptionChunks } from "@/transcription/caption";
-import { insertCaptionChunksAsTextTrack } from "@/subtitles/insert";
-import { parseSubtitleFile } from "@/subtitles/parse";
 import { Spinner } from "@/components/ui/spinner";
-import {
-	Section,
-	SectionContent,
-	SectionField,
-	SectionFields,
-} from "@/components/section";
-import { AlertCircleIcon, CloudUploadIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	Tooltip,
 	TooltipContent,
@@ -39,6 +21,24 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { DiagnosticSeverity } from "@/diagnostics/types";
+import { useEditor } from "@/editor/use-editor";
+import { decodeAudioToFloat32 } from "@/media/audio";
+import { extractTimelineAudio } from "@/media/mediabunny";
+import { transcriptionService } from "@/services/transcription/service";
+import { insertCaptionChunksAsTextTrack } from "@/subtitles/insert";
+import { parseSubtitleFile } from "@/subtitles/parse";
+import { DEFAULT_TRANSCRIPTION_SAMPLE_RATE } from "@/transcription/audio";
+import { buildCaptionChunks } from "@/transcription/caption";
+import { TRANSCRIPTION_DIAGNOSTICS_SCOPE } from "@/transcription/diagnostics";
+import { TRANSCRIPTION_LANGUAGES } from "@/transcription/supported-languages";
+import type {
+	CaptionChunk,
+	TranscriptionLanguage,
+	TranscriptionProgress,
+} from "@/transcription/types";
+import { AlertCircleIcon, CloudUploadIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useReducer, useRef, useState } from "react";
 
 const DIAGNOSTIC_BUTTON_VARIANT: Record<
 	DiagnosticSeverity,

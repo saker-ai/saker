@@ -1,16 +1,16 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
-import { GUIDE_REGISTRY, getGuideById } from "@/guides";
-import { usePreviewStore } from "@/preview/preview-store";
+import { Label } from "@/components/ui/label";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { GUIDE_REGISTRY, getGuideById } from "@/guides";
+import { usePreviewStore } from "@/preview/preview-store";
 import { cn } from "@/utils/ui";
+import { AnimatePresence, motion } from "motion/react";
 
 export function GridPopover({ children }: { children: React.ReactNode }) {
 	const activeGuide = usePreviewStore((state) => state.activeGuide);

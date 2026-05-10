@@ -1,5 +1,5 @@
-import type { EditorCore } from "@/core";
 import type { SelectedKeyframeRef } from "@/animation/types";
+import type { EditorCore } from "@/core";
 import type {
 	EditorSelectionKind,
 	EditorSelectionPatch,
@@ -188,8 +188,8 @@ export class SelectionManager {
 	}
 
 	private notify(): void {
-		this.listeners.forEach((fn) => {
+		for (const fn of this.listeners) {
 			fn();
-		});
+		}
 	}
 }

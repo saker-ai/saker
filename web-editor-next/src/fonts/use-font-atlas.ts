@@ -1,11 +1,11 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
 import {
+	clearFontAtlasCache,
 	getCachedFontAtlas,
 	loadFontAtlas,
-	clearFontAtlasCache,
 } from "@/fonts/google-fonts";
-import type { FontAtlas } from "@/fonts/types";
 import { SYSTEM_FONTS } from "@/fonts/system-fonts";
+import type { FontAtlas } from "@/fonts/types";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type Status = "idle" | "loading" | "error";
 

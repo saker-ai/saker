@@ -2,7 +2,11 @@ import {
 	DEFAULT_SHAPE_MASK_SHORT_SIDE_RATIO,
 	MIN_MASK_DIMENSION,
 } from "@/masks/dimensions";
-import { computeFeatherUpdate } from "../param-update";
+import {
+	getBoxMaskHandlePositions,
+	getBoxMaskOverlays,
+} from "@/masks/handle-positions";
+import { snapMaskInteraction } from "@/masks/snap";
 import type {
 	BaseMaskParams,
 	MaskDefaultContext,
@@ -12,11 +16,7 @@ import type {
 	RectangleMaskParams,
 } from "@/masks/types";
 import type { NumberParamDefinition, ParamDefinition } from "@/params";
-import {
-	getBoxMaskHandlePositions,
-	getBoxMaskOverlays,
-} from "@/masks/handle-positions";
-import { snapMaskInteraction } from "@/masks/snap";
+import { computeFeatherUpdate } from "../param-update";
 
 const PERCENTAGE_DISPLAY: Pick<
 	NumberParamDefinition,

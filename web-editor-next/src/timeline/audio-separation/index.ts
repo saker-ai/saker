@@ -3,9 +3,9 @@ import type { ElementAnimations } from "@/animation/types";
 import type { MediaAsset } from "@/media/types";
 import { DEFAULTS } from "@/timeline/defaults";
 import type {
+	AudioElement,
 	CreateUploadAudioElement,
 	TimelineElement,
-	AudioElement,
 	VideoElement,
 } from "../types";
 

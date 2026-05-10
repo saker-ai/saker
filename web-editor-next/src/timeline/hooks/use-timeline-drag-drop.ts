@@ -1,9 +1,9 @@
-import { useEffect, useReducer, useRef, type RefObject } from "react";
 import { useEditor } from "@/editor/use-editor";
 import {
-	DragDropController,
 	type DragDropConfig,
+	DragDropController,
 } from "@/timeline/controllers/drag-drop-controller";
+import { type RefObject, useEffect, useReducer, useRef } from "react";
 
 interface UseTimelineDragDropProps {
 	containerRef: RefObject<HTMLDivElement | null>;

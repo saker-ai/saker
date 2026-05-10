@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { type Label as LabelPrimitive, Slot as SlotPrimitive } from "radix-ui";
+import * as React from "react";
 
 import {
 	Controller,
@@ -10,8 +10,8 @@ import {
 	type FieldPath,
 	type FieldValues,
 	FormProvider,
-	useFormContext,
 	type UseFormReturn,
+	useFormContext,
 } from "react-hook-form";
 
 import { cn } from "@/utils/ui";
@@ -55,9 +55,7 @@ function Form<
 		try {
 			const stored = store.getItem(persistKeyOnMount.current);
 			if (stored) {
-				resetRef.current(
-					JSON.parse(stored) as DefaultValues<TFieldValues>,
-				);
+				resetRef.current(JSON.parse(stored) as DefaultValues<TFieldValues>);
 			}
 		} catch {
 			// Storage may be unavailable (private browsing, storage blocked)

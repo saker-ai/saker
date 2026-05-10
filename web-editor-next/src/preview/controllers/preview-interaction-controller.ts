@@ -1,11 +1,7 @@
-import type {
-	MouseEvent as ReactMouseEvent,
-	PointerEvent as ReactPointerEvent,
-} from "react";
 import type { MediaAsset } from "@/media/types";
 import {
-	getVisibleElementsWithBounds,
 	type ElementWithBounds,
+	getVisibleElementsWithBounds,
 } from "@/preview/element-bounds";
 import {
 	getHitElements,
@@ -14,12 +10,11 @@ import {
 } from "@/preview/hit-test";
 import {
 	SNAP_THRESHOLD_SCREEN_PIXELS,
-	snapPosition,
 	type SnapLine,
+	snapPosition,
 } from "@/preview/preview-snap";
 import type { TCanvasSize } from "@/project/types";
 import type { Transform } from "@/rendering";
-import { isVisualElement } from "@/timeline/element-utils";
 import type {
 	ElementRef,
 	SceneTracks,
@@ -28,6 +23,11 @@ import type {
 	TimelineTrack,
 	VisualElement,
 } from "@/timeline";
+import { isVisualElement } from "@/timeline/element-utils";
+import type {
+	MouseEvent as ReactMouseEvent,
+	PointerEvent as ReactPointerEvent,
+} from "react";
 
 const MIN_DRAG_DISTANCE = 0.5;
 const PRIMARY_POINTER_BUTTON = 0;

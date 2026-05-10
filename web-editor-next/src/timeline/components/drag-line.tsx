@@ -1,5 +1,5 @@
+import type { DropTarget, TimelineTrack } from "@/timeline";
 import { getDropLineY } from "./drop-target";
-import type { TimelineTrack, DropTarget } from "@/timeline";
 import { TIMELINE_LAYERS } from "./layers";
 
 interface DragLineProps {

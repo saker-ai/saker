@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { SelectionBox } from "@/selection/selection-box";
-import { SelectionContext } from "@/selection/context";
 import { SELECTABLE_ITEM_ATTRIBUTE } from "@/selection/attributes";
+import { SelectionContext } from "@/selection/context";
 import { resolveElementIntersections } from "@/selection/hit-testing";
+import { useBoxSelect } from "@/selection/hooks/use-box-select";
+import { SelectionBox } from "@/selection/selection-box";
 import {
 	applyBoxSelection,
 	clearSelection,
@@ -14,12 +14,9 @@ import {
 	selectRange,
 	toggleSelection,
 } from "@/selection/state";
-import type {
-	SelectableSurfaceProps,
-	SelectionState,
-} from "@/selection/types";
-import { useBoxSelect } from "@/selection/hooks/use-box-select";
+import type { SelectableSurfaceProps, SelectionState } from "@/selection/types";
 import { cn } from "@/utils/ui";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function SelectableSurface({
 	orderedIds,
@@ -197,7 +194,11 @@ export function SelectableSurface({
 				return;
 			}
 
-			if (event.key !== "Enter" && event.key !== " " && event.key !== "Escape") {
+			if (
+				event.key !== "Enter" &&
+				event.key !== " " &&
+				event.key !== "Escape"
+			) {
 				return;
 			}
 

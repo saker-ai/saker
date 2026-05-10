@@ -1,14 +1,14 @@
-import { useEffect, useReducer, useRef, type RefObject } from "react";
+import { registerCanceller } from "@/editor/cancel-interaction";
 import { useEditor } from "@/editor/use-editor";
 import { useShiftKey } from "@/hooks/use-shift-key";
-import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
-import { registerCanceller } from "@/editor/cancel-interaction";
 import {
 	ElementInteractionController,
 	type ElementInteractionDeps,
 	type ElementInteractionDepsRef,
 } from "@/timeline/controllers/element-interaction-controller";
+import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
 import type { SnapPoint } from "@/timeline/snapping";
+import { type RefObject, useEffect, useReducer, useRef } from "react";
 
 interface UseElementInteractionProps {
 	zoomLevel: number;

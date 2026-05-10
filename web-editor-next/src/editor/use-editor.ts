@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useRef, useSyncExternalStore } from "react";
 import { EditorCore } from "@/core";
+import { useCallback, useMemo, useRef, useSyncExternalStore } from "react";
 
 function isShallowEqual(a: unknown, b: unknown): boolean {
 	if (Object.is(a, b)) return true;
@@ -35,9 +35,9 @@ export function useEditor<T>(
 				editor.diagnostics.subscribe(onChange),
 			];
 			return () => {
-				unsubscribers.forEach((unsubscribe) => {
+				for (const unsubscribe of unsubscribers) {
 					unsubscribe();
-				});
+				}
 			};
 		},
 		[editor],

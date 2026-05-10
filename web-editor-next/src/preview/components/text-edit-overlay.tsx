@@ -1,15 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
-import { usePreviewViewport } from "@/preview/components/preview-viewport";
+import { getElementLocalTime } from "@/animation";
 import { useEditor } from "@/editor/use-editor";
-import type { TextElement } from "@/timeline";
-import { DEFAULTS } from "@/timeline/defaults";
-import {
-	getElementLocalTime,
-} from "@/animation";
+import { usePreviewViewport } from "@/preview/components/preview-viewport";
 import { resolveTransformAtTime } from "@/rendering/animation-values";
 import { resolveTextLayout } from "@/text/primitives";
+import type { TextElement } from "@/timeline";
+import { DEFAULTS } from "@/timeline/defaults";
+import { useCallback, useEffect, useRef } from "react";
 
 export function TextEditOverlay({
 	trackId,
@@ -120,7 +118,6 @@ export function TextEditOverlay({
 				transformOrigin: "center center",
 			}}
 		>
-			{/* biome-ignore lint/a11y/useSemanticElements: contenteditable required for multiline, IME, paste */}
 			<div
 				ref={divRef}
 				contentEditable

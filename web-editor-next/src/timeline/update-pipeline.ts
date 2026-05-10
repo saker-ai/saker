@@ -142,9 +142,7 @@ export function applyElementUpdate({
 	context: ElementUpdateContext;
 }): TimelineElement {
 	let nextElement = { ...element, ...patch } as TimelineElement;
-	const changedFields = new Set(
-		Object.keys(patch) as ElementUpdateField[],
-	);
+	const changedFields = new Set(Object.keys(patch) as ElementUpdateField[]);
 
 	for (const rule of deriveRules) {
 		if (!shouldApplyRule({ rule, changedFields })) {

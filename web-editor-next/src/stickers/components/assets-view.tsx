@@ -1,9 +1,5 @@
 "use client";
 
-import Image from "next/image";
-import type { CSSProperties } from "react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,25 +7,27 @@ import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEditor } from "@/editor/use-editor";
 import { resolveStickerIntrinsicSize } from "@/stickers";
-import {
-	buildGraphicElement,
-	buildStickerElement,
-} from "@/timeline/element-utils";
-import { STICKER_CATEGORIES } from "@/stickers/categories";
 import { getRegionLabel, resolveQueryToRegions } from "@/stickers";
-import { parseShapeStickerId } from "@/stickers/providers/shapes";
-import type { TimelineDragData } from "@/timeline/drag";
 import type {
 	StickerBrowseSection,
 	StickerCategory,
 	StickerItem as StickerData,
 } from "@/stickers";
+import { STICKER_CATEGORIES } from "@/stickers/categories";
+import { parseShapeStickerId } from "@/stickers/providers/shapes";
 import { useStickersStore } from "@/stickers/stickers-store";
-import { cn } from "@/utils/ui";
+import type { TimelineDragData } from "@/timeline/drag";
 import {
-	HappyIcon,
-} from "@hugeicons/core-free-icons";
+	buildGraphicElement,
+	buildStickerElement,
+} from "@/timeline/element-utils";
+import { cn } from "@/utils/ui";
+import { HappyIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import Image from "next/image";
+import type { CSSProperties } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export function StickersView() {
 	const {
@@ -343,7 +341,9 @@ function StickerItem({
 
 	const displayName = item.name;
 	const shapePreset =
-		item.provider === "shapes" ? parseShapeStickerId({ stickerId: item.id }) : null;
+		item.provider === "shapes"
+			? parseShapeStickerId({ stickerId: item.id })
+			: null;
 
 	const handleAdd = async () => {
 		setIsAdding(true);

@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import { timelineTimeToSnappedPixels } from "@/timeline";
 import { TIMELINE_TRACK_LABELS_COLUMN_WIDTH_PX } from "@/timeline/components/layout";
+import { useEffect, useState } from "react";
 interface UseSnapIndicatorPositionParams {
 	snapPoint: { time: number } | null;
 	zoomLevel: number;

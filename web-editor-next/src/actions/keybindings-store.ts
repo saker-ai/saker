@@ -1,13 +1,13 @@
 "use client";
 
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import type { TActionWithOptionalArgs } from "@/actions";
 import { getDefaultShortcuts } from "@/actions";
+import type { KeybindingConfig, ShortcutKey } from "@/actions/keybinding";
 import { isTypableDOMElement } from "@/utils/browser";
 import { isAppleDevice } from "@/utils/platform";
-import type { KeybindingConfig, ShortcutKey } from "@/actions/keybinding";
-import { runMigrations, CURRENT_VERSION } from "./keybindings/migrations";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { CURRENT_VERSION, runMigrations } from "./keybindings/migrations";
 
 const defaultKeybindings: KeybindingConfig = getDefaultShortcuts();
 

@@ -1,9 +1,9 @@
+import { resolveAnimationPathValueAtTime } from "./resolve";
 import type {
 	AnimationColorPropertyPath,
 	AnimationNumericPropertyPath,
 	ElementAnimations,
 } from "./types";
-import { resolveAnimationPathValueAtTime } from "./resolve";
 
 export function resolveOpacityAtTime({
 	baseOpacity,

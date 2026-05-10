@@ -1,17 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { cn } from "@/utils/ui";
+import { type MediaTime, parseMediaTimecode, snapSeekMediaTime } from "@/wasm";
 import {
-	formatTimecode,
 	type FrameRate,
 	type TimeCodeFormat,
+	formatTimecode,
 } from "opencut-wasm";
-import { cn } from "@/utils/ui";
-import {
-	parseMediaTimecode,
-	snapSeekMediaTime,
-	type MediaTime,
-} from "@/wasm";
+import { useEffect, useRef, useState } from "react";
 
 interface EditableTimecodeProps {
 	time: MediaTime;

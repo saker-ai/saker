@@ -39,8 +39,11 @@ dependencies:
     - any-glob-to-any-file:
       - 'go.mod'
       - 'go.sum'
-      - 'web/package-lock.json'
-      - 'web-editor-next/package-lock.json'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'web/package.json'
+      - 'web-editor-next/package.json'
+      - 'packages/*/package.json'
 
 security:
   - changed-files:

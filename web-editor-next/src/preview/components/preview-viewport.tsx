@@ -1,6 +1,15 @@
 "use client";
 
 import {
+	canvasToOverlay,
+	getDisplayScale,
+	positionToOverlay,
+	screenPixelsToLogicalThreshold,
+	screenToCanvas,
+} from "@/preview/preview-coords";
+import { PREVIEW_ZOOM } from "@/preview/zoom";
+import { clamp, isNearlyEqual } from "@/utils/math";
+import {
 	createContext,
 	useCallback,
 	useContext,
@@ -9,15 +18,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import {
-	canvasToOverlay,
-	getDisplayScale,
-	positionToOverlay,
-	screenPixelsToLogicalThreshold,
-	screenToCanvas,
-} from "@/preview/preview-coords";
-import { clamp, isNearlyEqual } from "@/utils/math";
-import { PREVIEW_ZOOM } from "@/preview/zoom";
 
 const MIDDLE_MOUSE_BUTTON = 1;
 const IS_AT_FIT_EPSILON = 0.001;

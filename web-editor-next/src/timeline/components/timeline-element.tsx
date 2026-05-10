@@ -1,29 +1,15 @@
 "use client";
 
-import { createContext, useContext } from "react";
-import { useEditor } from "@/editor/use-editor";
-import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
-import { AudioWaveform, WAVEFORM_GAIN_SAMPLE_COUNT } from "./audio-waveform";
-import { AudioVolumeLine } from "./audio-volume-line";
-import { useElementPreview } from "@/timeline/hooks/use-element-preview";
 import {
-	useKeyframeDrag,
-	type KeyframeDragState,
-} from "@/timeline/hooks/element/use-keyframe-drag";
-import { useKeyframeSelection } from "@/timeline/hooks/element/use-keyframe-selection";
-import { useKeyframeBoxSelect } from "@/timeline/hooks/element/use-keyframe-box-select";
-import { SelectionBox } from "@/selection/selection-box";
+	type TAction,
+	type TActionWithOptionalArgs,
+	getActionDefinition,
+	invokeAction,
+} from "@/actions";
 import { getElementKeyframes } from "@/animation";
-import {
-	canElementHaveAudio,
-	canElementBeHidden,
-	hasElementEffects,
-	hasMediaId,
-	timelineTimeToPixels,
-	timelineTimeToSnappedPixels,
-} from "@/timeline";
-import { getTrackHeight } from "./track-layout";
-import { getTimelineElementClassName, TIMELINE_TRACK_THEME } from "./theme";
+import type { ElementKeyframe, SelectedKeyframeRef } from "@/animation/types";
+import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
+import { usePropertiesStore } from "@/components/editor/panels/properties/stores/properties-store";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -31,63 +17,77 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { useEditor } from "@/editor/use-editor";
+import { buildGraphicPreviewUrl } from "@/graphics";
+import { mediaSupportsAudio } from "@/media/media-utils";
+import type { MediaAsset } from "@/media/types";
+import { buildWaveformSourceKey } from "@/media/waveform-summary";
+import { SelectionBox } from "@/selection/selection-box";
+import { resolveStickerId } from "@/stickers";
+import {
+	canElementBeHidden,
+	canElementHaveAudio,
+	hasElementEffects,
+	hasMediaId,
+	timelineTimeToPixels,
+	timelineTimeToSnappedPixels,
+} from "@/timeline";
 import type {
+	AudioElement,
+	ElementDragView,
+	ImageElement,
 	TimelineElement as TimelineElementType,
 	TimelineTrack,
-	ElementDragView,
 	VideoElement,
-	ImageElement,
-	AudioElement,
 } from "@/timeline";
-import type { MediaAsset } from "@/media/types";
-import { mediaSupportsAudio } from "@/media/media-utils";
+import { getTimelinePixelsPerSecond } from "@/timeline";
 import {
 	canToggleSourceAudio,
 	getSourceAudioActionLabel,
 	isSourceAudioSeparated,
 } from "@/timeline/audio-separation";
 import { buildWaveformGainSamples } from "@/timeline/audio-state";
-import { getTimelinePixelsPerSecond } from "@/timeline";
-import { buildWaveformSourceKey } from "@/media/waveform-summary";
-import { addMediaTime, type MediaTime, TICKS_PER_SECOND } from "@/wasm";
-import {
-	getActionDefinition,
-	type TAction,
-	type TActionWithOptionalArgs,
-	invokeAction,
-} from "@/actions";
 import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
-import { resolveStickerId } from "@/stickers";
-import { buildGraphicPreviewUrl } from "@/graphics";
-import Image from "next/image";
+import { useKeyframeBoxSelect } from "@/timeline/hooks/element/use-keyframe-box-select";
 import {
-	ScissorIcon,
-	Delete02Icon,
+	type KeyframeDragState,
+	useKeyframeDrag,
+} from "@/timeline/hooks/element/use-keyframe-drag";
+import { useKeyframeSelection } from "@/timeline/hooks/element/use-keyframe-selection";
+import { useElementPreview } from "@/timeline/hooks/use-element-preview";
+import { getTrackTypeForElementType } from "@/timeline/placement/compatibility";
+import { useTimelineStore } from "@/timeline/timeline-store";
+import { uppercase } from "@/utils/string";
+import { cn } from "@/utils/ui";
+import { type MediaTime, TICKS_PER_SECOND, addMediaTime } from "@/wasm";
+import {
 	Copy01Icon,
-	ViewIcon,
-	ViewOffSlashIcon,
-	VolumeHighIcon,
-	VolumeOffIcon,
-	VolumeMute02Icon,
-	Search01Icon,
+	Delete02Icon,
 	Exchange01Icon,
 	KeyframeIcon,
 	MagicWand05Icon,
+	ScissorIcon,
+	Search01Icon,
+	ViewIcon,
+	ViewOffSlashIcon,
+	VolumeHighIcon,
+	VolumeMute02Icon,
+	VolumeOffIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { uppercase } from "@/utils/string";
-import { useMemo, type ComponentProps, type ReactNode } from "react";
-import type { SelectedKeyframeRef, ElementKeyframe } from "@/animation/types";
-import { cn } from "@/utils/ui";
-import { usePropertiesStore } from "@/components/editor/panels/properties/stores/properties-store";
-import { getTrackTypeForElementType } from "@/timeline/placement/compatibility";
-import { useTimelineStore } from "@/timeline/timeline-store";
-import { KEYFRAME_LANE_HEIGHT_PX } from "./layout";
+import Image from "next/image";
+import { createContext, useContext } from "react";
+import { type ComponentProps, type ReactNode, useMemo } from "react";
+import { AudioVolumeLine } from "./audio-volume-line";
+import { AudioWaveform, WAVEFORM_GAIN_SAMPLE_COUNT } from "./audio-waveform";
 import {
+	type ExpandedRow,
 	getExpandedRows,
 	getExpansionHeight,
-	type ExpandedRow,
 } from "./expanded-layout";
+import { KEYFRAME_LANE_HEIGHT_PX } from "./layout";
+import { TIMELINE_TRACK_THEME, getTimelineElementClassName } from "./theme";
+import { getTrackHeight } from "./track-layout";
 
 const KEYFRAME_INDICATOR_MIN_WIDTH_PX = 40;
 const ELEMENT_RING_WIDTH_PX = 1.5;
@@ -649,7 +649,7 @@ function ResizeHandle({
 			onMouseDown={(event) => onResizeStart({ event, element, track, side })}
 			onClick={(event) => event.stopPropagation()}
 			aria-label={`${isLeft ? "Left" : "Right"} resize handle`}
-		></button>
+		/>
 	);
 }
 
@@ -808,7 +808,6 @@ function ExpandedKeyframeLanes({
 	);
 
 	return (
-		// biome-ignore lint/a11y/noStaticElementInteractions: expanded keyframe lanes are a pointer-only editing surface
 		// biome-ignore lint/a11y/useKeyWithClickEvents: expanded keyframe lanes are a pointer-only editing surface
 		<div
 			ref={containerRef}

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useId, useRef } from "react";
 import { useKeybindingsStore } from "@/actions/keybindings-store";
+import { useCallback, useEffect, useId, useRef } from "react";
 
 export function useOverlayOpenChange({
 	open,
