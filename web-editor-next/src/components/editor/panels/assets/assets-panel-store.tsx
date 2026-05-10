@@ -1,19 +1,19 @@
-import type { ElementType } from "react";
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import {
 	ArrowRightDoubleIcon,
 	ClosedCaptionIcon,
+	ColorsIcon,
 	Folder03Icon,
 	Happy01Icon,
 	HeadphonesIcon,
 	MagicWand05Icon,
-	TextIcon,
 	Settings01Icon,
 	SlidersHorizontalIcon,
-	ColorsIcon,
+	TextIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
+import type { ElementType } from "react";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export const TAB_KEYS = [
 	"media",

@@ -1,5 +1,5 @@
-import type { RetimeConfig } from "@/timeline";
 import { clampRetimeRate } from "@/retime/rate";
+import type { RetimeConfig } from "@/timeline";
 
 export function buildConstantRetime({
 	rate,

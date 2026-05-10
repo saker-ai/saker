@@ -1,12 +1,12 @@
 "use client";
 
-import { cn } from "@/utils/ui";
-import { clamp } from "@/utils/math";
-import { useRef, useState, useLayoutEffect, type ComponentProps } from "react";
-import { useFocusLock } from "@/hooks/use-focus-lock";
 import { Button } from "@/components/ui/button";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { useFocusLock } from "@/hooks/use-focus-lock";
+import { clamp } from "@/utils/math";
+import { cn } from "@/utils/ui";
 import { ArrowTurnBackwardIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { type ComponentProps, useLayoutEffect, useRef, useState } from "react";
 
 const SUFFIX_GAP_PX = 6;
 
@@ -141,7 +141,9 @@ function NumberField({
 	const cumulativeDeltaRef = useRef(0);
 	const [isInputFocused, setIsInputFocused] = useState(false);
 	const [suffixLeft, setSuffixLeft] = useState(0);
-	const ghostValue = Array.isArray(value) ? value.join(", ") : String(value ?? "");
+	const ghostValue = Array.isArray(value)
+		? value.join(", ")
+		: String(value ?? "");
 
 	useLayoutEffect(() => {
 		if (!suffix) {
@@ -153,7 +155,7 @@ function NumberField({
 			ghostRef.current.textContent = ghostValue;
 		}
 		const paddingLeft =
-			parseFloat(getComputedStyle(inputRef.current).paddingLeft) || 0;
+			Number.parseFloat(getComputedStyle(inputRef.current).paddingLeft) || 0;
 		setSuffixLeft(paddingLeft + ghostRef.current.offsetWidth);
 	}, [ghostValue, suffix]);
 
@@ -166,7 +168,7 @@ function NumberField({
 
 	const handleIconPointerDown = (event: React.PointerEvent) => {
 		if (!onScrub || disabled || event.button !== 0) return;
-		const parsed = parseFloat(String(value ?? "0"));
+		const parsed = Number.parseFloat(String(value ?? "0"));
 		startValueRef.current = Number.isNaN(parsed) ? 0 : parsed;
 		cumulativeDeltaRef.current = 0;
 		let hasReceivedFirstMove = false;

@@ -1,5 +1,5 @@
-import { stickersRegistry } from "../registry";
 import type { StickerProvider } from "@/stickers/types";
+import { stickersRegistry } from "../registry";
 import { flagsProvider } from "./flags";
 import { logosProvider } from "./logos";
 import { shapesProvider } from "./shapes";

@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { usePropertiesStore } from "@/components/editor/panels/properties/stores/properties-store";
+import { useEditor } from "@/editor/use-editor";
 import { usePreviewViewport } from "@/preview/components/preview-viewport";
 import { usePreviewInteraction } from "@/preview/hooks/use-preview-interaction";
 import type { SnapLine } from "@/preview/preview-snap";
-import { TransformHandles } from "./transform-handles";
+import { useState } from "react";
 import { MaskHandles } from "./mask-handles";
 import { SnapGuides } from "./snap-guides";
 import { TextEditOverlay } from "./text-edit-overlay";
-import { usePropertiesStore } from "@/components/editor/panels/properties/stores/properties-store";
-import { useEditor } from "@/editor/use-editor";
+import { TransformHandles } from "./transform-handles";
 
 export function PreviewInteractionOverlay() {
 	const [snapLines, setSnapLines] = useState<SnapLine[]>([]);

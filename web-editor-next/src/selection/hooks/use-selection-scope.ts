@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
 import { useSelectionContext } from "@/selection/context";
-import { activateScope, type ScopeEntry } from "@/selection/scope";
+import { type ScopeEntry, activateScope } from "@/selection/scope";
+import { useEffect, useRef } from "react";
 
 export function useSelectionScope() {
 	const { selectedIds, clearSelection } = useSelectionContext();

@@ -1,13 +1,13 @@
-import { useEffect, useReducer, useRef } from "react";
-import { usePreviewViewport } from "@/preview/components/preview-viewport";
-import type { OnSnapLinesChange } from "@/preview/hooks/use-preview-interaction";
+import { registerCanceller } from "@/editor/cancel-interaction";
 import { useEditor } from "@/editor/use-editor";
 import { useShiftKey } from "@/hooks/use-shift-key";
-import { registerCanceller } from "@/editor/cancel-interaction";
+import { usePreviewViewport } from "@/preview/components/preview-viewport";
 import {
 	TransformHandleController,
 	type TransformHandleDeps,
 } from "@/preview/controllers/transform-handle-controller";
+import type { OnSnapLinesChange } from "@/preview/hooks/use-preview-interaction";
+import { useEffect, useReducer, useRef } from "react";
 
 export function useTransformHandles({
 	onSnapLinesChange,

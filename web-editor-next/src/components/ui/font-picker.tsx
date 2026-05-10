@@ -1,22 +1,29 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect, useCallback, type CSSProperties } from "react";
-import { List, type RowComponentProps } from "react-window";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { loadFullFont } from "@/fonts/google-fonts";
 import { SYSTEM_FONTS } from "@/fonts/system-fonts";
 import type { FontAtlas, FontAtlasEntry } from "@/fonts/types";
 import { useFontAtlas } from "@/fonts/use-font-atlas";
 import { cn } from "@/utils/ui";
-import { ChevronDown, Search } from "lucide-react";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { TextIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ChevronDown, Search } from "lucide-react";
+import {
+	type CSSProperties,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import { List, type RowComponentProps } from "react-window";
 
 const FONT_TABS = [
 	{ key: "all", label: "All fonts" },
@@ -47,7 +54,12 @@ export function FontPicker({
 	const [search, setSearch] = useState("");
 	const [activeTab, setActiveTab] = useState<FontTab>("all");
 	const searchInputRef = useRef<HTMLInputElement>(null);
-	const { atlas, status, fontNames, retry: handleRetry } = useFontAtlas({ open });
+	const {
+		atlas,
+		status,
+		fontNames,
+		retry: handleRetry,
+	} = useFontAtlas({ open });
 
 	const filteredFonts = useMemo(() => {
 		if (!search) return fontNames;
@@ -246,7 +258,10 @@ function FontRow({
 		>
 			<div className="min-w-0 overflow-hidden">
 				{isSystemFont ? (
-					<span className="text-xl text-foreground/85" style={{ fontFamily: fontName }}>
+					<span
+						className="text-xl text-foreground/85"
+						style={{ fontFamily: fontName }}
+					>
 						{fontName}
 					</span>
 				) : (

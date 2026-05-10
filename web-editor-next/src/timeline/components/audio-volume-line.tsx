@@ -1,15 +1,10 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { useEditor } from "@/editor/use-editor";
-import { DEFAULTS } from "@/timeline/defaults";
-import {
-	getDbFromLinePos,
-	getLinePosFromDb,
-} from "@/timeline/audio-display";
 import { VOLUME_DB_MAX, VOLUME_DB_MIN } from "@/timeline/audio-constants";
+import { getDbFromLinePos, getLinePosFromDb } from "@/timeline/audio-display";
 import { hasAnimatedVolume } from "@/timeline/audio-state";
+import { DEFAULTS } from "@/timeline/defaults";
 import type { AudioElement } from "@/timeline/types";
 import {
 	clamp,
@@ -19,6 +14,8 @@ import {
 	snapToStep,
 } from "@/utils/math";
 import { cn } from "@/utils/ui";
+import { useCallback, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 const HIT_AREA_HEIGHT_PX = 14;
 const TOOLTIP_OFFSET_PX = 10;
@@ -242,7 +239,6 @@ export function AudioVolumeLine({
 					)}
 					style={{ top: lineTop }}
 				/>
-				{/* biome-ignore lint/a11y/noStaticElementInteractions: timeline volume line is a pointer-only editing surface */}
 				{/* biome-ignore lint/a11y/useKeyWithClickEvents: timeline volume line is a pointer-only editing surface */}
 				<div
 					className="absolute inset-x-0 -translate-y-1/2 touch-none cursor-ns-resize pointer-events-auto"

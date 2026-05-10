@@ -1,6 +1,6 @@
-import type { FrameRate } from "opencut-wasm";
-import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
 import { frameRateToFloat } from "@/fps/utils";
+import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
+import type { FrameRate } from "opencut-wasm";
 
 /**
  * frame intervals for labels - starts at 2 so there's always at least
@@ -206,7 +206,10 @@ export function formatRulerLabel({
 		return formatTimestamp({ timeInSeconds });
 	}
 
-	const frameWithinSecond = getFrameWithinSecond({ timeInSeconds, fps: frameRateToFloat(fps) });
+	const frameWithinSecond = getFrameWithinSecond({
+		timeInSeconds,
+		fps: frameRateToFloat(fps),
+	});
 	return `${frameWithinSecond}f`;
 }
 

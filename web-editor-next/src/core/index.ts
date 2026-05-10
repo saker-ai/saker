@@ -1,18 +1,18 @@
-import { PlaybackManager } from "./managers/playback-manager";
-import { TimelineManager } from "./managers/timeline-manager";
-import { ScenesManager } from "./managers/scenes-manager";
-import { ProjectManager } from "./managers/project-manager";
-import { MediaManager } from "./managers/media-manager";
-import { RendererManager } from "./managers/renderer-manager";
-import { CommandManager } from "./managers/commands";
-import { SaveManager } from "./managers/save-manager";
-import { AudioManager } from "./managers/audio-manager";
-import { SelectionManager } from "./managers/selection-manager";
-import { ClipboardManager } from "./managers/clipboard-manager";
-import { DiagnosticsManager } from "./managers/diagnostics-manager";
 import { registerDefaultEffects } from "@/effects";
 import { registerDefaultMasks } from "@/masks";
 import { registerTranscriptionDiagnostics } from "@/transcription/diagnostics";
+import { AudioManager } from "./managers/audio-manager";
+import { ClipboardManager } from "./managers/clipboard-manager";
+import { CommandManager } from "./managers/commands";
+import { DiagnosticsManager } from "./managers/diagnostics-manager";
+import { MediaManager } from "./managers/media-manager";
+import { PlaybackManager } from "./managers/playback-manager";
+import { ProjectManager } from "./managers/project-manager";
+import { RendererManager } from "./managers/renderer-manager";
+import { SaveManager } from "./managers/save-manager";
+import { ScenesManager } from "./managers/scenes-manager";
+import { SelectionManager } from "./managers/selection-manager";
+import { TimelineManager } from "./managers/timeline-manager";
 
 export class EditorCore {
 	private static instance: EditorCore | null = null;

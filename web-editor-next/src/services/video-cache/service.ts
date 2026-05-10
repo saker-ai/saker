@@ -1,8 +1,8 @@
 import {
-	Input,
 	ALL_FORMATS,
 	BlobSource,
 	CanvasSink,
+	Input,
 	type WrappedCanvas,
 } from "mediabunny";
 

@@ -1,16 +1,16 @@
-import { useEffect, useReducer, useRef } from "react";
+import { registerCanceller } from "@/editor/cancel-interaction";
 import { useEditor } from "@/editor/use-editor";
 import { useShiftKey } from "@/hooks/use-shift-key";
-import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
-import { useTimelineStore } from "@/timeline/timeline-store";
-import { registerCanceller } from "@/editor/cancel-interaction";
+import type { TimelineElement } from "@/timeline";
 import {
-	ResizeController,
 	type ResizeConfig,
+	ResizeController,
 } from "@/timeline/controllers/resize-controller";
 import type { ResizeSide } from "@/timeline/group-resize";
+import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
 import type { SnapPoint } from "@/timeline/snapping";
-import type { TimelineElement } from "@/timeline";
+import { useTimelineStore } from "@/timeline/timeline-store";
+import { useEffect, useReducer, useRef } from "react";
 
 export type { ResizeSide };
 

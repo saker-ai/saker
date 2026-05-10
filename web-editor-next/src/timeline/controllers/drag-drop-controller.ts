@@ -1,36 +1,36 @@
-import type { DragEvent } from "react";
-import { processMediaAssets } from "@/media/processing";
-import { showMediaUploadToast } from "@/media/upload-toast";
-import {
-	DEFAULT_NEW_ELEMENT_DURATION,
-	toElementDurationTicks,
-} from "@/timeline/creation";
-import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
-import type { FrameRate } from "opencut-wasm";
-import {
-	buildTextElement,
-	buildGraphicElement,
-	buildStickerElement,
-	buildElementFromMedia,
-	buildEffectElement,
-} from "@/timeline/element-utils";
-import { AddTrackCommand, InsertElementCommand } from "@/commands/timeline";
 import { BatchCommand } from "@/commands";
 import type { Command } from "@/commands/base-command";
-import { computeDropTarget } from "@/timeline/components/drop-target";
-import type { TimelineDragSource } from "@/timeline/drag-source";
+import { AddTrackCommand, InsertElementCommand } from "@/commands/timeline";
+import { processMediaAssets } from "@/media/processing";
+import type { ProcessedMediaAsset } from "@/media/processing";
+import type { MediaAsset } from "@/media/types";
+import { showMediaUploadToast } from "@/media/upload-toast";
 import type {
-	TrackType,
+	CreateTimelineElement,
 	DropTarget,
 	ElementType,
 	SceneTracks,
 	TimelineTrack,
-	CreateTimelineElement,
+	TrackType,
 } from "@/timeline";
+import { computeDropTarget } from "@/timeline/components/drop-target";
+import {
+	DEFAULT_NEW_ELEMENT_DURATION,
+	toElementDurationTicks,
+} from "@/timeline/creation";
 import type { TimelineDragData } from "@/timeline/drag";
-import type { MediaAsset } from "@/media/types";
-import type { ProcessedMediaAsset } from "@/media/processing";
-import { roundFrameTime, type MediaTime } from "@/wasm";
+import type { TimelineDragSource } from "@/timeline/drag-source";
+import {
+	buildEffectElement,
+	buildElementFromMedia,
+	buildGraphicElement,
+	buildStickerElement,
+	buildTextElement,
+} from "@/timeline/element-utils";
+import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
+import { type MediaTime, roundFrameTime } from "@/wasm";
+import type { FrameRate } from "opencut-wasm";
+import type { DragEvent } from "react";
 
 // --- Config ---
 

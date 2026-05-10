@@ -1,9 +1,9 @@
-import { generateUUID } from "@/utils/id";
-import { buildDefaultParamValues } from "@/params/registry";
-import { effectsRegistry } from "./registry";
-import type { ParamValues } from "@/params";
 import type { Effect, EffectDefinition, EffectPass } from "@/effects/types";
+import type { ParamValues } from "@/params";
+import { buildDefaultParamValues } from "@/params/registry";
 import { VISUAL_ELEMENT_TYPES } from "@/timeline";
+import { generateUUID } from "@/utils/id";
+import { effectsRegistry } from "./registry";
 
 export { effectsRegistry } from "./registry";
 export { registerDefaultEffects } from "./definitions";

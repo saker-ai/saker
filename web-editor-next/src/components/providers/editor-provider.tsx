@@ -1,19 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { useKeybindingsStore } from "@/actions/keybindings-store";
+import { useEditorActions } from "@/actions/use-editor-actions";
+import { useKeybindingsListener } from "@/actions/use-keybindings";
 import { EditorCore } from "@/core";
 import { useEditor } from "@/editor/use-editor";
-import { useKeybindingsListener } from "@/actions/use-keybindings";
-import { useKeybindingsStore } from "@/actions/keybindings-store";
-import { useTimelineStore } from "@/timeline/timeline-store";
-import { useEditorActions } from "@/actions/use-editor-actions";
 import { loadFontAtlas } from "@/fonts/google-fonts";
 import {
 	initializeGpuRenderer,
 	isGpuAvailable,
 } from "@/services/renderer/gpu-renderer";
+import { useTimelineStore } from "@/timeline/timeline-store";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface EditorProviderProps {
 	projectId: string;
@@ -74,7 +74,8 @@ export function EditorProvider({ projectId, children }: EditorProviderProps) {
 					const wasmPanic = (window as Window & { __wasmPanic?: string })
 						.__wasmPanic;
 					if (wasmPanic) {
-						delete (window as Window & { __wasmPanic?: string }).__wasmPanic;
+						(window as Window & { __wasmPanic?: string }).__wasmPanic =
+							undefined;
 						setError(wasmPanic);
 					} else {
 						setError(

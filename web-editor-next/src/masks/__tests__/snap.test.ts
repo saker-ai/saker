@@ -14,13 +14,13 @@ import { getSplitMaskStrokeSegment } from "@/masks/definitions/split";
 import { textMaskDefinition } from "@/masks/definitions/text";
 import { getMaskSnapGeometry } from "@/masks/geometry";
 import { snapMaskInteraction } from "@/masks/snap";
-import type { ElementBounds } from "@/preview/element-bounds";
 import type {
 	CustomMaskParams,
 	RectangleMaskParams,
 	SplitMaskParams,
 	TextMaskParams,
 } from "@/masks/types";
+import type { ElementBounds } from "@/preview/element-bounds";
 
 const bounds: ElementBounds = {
 	cx: 200,

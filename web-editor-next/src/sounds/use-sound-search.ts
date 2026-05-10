@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { useSoundsStore } from "@/sounds/sounds-store";
+import { useEffect } from "react";
 
 export function useSoundSearch({
 	query,

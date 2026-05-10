@@ -1,24 +1,24 @@
 import type { SceneTracks } from "@/timeline";
 import { getTrackTypeForElementType } from "@/timeline/placement/compatibility";
 import { canPlaceTimeSpansOnTrack } from "@/timeline/placement/overlap";
+import {
+	type MediaTime,
+	ZERO_MEDIA_TIME,
+	addMediaTime,
+	maxMediaTime,
+	subMediaTime,
+} from "@/wasm";
+import {
+	getDisplayTracks,
+	getTrackPlacementByDisplayIndex,
+	getTrackPlacementById,
+} from "./track-placement";
 import type {
 	GroupMoveResult,
 	MoveGroup,
 	PlannedElementMove,
 	PlannedTrackCreation,
 } from "./types";
-import {
-	getDisplayTracks,
-	getTrackPlacementByDisplayIndex,
-	getTrackPlacementById,
-} from "./track-placement";
-import {
-	addMediaTime,
-	maxMediaTime,
-	type MediaTime,
-	subMediaTime,
-	ZERO_MEDIA_TIME,
-} from "@/wasm";
 
 type GroupMoveTarget =
 	| {

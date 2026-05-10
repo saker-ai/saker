@@ -1,11 +1,11 @@
 import { Command, type CommandResult } from "@/commands/base-command";
 import { EditorCore } from "@/core";
 import type { TScene } from "@/timeline";
-import { updateSceneInArray } from "@/timeline/scenes";
 import {
 	getFrameTime,
 	toggleBookmarkInArray,
 } from "@/timeline/bookmarks/index";
+import { updateSceneInArray } from "@/timeline/scenes";
 import type { MediaTime } from "@/wasm";
 
 export class ToggleBookmarkCommand extends Command {

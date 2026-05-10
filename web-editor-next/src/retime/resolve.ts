@@ -1,5 +1,5 @@
-import type { RetimeConfig } from "@/timeline";
 import { clampRetimeRate } from "@/retime/rate";
+import type { RetimeConfig } from "@/timeline";
 
 function getSafeRate({ rate }: { rate: number }): number {
 	return clampRetimeRate({ rate });

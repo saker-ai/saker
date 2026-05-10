@@ -1,5 +1,5 @@
-import ReactMarkdown from "react-markdown";
 import { cn } from "@/utils/ui";
+import ReactMarkdown from "react-markdown";
 
 export function ReactMarkdownWrapper({
 	children,

@@ -1,5 +1,5 @@
-import type { ElementWithBounds } from "./element-bounds";
 import type { ElementRef } from "@/timeline/types";
+import type { ElementWithBounds } from "./element-bounds";
 
 function pointInRotatedRect({
 	px,

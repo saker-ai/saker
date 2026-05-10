@@ -1,38 +1,38 @@
-import type { MouseEvent as ReactMouseEvent } from "react";
-import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
 import {
-	addMediaTime,
-	maxMediaTime,
-	type MediaTime,
-	mediaTime,
-	minMediaTime,
-	subMediaTime,
-	TICKS_PER_SECOND,
-} from "@/wasm";
+	type SceneTracks,
+	type TimelineElement,
+	type TimelineTrack,
+	isRetimableElement,
+} from "@/timeline";
+import { getAnimationKeyframeSnapPointsForTimeline } from "@/timeline/animation-snap-points";
+import { getElementEdgeSnapPoints } from "@/timeline/element-snap-source";
 import {
-	computeGroupResize,
 	type GroupResizeMember,
 	type GroupResizeResult,
 	type GroupResizeUpdate,
 	type ResizeSide,
+	computeGroupResize,
 } from "@/timeline/group-resize";
+import { getPlayheadSnapPoints } from "@/timeline/playhead-snap-source";
+import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
 import {
+	type SnapPoint,
 	buildTimelineSnapPoints,
 	getTimelineSnapThresholdInTicks,
 	resolveTimelineSnap,
-	type SnapPoint,
 } from "@/timeline/snapping";
-import { getElementEdgeSnapPoints } from "@/timeline/element-snap-source";
-import { getPlayheadSnapPoints } from "@/timeline/playhead-snap-source";
-import { getAnimationKeyframeSnapPointsForTimeline } from "@/timeline/animation-snap-points";
-import {
-	isRetimableElement,
-	type SceneTracks,
-	type TimelineElement,
-	type TimelineTrack,
-} from "@/timeline";
 import type { ElementRef } from "@/timeline/types";
+import {
+	type MediaTime,
+	TICKS_PER_SECOND,
+	addMediaTime,
+	maxMediaTime,
+	mediaTime,
+	minMediaTime,
+	subMediaTime,
+} from "@/wasm";
 import type { FrameRate } from "opencut-wasm";
+import type { MouseEvent as ReactMouseEvent } from "react";
 
 // --- Session ---
 
@@ -112,7 +112,8 @@ export function buildResizeMembers({
 		const rightNeighborBound = otherElements
 			.filter(
 				(el) =>
-					el.startTime >= addMediaTime({ a: element.startTime, b: element.duration }),
+					el.startTime >=
+					addMediaTime({ a: element.startTime, b: element.duration }),
 			)
 			.reduce<MediaTime | null>(
 				(bound, el) =>
@@ -292,7 +293,7 @@ export class ResizeController {
 		const maxSnapDistance = getTimelineSnapThresholdInTicks({ zoomLevel });
 
 		let closestSnapPoint: SnapPoint | null = null;
-		let closestSnapDistance = Infinity;
+		let closestSnapDistance = Number.POSITIVE_INFINITY;
 		let deltaTime = rawDeltaTime;
 
 		for (const member of session.members) {
@@ -311,7 +312,10 @@ export class ResizeController {
 			) {
 				closestSnapDistance = snapResult.snapDistance;
 				closestSnapPoint = snapResult.snapPoint;
-				deltaTime = subMediaTime({ a: snapResult.snappedTime, b: baseEdgeTime });
+				deltaTime = subMediaTime({
+					a: snapResult.snappedTime,
+					b: baseEdgeTime,
+				});
 			}
 		}
 

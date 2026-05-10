@@ -81,8 +81,14 @@ describe("V21 to V22 Migration", () => {
 		const tracks = scenes[0].tracks as Array<Record<string, unknown>>;
 		const elements = tracks[0].elements as Array<Record<string, unknown>>;
 		const animations = elements[0].animations as Record<string, unknown>;
-		const bindings = animations.bindings as Record<string, Record<string, unknown>>;
-		const channels = animations.channels as Record<string, Record<string, unknown>>;
+		const bindings = animations.bindings as Record<
+			string,
+			Record<string, unknown>
+		>;
+		const channels = animations.channels as Record<
+			string,
+			Record<string, unknown>
+		>;
 
 		expect(bindings.opacity).toEqual({
 			path: "opacity",

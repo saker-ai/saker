@@ -1,13 +1,13 @@
+import { cloneAnimations } from "@/animation";
 import {
 	Command,
-	createElementSelectionResult,
 	type CommandResult,
+	createElementSelectionResult,
 } from "@/commands/base-command";
-import type { SceneTracks, TimelineElement } from "@/timeline";
-import { generateUUID } from "@/utils/id";
 import { EditorCore } from "@/core";
+import type { SceneTracks, TimelineElement } from "@/timeline";
 import { applyPlacement, resolveTrackPlacement } from "@/timeline/placement";
-import { cloneAnimations } from "@/animation";
+import { generateUUID } from "@/utils/id";
 import type { MediaTime } from "@/wasm";
 
 interface DuplicateElementsParams {

@@ -1,13 +1,13 @@
-import { useEffect, useRef } from "react";
 import { useEditor } from "@/editor/use-editor";
 import { useShiftKey } from "@/hooks/use-shift-key";
-import { useEdgeAutoScroll } from "@/timeline/hooks/use-edge-auto-scroll";
 import { timelineTimeToPixels } from "@/timeline";
 import {
-	PlayheadController,
 	type PlayheadConfig,
+	PlayheadController,
 } from "@/timeline/controllers/playhead-controller";
+import { useEdgeAutoScroll } from "@/timeline/hooks/use-edge-auto-scroll";
 import type { MediaTime } from "@/wasm";
+import { useEffect, useRef } from "react";
 
 interface UseTimelinePlayheadProps {
 	zoomLevel: number;

@@ -1,7 +1,7 @@
-import { PlusSignIcon, RulerIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
 import type { GuideDefinition } from "@/guides/types";
+import { PlusSignIcon, RulerIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 function CustomGuideOptions() {
 	return (

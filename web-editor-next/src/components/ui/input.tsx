@@ -1,18 +1,19 @@
 "use client";
 
-import { Eye, EyeOff, X } from "lucide-react";
-import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/utils/ui";
-import { Button } from "./button";
-import { forwardRef, type ComponentProps } from "react";
+import { type VariantProps, cva } from "class-variance-authority";
+import { Eye, EyeOff, X } from "lucide-react";
+import { type ComponentProps, forwardRef } from "react";
 import { useState } from "react";
+import { Button } from "./button";
 
 const inputVariants = cva(
 	"file:text-foreground placeholder:text-muted-foreground border-border bg-input flex w-full min-w-0 rounded-md border shadow-xs outline-none file:inline-flex file:border-0 file:bg-transparent file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-offset-0 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
 	{
 		variants: {
 			variant: {
-				default: "selection:bg-primary selection:text-primary-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20",
+				default:
+					"selection:bg-primary selection:text-primary-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20",
 				outline: "bg-background",
 				destructive:
 					"selection:bg-destructive selection:text-destructive-foreground focus-visible:border-destructive focus-visible:ring-destructive/10",

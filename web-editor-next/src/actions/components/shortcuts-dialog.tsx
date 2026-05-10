@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useKeybindingsStore } from "@/actions/keybindings-store";
 import {
 	type KeyboardShortcut,
 	useKeyboardShortcutsHelp,
 } from "@/actions/use-keyboard-shortcuts-help";
-import { useKeybindingsStore } from "@/actions/keybindings-store";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -16,6 +14,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export function ShortcutsDialog({
 	isOpen,

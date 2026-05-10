@@ -73,7 +73,9 @@ describe("V8 to V9 Migration", () => {
 		const track = (
 			result.project.scenes as Array<{ tracks: Array<{ elements: unknown[] }> }>
 		)[0].tracks[0];
-		const elements = track.elements as Array<{ background: { enabled: boolean; color: string } }>;
+		const elements = track.elements as Array<{
+			background: { enabled: boolean; color: string };
+		}>;
 
 		expect(elements[0].background.enabled).toBe(true);
 		expect(elements[0].background.color).toBe("#ff0000");

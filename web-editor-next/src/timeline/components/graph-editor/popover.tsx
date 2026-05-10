@@ -1,26 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { getBezierPoint } from "@/animation/bezier";
+import type { NormalizedCubicBezier } from "@/animation/types";
+import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/ui";
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	ArrowDown01Icon,
 	Delete02Icon,
 	PlusSignIcon,
 } from "@hugeicons/core-free-icons";
-import { getBezierPoint } from "@/animation/bezier";
-import type { NormalizedCubicBezier } from "@/animation/types";
-import type { GraphEditorComponentOption } from "./session";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useState } from "react";
+import { BEZIER_GRAPH_MIN_HEIGHT, BezierGraph } from "./bezier-graph";
+import {
+	removePreset,
+	savePreset,
+	useCustomPresets,
+} from "./custom-presets-store";
 import {
 	BUILTIN_PRESETS,
-	PRESET_MATCH_TOLERANCE,
 	type EasingPreset,
+	PRESET_MATCH_TOLERANCE,
 } from "./easing-presets";
-import { removePreset, savePreset, useCustomPresets } from "./custom-presets-store";
-import { BezierGraph, BEZIER_GRAPH_MIN_HEIGHT } from "./bezier-graph";
+import type { GraphEditorComponentOption } from "./session";
 
 const COLLAPSED_MAX = 6;
 const THUMB_SEGMENTS = 24;
@@ -123,7 +127,11 @@ export function GraphEditorPopover({
 					)}
 				</div>
 
-				<Tabs variant="underline" defaultValue="presets" className="flex flex-col gap-2">
+				<Tabs
+					variant="underline"
+					defaultValue="presets"
+					className="flex flex-col gap-2"
+				>
 					<TabsList className="px-3">
 						<TabsTrigger value="presets" className="text-xs">
 							Presets
@@ -311,8 +319,24 @@ function CurveThumb({ value }: { value: NormalizedCubicBezier }) {
 	const points: string[] = [];
 	for (let i = 0; i <= THUMB_SEGMENTS; i++) {
 		const progress = i / THUMB_SEGMENTS;
-		const x = toThumbX({ value: getBezierPoint({ progress, p0: 0, p1: value[0], p2: value[2], p3: 1 }) });
-		const y = toThumbY({ value: getBezierPoint({ progress, p0: 0, p1: value[1], p2: value[3], p3: 1 }) });
+		const x = toThumbX({
+			value: getBezierPoint({
+				progress,
+				p0: 0,
+				p1: value[0],
+				p2: value[2],
+				p3: 1,
+			}),
+		});
+		const y = toThumbY({
+			value: getBezierPoint({
+				progress,
+				p0: 0,
+				p1: value[1],
+				p2: value[3],
+				p3: 1,
+			}),
+		});
 		points.push(`${x},${y}`);
 	}
 	return (

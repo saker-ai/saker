@@ -1,6 +1,6 @@
-import { create } from "zustand";
 import { DEFAULT_CANVAS_PRESETS } from "@/canvas/sizes";
 import type { TCanvasSize } from "@/project/types";
+import { create } from "zustand";
 
 interface EditorState {
 	isInitializing: boolean;

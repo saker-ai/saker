@@ -14,17 +14,24 @@ import type {
 	ScalarCurveKeyframePatch,
 	ScalarSegmentType,
 } from "@/animation/types";
+import { generateUUID } from "@/utils/id";
 import {
-	cloneAnimationBinding,
-	createAnimationBinding,
-	decomposeAnimationValue,
-} from "./binding-values";
+	type MediaTime,
+	ZERO_MEDIA_TIME,
+	roundMediaTime,
+	subMediaTime,
+} from "@/wasm";
 import {
 	getBezierPoint,
 	getDefaultLeftHandle,
 	getDefaultRightHandle,
 	solveBezierProgressForTime,
 } from "./bezier";
+import {
+	cloneAnimationBinding,
+	createAnimationBinding,
+	decomposeAnimationValue,
+} from "./binding-values";
 import {
 	getChannelValueAtTime,
 	getScalarSegmentInterpolation,
@@ -34,13 +41,6 @@ import {
 	coerceAnimationValueForProperty,
 	getAnimationPropertyDefinition,
 } from "./property-registry";
-import {
-	type MediaTime,
-	roundMediaTime,
-	subMediaTime,
-	ZERO_MEDIA_TIME,
-} from "@/wasm";
-import { generateUUID } from "@/utils/id";
 
 function isNearlySameTime({
 	leftTime,
@@ -73,7 +73,10 @@ function toAnimation({
 			hasChannelKeys({ channel }),
 		),
 	);
-	if (Object.keys(nextBindings).length === 0 || Object.keys(nextChannels).length === 0) {
+	if (
+		Object.keys(nextBindings).length === 0 ||
+		Object.keys(nextChannels).length === 0
+	) {
 		return undefined;
 	}
 
@@ -238,7 +241,10 @@ function getBindingComponent({
 	binding: AnimationBindingInstance;
 	componentKey: string;
 }) {
-	return binding.components.find((component) => component.key === componentKey) ?? null;
+	return (
+		binding.components.find((component) => component.key === componentKey) ??
+		null
+	);
 }
 
 function getTargetKeyMetadata({
@@ -628,7 +634,9 @@ export function removeKeyframe({
 		return undefined;
 	}
 
-	const nextKeys = channel.keys.filter((keyframe) => keyframe.id !== keyframeId);
+	const nextKeys = channel.keys.filter(
+		(keyframe) => keyframe.id !== keyframeId,
+	);
 	if (nextKeys.length === 0) {
 		return undefined;
 	}
@@ -790,7 +798,9 @@ export function updateScalarKeyframeCurve({
 		return animations;
 	}
 
-	const keyframeIndex = channel.keys.findIndex((keyframe) => keyframe.id === keyframeId);
+	const keyframeIndex = channel.keys.findIndex(
+		(keyframe) => keyframe.id === keyframeId,
+	);
 	if (keyframeIndex < 0) {
 		return animations;
 	}
@@ -802,11 +812,11 @@ export function updateScalarKeyframeCurve({
 		leftHandle:
 			patch.leftHandle === undefined
 				? currentKey.leftHandle
-				: patch.leftHandle ?? undefined,
+				: (patch.leftHandle ?? undefined),
 		rightHandle:
 			patch.rightHandle === undefined
 				? currentKey.rightHandle
-				: patch.rightHandle ?? undefined,
+				: (patch.rightHandle ?? undefined),
 		segmentToNext: patch.segmentToNext ?? currentKey.segmentToNext,
 		tangentMode: patch.tangentMode ?? currentKey.tangentMode,
 	};
@@ -1029,7 +1039,10 @@ function splitScalarChannelAtTime({
 	const hasBoundaryOnRight = rightKeys.some((key) =>
 		isNearlySameTime({ leftTime: key.time, rightTime: 0 }),
 	);
-	if (!shouldIncludeSplitBoundary || (hasBoundaryOnLeft && hasBoundaryOnRight)) {
+	if (
+		!shouldIncludeSplitBoundary ||
+		(hasBoundaryOnLeft && hasBoundaryOnRight)
+	) {
 		return {
 			leftChannel: leftKeys.length
 				? normalizeChannel({
@@ -1052,15 +1065,14 @@ function splitScalarChannelAtTime({
 		};
 	}
 
-	for (let keyIndex = 0; keyIndex < normalizedChannel.keys.length - 1; keyIndex++) {
+	for (
+		let keyIndex = 0;
+		keyIndex < normalizedChannel.keys.length - 1;
+		keyIndex++
+	) {
 		const leftKey = normalizedChannel.keys[keyIndex];
 		const rightKey = normalizedChannel.keys[keyIndex + 1];
-		if (
-			!(
-				splitTime > leftKey.time &&
-				splitTime < rightKey.time
-			)
-		) {
+		if (!(splitTime > leftKey.time && splitTime < rightKey.time)) {
 			continue;
 		}
 
@@ -1264,7 +1276,8 @@ export function splitAnimationsAtTime({
 				hasLeftKeys = true;
 			}
 			if (splitResult.rightChannel) {
-				rightAnimations.channels[component.channelId] = splitResult.rightChannel;
+				rightAnimations.channels[component.channelId] =
+					splitResult.rightChannel;
 				hasRightKeys = true;
 			}
 		}

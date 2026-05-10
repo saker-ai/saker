@@ -1,14 +1,14 @@
-import { useEffect, useReducer, useRef } from "react";
+import { registerCanceller } from "@/editor/cancel-interaction";
 import { useEditor } from "@/editor/use-editor";
 import { useShiftKey } from "@/hooks/use-shift-key";
 import { usePreviewViewport } from "@/preview/components/preview-viewport";
-import type { SnapLine } from "@/preview/preview-snap";
-import { registerCanceller } from "@/editor/cancel-interaction";
 import {
 	PreviewInteractionController,
 	type PreviewInteractionDeps,
 	type PreviewInteractionDepsRef,
 } from "@/preview/controllers/preview-interaction-controller";
+import type { SnapLine } from "@/preview/preview-snap";
+import { useEffect, useReducer, useRef } from "react";
 
 export type OnSnapLinesChange = (lines: SnapLine[]) => void;
 
@@ -72,10 +72,7 @@ export function usePreviewInteraction({
 	const controller = controllerRef.current;
 
 	const [, rerender] = useReducer((n: number) => n + 1, 0);
-	useEffect(
-		() => controller.subscribe({ listener: rerender }),
-		[controller],
-	);
+	useEffect(() => controller.subscribe({ listener: rerender }), [controller]);
 
 	useEffect(() => {
 		if (!controller.isDragging) return;

@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
 	// primitives don't get bundled. Significant size win for radix-ui
 	// (which re-exports every primitive from one barrel) and the icon
 	// libraries we touch from many files.
+	transpilePackages: ["@saker/editor-protocol"],
 	experimental: {
 		optimizePackageImports: [
 			"radix-ui",

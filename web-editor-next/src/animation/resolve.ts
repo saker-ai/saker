@@ -8,9 +8,7 @@ import {
 	composeAnimationValue,
 	decomposeAnimationValue,
 } from "./binding-values";
-import {
-	getChannelValueAtTime,
-} from "./interpolation";
+import { getChannelValueAtTime } from "./interpolation";
 
 export function getElementLocalTime({
 	timelineTime,

@@ -1,9 +1,9 @@
-import { useEditor } from "@/editor/use-editor";
-import { clamp } from "@/utils/math";
-import { NumberField } from "@/components/ui/number-field";
+import type { ElementAnimations } from "@/animation/types";
+import { resolveOpacityAtTime } from "@/animation/values";
+import { KeyframeToggle } from "@/components/editor/panels/properties/components/keyframe-toggle";
+import { useElementPlayhead } from "@/components/editor/panels/properties/hooks/use-element-playhead";
+import { useKeyframedNumberProperty } from "@/components/editor/panels/properties/hooks/use-keyframed-number-property";
 import { OcCheckerboardIcon } from "@/components/icons";
-import { Fragment, useRef } from "react";
-import { useMenuPreview } from "@/editor/use-menu-preview";
 import {
 	Section,
 	SectionContent,
@@ -11,6 +11,7 @@ import {
 	SectionHeader,
 	SectionTitle,
 } from "@/components/section";
+import { NumberField } from "@/components/ui/number-field";
 import {
 	Select,
 	SelectContent,
@@ -19,18 +20,17 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useEditor } from "@/editor/use-editor";
+import { useMenuPreview } from "@/editor/use-menu-preview";
 import type { BlendMode } from "@/rendering";
 import type { ElementType } from "@/timeline";
-import type { ElementAnimations } from "@/animation/types";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { RainDropIcon } from "@hugeicons/core-free-icons";
-import { KeyframeToggle } from "@/components/editor/panels/properties/components/keyframe-toggle";
-import { useKeyframedNumberProperty } from "@/components/editor/panels/properties/hooks/use-keyframed-number-property";
-import { useElementPlayhead } from "@/components/editor/panels/properties/hooks/use-element-playhead";
-import { resolveOpacityAtTime } from "@/animation/values";
 import { DEFAULTS } from "@/timeline/defaults";
-import { isPropertyAtDefault } from "./transform-tab";
+import { clamp } from "@/utils/math";
 import type { MediaTime } from "@/wasm";
+import { RainDropIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Fragment, useRef } from "react";
+import { isPropertyAtDefault } from "./transform-tab";
 
 type BlendingElement = {
 	id: string;
@@ -136,7 +136,7 @@ export function BlendingTab({
 		isPlayheadWithinElementRange,
 		displayValue: Math.round(resolvedOpacity * 100).toString(),
 		parse: (input) => {
-			const parsed = parseFloat(input);
+			const parsed = Number.parseFloat(input);
 			if (Number.isNaN(parsed)) return null;
 			return clamp({ value: parsed, min: 0, max: 100 }) / 100;
 		},

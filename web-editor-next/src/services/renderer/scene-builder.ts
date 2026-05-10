@@ -1,17 +1,17 @@
-import type { SceneTracks, TimelineTrack } from "@/timeline";
-import type { MediaAsset } from "@/media/types";
-import { RootNode } from "./nodes/root-node";
-import { VideoNode } from "./nodes/video-node";
-import { ImageNode } from "./nodes/image-node";
-import { TextNode } from "./nodes/text-node";
-import { StickerNode } from "./nodes/sticker-node";
-import { GraphicNode } from "./nodes/graphic-node";
-import { ColorNode } from "./nodes/color-node";
-import { BlurBackgroundNode } from "./nodes/blur-background-node";
-import { EffectLayerNode } from "./nodes/effect-layer-node";
-import type { AnyBaseNode } from "./nodes/base-node";
-import type { TBackground, TCanvasSize } from "@/project/types";
 import { DEFAULT_BACKGROUND_BLUR_INTENSITY } from "@/background/blur";
+import type { MediaAsset } from "@/media/types";
+import type { TBackground, TCanvasSize } from "@/project/types";
+import type { SceneTracks, TimelineTrack } from "@/timeline";
+import type { AnyBaseNode } from "./nodes/base-node";
+import { BlurBackgroundNode } from "./nodes/blur-background-node";
+import { ColorNode } from "./nodes/color-node";
+import { EffectLayerNode } from "./nodes/effect-layer-node";
+import { GraphicNode } from "./nodes/graphic-node";
+import { ImageNode } from "./nodes/image-node";
+import { RootNode } from "./nodes/root-node";
+import { StickerNode } from "./nodes/sticker-node";
+import { TextNode } from "./nodes/text-node";
+import { VideoNode } from "./nodes/video-node";
 
 const PREVIEW_MAX_IMAGE_SIZE = 2048;
 

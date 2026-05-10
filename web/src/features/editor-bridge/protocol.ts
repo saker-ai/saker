@@ -50,17 +50,23 @@ function pruneExpiredStorage(): void {
 	if (typeof window === "undefined" || !window.localStorage) return;
 	const cutoff = Date.now() - STORAGE_TTL_MS;
 	const drop: string[] = [];
-	for (let i = 0; i < window.localStorage.length; i++) {
-		const k = window.localStorage.key(i);
-		if (!k || !k.startsWith(STORAGE_KEY_PREFIX)) continue;
-		try {
-			const v = window.localStorage.getItem(k);
-			if (!v) continue;
-			const r = JSON.parse(v) as StoredImport;
-			if (!r.ts || r.ts < cutoff) drop.push(k);
-		} catch {
-			drop.push(k);
+	try {
+		const len = window.localStorage.length;
+		for (let i = 0; i < len; i++) {
+			const k = window.localStorage.key(i);
+			if (!k || !k.startsWith(STORAGE_KEY_PREFIX)) continue;
+			try {
+				const v = window.localStorage.getItem(k);
+				if (!v) continue;
+				const r = JSON.parse(v) as StoredImport;
+				if (!r.ts || r.ts < cutoff) drop.push(k);
+			} catch {
+				drop.push(k);
+			}
 		}
+	} catch {
+		/* localStorage may be unavailable during concurrent access */
+		return;
 	}
 	for (const k of drop) {
 		try {
@@ -77,7 +83,7 @@ export function buildEditorImportUrl(
 	const payload: EditorImportPayload = Array.isArray(input)
 		? { assets: input }
 		: input;
-	if (payload.assets.length === 0) return EDITOR_BASE_PATH;
+	if (!payload.assets || payload.assets.length === 0) return EDITOR_BASE_PATH;
 	const inline = encodeImportPayload(payload);
 	if (inline.length <= INLINE_LIMIT_CHARS) {
 		return `${EDITOR_BASE_PATH}?import=inline:${inline}`;
@@ -94,6 +100,6 @@ export function isEditorExportMessage(value: unknown): value is EditorExportMess
 	if (v.type !== EDITOR_EXPORT_MESSAGE_TYPE) return false;
 	if (typeof v.filename !== "string") return false;
 	const hasBlob = typeof Blob !== "undefined" && v.blob instanceof Blob;
-	const hasDataUrl = typeof v.dataUrl === "string" && v.dataUrl.length > 0;
+	const hasDataUrl = v.dataUrl != null && typeof v.dataUrl === "string" && v.dataUrl.length > 0;
 	return hasBlob || hasDataUrl;
 }

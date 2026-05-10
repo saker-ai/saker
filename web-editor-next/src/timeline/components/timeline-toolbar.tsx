@@ -1,54 +1,54 @@
-import { useEditor } from "@/editor/use-editor";
-import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
-import {
-	TooltipProvider,
-	Tooltip,
-	TooltipTrigger,
-	TooltipContent,
-} from "@/components/ui/tooltip";
+import { type TActionWithOptionalArgs, invokeAction } from "@/actions";
+import { ScenesView } from "@/components/editor/scenes-view";
+import { OcRippleIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import { PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Slider } from "@/components/ui/slider";
 import {
 	SplitButton,
 	SplitButtonLeft,
 	SplitButtonRight,
 	SplitButtonSeparator,
 } from "@/components/ui/split-button";
-import { Slider } from "@/components/ui/slider";
-import { TIMELINE_ZOOM_BUTTON_FACTOR } from "./interaction";
-import { TIMELINE_ZOOM_MAX } from "@/timeline/scale";
-import { sliderToZoom, zoomToSlider } from "@/timeline/zoom-utils";
-import { ScenesView } from "@/components/editor/scenes-view";
-import { type TActionWithOptionalArgs, invokeAction } from "@/actions";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useEditor } from "@/editor/use-editor";
+import { hasMediaId } from "@/timeline";
 import {
 	canToggleSourceAudio,
 	getSourceAudioActionLabel,
 	isSourceAudioSeparated,
 } from "@/timeline/audio-separation";
-import { hasMediaId } from "@/timeline";
-import { cn } from "@/utils/ui";
+import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
+import { TIMELINE_ZOOM_MAX } from "@/timeline/scale";
 import { useTimelineStore } from "@/timeline/timeline-store";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { sliderToZoom, zoomToSlider } from "@/timeline/zoom-utils";
+import { cn } from "@/utils/ui";
 import {
-	Bookmark02Icon,
-	Delete02Icon,
-	SnowIcon,
-	ScissorIcon,
-	MagnetIcon,
-	SearchAddIcon,
-	SearchMinusIcon,
-	Copy01Icon,
 	AlignLeftIcon,
 	AlignRightIcon,
-	Link02Icon,
-	Layers01Icon,
+	Bookmark02Icon,
 	Chart03Icon,
+	Copy01Icon,
+	Delete02Icon,
+	Layers01Icon,
+	Link02Icon,
+	MagnetIcon,
+	ScissorIcon,
+	SearchAddIcon,
+	SearchMinusIcon,
+	SnowIcon,
 	Unlink02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { OcRippleIcon } from "@/components/icons";
 import { GraphEditorPopover } from "./graph-editor/popover";
-import { PopoverTrigger } from "@/components/ui/popover";
 import { useGraphEditorController } from "./graph-editor/use-controller";
+import { TIMELINE_ZOOM_BUTTON_FACTOR } from "./interaction";
 
 export function TimelineToolbar({
 	zoomLevel,

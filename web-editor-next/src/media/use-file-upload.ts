@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
 import { useEditor } from "@/editor/use-editor";
+import { useRef, useState } from "react";
 
 interface UseFileUploadOptions {
 	accept?: string;

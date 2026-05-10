@@ -1,16 +1,17 @@
 "use client";
 
 import { usePreviewViewport } from "@/preview/components/preview-viewport";
-import { useTransformHandles } from "@/preview/hooks/use-transform-handles";
-import { isVisualElement } from "@/timeline/element-utils";
 import {
-	getCornerPosition,
-	getEdgeHandlePosition,
-	ROTATION_HANDLE_OFFSET,
 	type Corner,
 	type Edge,
+	ROTATION_HANDLE_OFFSET,
+	getCornerPosition,
+	getEdgeHandlePosition,
 } from "@/preview/element-bounds";
 import type { OnSnapLinesChange } from "@/preview/hooks/use-preview-interaction";
+import { useTransformHandles } from "@/preview/hooks/use-transform-handles";
+import { isVisualElement } from "@/timeline/element-utils";
+import { Rotate01Icon } from "@hugeicons/core-free-icons";
 import {
 	BoundingBoxOutline,
 	CornerHandle,
@@ -18,7 +19,6 @@ import {
 	IconHandle,
 	getResizeCursor,
 } from "./handle-primitives";
-import { Rotate01Icon } from "@hugeicons/core-free-icons";
 
 const CORNERS: Corner[] = [
 	"top-left",

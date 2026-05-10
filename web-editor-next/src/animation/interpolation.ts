@@ -8,6 +8,7 @@ import type {
 	ScalarAnimationKey,
 	ScalarSegmentType,
 } from "@/animation/types";
+import { clamp } from "@/utils/math";
 import { mediaTime } from "@/wasm";
 import {
 	getBezierPoint,
@@ -15,7 +16,6 @@ import {
 	getDefaultRightHandle,
 	solveBezierProgressForTime,
 } from "./bezier";
-import { clamp } from "@/utils/math";
 
 function byTimeAscending({
 	leftTime,
@@ -196,7 +196,10 @@ function extrapolateScalarEdge({
 		return edgeKey.value;
 	}
 
-	return edgeKey.value + ((time - edgeKey.time) / span) * (neighborKey.value - edgeKey.value);
+	return (
+		edgeKey.value +
+		((time - edgeKey.time) / span) * (neighborKey.value - edgeKey.value)
+	);
 }
 
 export function getScalarSegmentInterpolation({

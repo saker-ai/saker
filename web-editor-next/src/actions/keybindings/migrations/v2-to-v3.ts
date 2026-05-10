@@ -1,5 +1,5 @@
-import type { KeybindingConfig, ShortcutKey } from "@/actions/keybinding";
 import type { TActionWithOptionalArgs } from "@/actions";
+import type { KeybindingConfig, ShortcutKey } from "@/actions/keybinding";
 
 interface V2State {
 	keybindings: KeybindingConfig;

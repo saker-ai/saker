@@ -1,11 +1,11 @@
-import type { EditorCore } from "@/core";
 import {
-	buildPasteClipboardCommand,
-	copyClipboardEntry,
 	type ClipboardEntry,
 	type CopyContext,
 	type PasteContext,
+	buildPasteClipboardCommand,
+	copyClipboardEntry,
 } from "@/clipboard";
+import type { EditorCore } from "@/core";
 import type { MediaTime } from "@/wasm";
 
 export class ClipboardManager {
@@ -75,8 +75,8 @@ export class ClipboardManager {
 	}
 
 	private notify(): void {
-		this.listeners.forEach((listener) => {
+		for (const listener of this.listeners) {
 			listener();
-		});
+		}
 	}
 }

@@ -13,6 +13,7 @@ function utf8ToBase64Url(str: string): string {
 }
 
 function base64UrlToUtf8(b64url: string): string {
+	if (!b64url) return "";
 	const padded = b64url.replace(/-/g, "+").replace(/_/g, "/");
 	const pad = padded.length % 4 === 0 ? "" : "=".repeat(4 - (padded.length % 4));
 	const dec = typeof atob !== "undefined" ? atob : (window.atob as typeof atob);
@@ -48,6 +49,7 @@ export function readStoredImport(key: string): EditorImportPayload | null {
 		window.localStorage.removeItem(fullKey);
 		const r = JSON.parse(v) as StoredImport;
 		if (!r.ts || Date.now() - r.ts > STORAGE_TTL_MS) return null;
+		if (!r.payload || !Array.isArray(r.payload.assets)) return null;
 		return r.payload;
 	} catch {
 		return null;

@@ -1,15 +1,13 @@
-import { EditorCore } from "@/core";
-import {
-	updateScalarKeyframeCurve,
-} from "@/animation";
-import { Command, type CommandResult } from "@/commands/base-command";
-import { updateElementInSceneTracks } from "@/timeline";
-import { resolveAnimationTarget } from "@/timeline/animation-targets";
+import { updateScalarKeyframeCurve } from "@/animation";
 import type {
 	AnimationPath,
 	ScalarCurveKeyframePatch,
 } from "@/animation/types";
+import { Command, type CommandResult } from "@/commands/base-command";
+import { EditorCore } from "@/core";
+import { updateElementInSceneTracks } from "@/timeline";
 import type { SceneTracks } from "@/timeline";
+import { resolveAnimationTarget } from "@/timeline/animation-targets";
 
 export class UpdateScalarKeyframeCurveCommand extends Command {
 	private savedState: SceneTracks | null = null;

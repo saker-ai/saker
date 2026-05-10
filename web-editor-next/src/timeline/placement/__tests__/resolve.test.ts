@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import type { Transform } from "@/rendering";
 import type {
 	AudioElement,
 	AudioTrack,
@@ -12,9 +13,8 @@ import type {
 	VideoElement,
 	VideoTrack,
 } from "@/timeline";
-import type { Transform } from "@/rendering";
 import { resolveTrackPlacement } from "@/timeline/placement";
-import { mediaTime, ZERO_MEDIA_TIME } from "@/wasm";
+import { ZERO_MEDIA_TIME, mediaTime } from "@/wasm";
 
 function buildTransform(): Transform {
 	return {

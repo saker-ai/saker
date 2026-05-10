@@ -1,5 +1,3 @@
-"use client";
-
 import type { ProgressCallback } from "./progress";
 
 export type ComposeInputType = "video" | "audio" | "image";

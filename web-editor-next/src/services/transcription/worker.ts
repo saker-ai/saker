@@ -1,13 +1,13 @@
 import {
-	pipeline,
-	type AutomaticSpeechRecognitionPipeline,
-	type AutomaticSpeechRecognitionOutput,
-} from "@huggingface/transformers";
-import type { TranscriptionSegment } from "@/transcription/types";
-import {
 	DEFAULT_CHUNK_LENGTH_SECONDS,
 	DEFAULT_STRIDE_SECONDS,
 } from "@/transcription/audio";
+import type { TranscriptionSegment } from "@/transcription/types";
+import {
+	type AutomaticSpeechRecognitionOutput,
+	type AutomaticSpeechRecognitionPipeline,
+	pipeline,
+} from "@huggingface/transformers";
 
 export type WorkerMessage =
 	| { type: "init"; modelId: string }

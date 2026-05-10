@@ -1,23 +1,23 @@
 "use client";
 
-import { useRef } from "react";
+import { useEditor } from "@/editor/use-editor";
 import {
-	getCenteredLineLeft,
 	TIMELINE_INDICATOR_LINE_WIDTH_PX,
+	getCenteredLineLeft,
 	timelineTimeToSnappedPixels,
 } from "@/timeline";
 import { useTimelinePlayhead } from "@/timeline/hooks/use-timeline-playhead";
 import {
+	TICKS_PER_SECOND,
+	ZERO_MEDIA_TIME,
 	addMediaTime,
 	maxMediaTime,
 	mediaTime,
 	subMediaTime,
-	TICKS_PER_SECOND,
-	ZERO_MEDIA_TIME,
 } from "@/wasm";
-import { useEditor } from "@/editor/use-editor";
-import { TIMELINE_SCROLLBAR_SIZE_PX } from "./layout";
+import { useRef } from "react";
 import { TIMELINE_LAYERS } from "./layers";
+import { TIMELINE_SCROLLBAR_SIZE_PX } from "./layout";
 
 interface TimelinePlayheadProps {
 	zoomLevel: number;
@@ -80,9 +80,7 @@ export function TimelinePlayhead({
 		event.preventDefault();
 		const fps = editor.project.getActive().settings.fps;
 		const ticksPerFrame = mediaTime({
-			ticks: Math.round(
-				(TICKS_PER_SECOND * fps.denominator) / fps.numerator,
-			),
+			ticks: Math.round((TICKS_PER_SECOND * fps.denominator) / fps.numerator),
 		});
 		const direction = event.key === "ArrowRight" ? 1 : -1;
 		const now = editor.playback.getCurrentTime();

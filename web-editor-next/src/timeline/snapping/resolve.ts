@@ -1,5 +1,5 @@
-import type { SnapPoint, SnapResult } from "./types";
 import type { MediaTime } from "@/wasm";
+import type { SnapPoint, SnapResult } from "./types";
 
 export function resolveTimelineSnap({
 	targetTime,
@@ -11,7 +11,7 @@ export function resolveTimelineSnap({
 	maxSnapDistance: number;
 }): SnapResult {
 	let closestSnapPoint: SnapPoint | null = null;
-	let closestDistance = Infinity;
+	let closestDistance = Number.POSITIVE_INFINITY;
 
 	for (const snapPoint of snapPoints) {
 		const distance = Math.abs(targetTime - snapPoint.time);

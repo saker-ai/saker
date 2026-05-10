@@ -1,5 +1,5 @@
-import { EditorCore } from "@/core";
 import { Command, type CommandResult } from "@/commands/base-command";
+import { EditorCore } from "@/core";
 import {
 	getCustomMaskClosedStateAfterPointRemoval,
 	removeCustomMaskPoints,

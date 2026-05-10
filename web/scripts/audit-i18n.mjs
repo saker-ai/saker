@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * i18n audit script for src/features/i18n/index.tsx
+ * i18n audit script for src/features/i18n/dict-*.ts
  *
  * Reports:
  *   ERROR  - missing keys (t("X") called but not in dict)
@@ -45,16 +45,18 @@ const bold = (s) => `${C.bold}${s}${C.reset}`;
 // ---------------------------------------------------------------------------
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-const I18N_FILE = path.join(ROOT, "src/features/i18n/index.tsx");
+const I18N_DIR = path.join(ROOT, "src/features/i18n");
 const SRC_DIR = path.join(ROOT, "src");
 
 // ---------------------------------------------------------------------------
 // 1. Parse the dict from i18n/index.tsx
 // ---------------------------------------------------------------------------
-function parseDict(src) {
-  // Extract the dict object literal between `const dict = {` and `} as const`
-  const dictStart = src.indexOf("const dict = {");
-  if (dictStart === -1) throw new Error("Could not find `const dict = {` in i18n file");
+function parseDict(src, filePath) {
+  // Extract the exported dict object literal from a split dictionary file.
+  const dictStart = src.search(/export\s+const\s+dict[A-Za-z0-9_]*\s*=\s*\{/);
+  if (dictStart === -1) {
+    throw new Error(`Could not find exported dict object in ${path.relative(ROOT, filePath)}`);
+  }
 
   // Find matching closing brace
   let depth = 0;
@@ -141,6 +143,34 @@ function parseDict(src) {
   return { entries, duplicates };
 }
 
+function listDictFiles() {
+  return fs.readdirSync(I18N_DIR)
+    .filter((name) => /^dict-.+\.ts$/.test(name))
+    .sort()
+    .map((name) => path.join(I18N_DIR, name));
+}
+
+function parseAllDicts() {
+  const entries = new Map();
+  const duplicates = [];
+  const dictFiles = listDictFiles();
+
+  for (const filePath of dictFiles) {
+    const src = fs.readFileSync(filePath, "utf8");
+    const parsed = parseDict(src, filePath);
+    duplicates.push(...parsed.duplicates);
+    for (const [key, val] of parsed.entries) {
+      if (entries.has(key)) {
+        duplicates.push({ key, lines: [entries.get(key).line, val.line] });
+      } else {
+        entries.set(key, val);
+      }
+    }
+  }
+
+  return { entries, duplicates, dictFiles };
+}
+
 // ---------------------------------------------------------------------------
 // 2. Walk src/ for .ts/.tsx files
 // ---------------------------------------------------------------------------
@@ -223,13 +253,12 @@ function main() {
   let warnings = 0;
 
   // --- Parse dict ---
-  const i18nSrc = fs.readFileSync(I18N_FILE, "utf8");
-  const { entries: dictEntries, duplicates } = parseDict(i18nSrc);
+  const { entries: dictEntries, duplicates, dictFiles } = parseAllDicts();
 
   // --- Walk files ---
   const allFiles = walkSrc(SRC_DIR);
   const relevantFiles = allFiles.filter((f) => {
-    if (f === I18N_FILE) return false;
+    if (f.startsWith(I18N_DIR + path.sep)) return false;
     const src = fs.readFileSync(f, "utf8");
     return importsI18n(src);
   });
@@ -268,7 +297,7 @@ function main() {
     console.log(`\n${color}${bold("━━ " + title + " ━━")}${C.reset}`);
 
   console.log(bold(cyan("\n[i18n-audit] Scanning…")));
-  console.log(gray(`  Dict file : ${path.relative(ROOT, I18N_FILE)}`));
+  console.log(gray(`  Dict files: ${dictFiles.length} files (${path.relative(ROOT, I18N_DIR)}/dict-*.ts)`));
   console.log(gray(`  Dict keys : ${dictEntries.size}`));
   console.log(gray(`  Scanned   : ${relevantFiles.length} files (importing i18n)`));
   console.log(gray(`  Refs found: ${allStaticRefs.size} unique static keys`));

@@ -1,5 +1,5 @@
-import { HugeiconsIcon } from "@hugeicons/react";
 import { UploadIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 
 interface MediaDragOverlayProps {
 	isVisible: boolean;

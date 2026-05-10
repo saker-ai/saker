@@ -1,15 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useEditor } from "@/editor/use-editor";
-import { registerCanceller } from "@/editor/cancel-interaction";
 import type { NormalizedCubicBezier } from "@/animation/types";
+import { registerCanceller } from "@/editor/cancel-interaction";
+import { useEditor } from "@/editor/use-editor";
 import { useKeyframeSelection } from "@/timeline/hooks/element/use-keyframe-selection";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+	type GraphEditorSelectionState,
 	applyGraphEditorCurvePreview,
 	buildGraphEditorCurvePatches,
 	resolveGraphEditorSelectionState,
-	type GraphEditorSelectionState,
 } from "./session";
 
 export function useGraphEditorController() {

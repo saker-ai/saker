@@ -1,15 +1,15 @@
-import { useEffect } from "react";
-import { useEditor } from "@/editor/use-editor";
-import { processMediaAssets } from "@/media/processing";
-import { showMediaUploadToast } from "@/media/upload-toast";
-import { buildElementFromMedia } from "@/timeline/element-utils";
+import { BatchCommand } from "@/commands";
 import { AddMediaAssetCommand } from "@/commands/media";
 import { InsertElementCommand } from "@/commands/timeline";
-import { BatchCommand } from "@/commands";
-import { DEFAULT_NEW_ELEMENT_DURATION } from "@/timeline/creation";
-import { mediaTimeFromSeconds } from "@/wasm";
-import { isTypableDOMElement } from "@/utils/browser";
+import { useEditor } from "@/editor/use-editor";
+import { processMediaAssets } from "@/media/processing";
 import type { MediaType } from "@/media/types";
+import { showMediaUploadToast } from "@/media/upload-toast";
+import { DEFAULT_NEW_ELEMENT_DURATION } from "@/timeline/creation";
+import { buildElementFromMedia } from "@/timeline/element-utils";
+import { isTypableDOMElement } from "@/utils/browser";
+import { mediaTimeFromSeconds } from "@/wasm";
+import { useEffect } from "react";
 
 const MEDIA_MIME_PREFIXES: MediaType[] = ["image", "video", "audio"];
 

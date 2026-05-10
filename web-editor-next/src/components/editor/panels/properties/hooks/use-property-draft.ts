@@ -1,5 +1,5 @@
-import { useReducer, useRef } from "react";
 import { evaluateMathExpression } from "@/utils/math";
+import { useReducer, useRef } from "react";
 
 function looksLikeExpression({ input }: { input: string }): boolean {
 	const trimmed = input.trim();

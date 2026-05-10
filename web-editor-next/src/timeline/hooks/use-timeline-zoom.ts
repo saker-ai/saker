@@ -1,3 +1,10 @@
+import { useEditor } from "@/editor/use-editor";
+import {
+	type ZoomConfig,
+	ZoomController,
+} from "@/timeline/controllers/zoom-controller";
+import { TIMELINE_ZOOM_MIN } from "@/timeline/scale";
+import type { MediaTime } from "@/wasm";
 import {
 	type WheelEvent as ReactWheelEvent,
 	type RefObject,
@@ -6,13 +13,6 @@ import {
 	useReducer,
 	useRef,
 } from "react";
-import { useEditor } from "@/editor/use-editor";
-import { TIMELINE_ZOOM_MIN } from "@/timeline/scale";
-import {
-	ZoomController,
-	type ZoomConfig,
-} from "@/timeline/controllers/zoom-controller";
-import type { MediaTime } from "@/wasm";
 
 interface UseTimelineZoomProps {
 	containerRef: RefObject<HTMLDivElement | null>;

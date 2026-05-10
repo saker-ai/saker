@@ -121,8 +121,8 @@ function migrateElementPosition({ element }: { element: unknown }): unknown {
 	});
 
 	const newChannels = { ...channels };
-	delete newChannels["transform.position.x"];
-	delete newChannels["transform.position.y"];
+	newChannels["transform.position.x"] = undefined;
+	newChannels["transform.position.y"] = undefined;
 	newChannels["transform.position"] = {
 		valueKind: "vector",
 		keyframes: vectorKeyframes,

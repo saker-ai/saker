@@ -94,9 +94,9 @@ function migrateMask({ mask }: { mask: unknown }): unknown {
 				: 0,
 	};
 
-	delete (result as Record<string, unknown>).feather;
-	delete (result as Record<string, unknown>).inverted;
-	delete (result as Record<string, unknown>).stroke;
+	(result as Record<string, unknown>).feather = undefined;
+	(result as Record<string, unknown>).inverted = undefined;
+	(result as Record<string, unknown>).stroke = undefined;
 
 	return result;
 }

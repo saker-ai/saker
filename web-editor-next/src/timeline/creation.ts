@@ -1,4 +1,4 @@
-import { mediaTime, mediaTimeFromSeconds, TICKS_PER_SECOND } from "@/wasm";
+import { TICKS_PER_SECOND, mediaTime, mediaTimeFromSeconds } from "@/wasm";
 
 export const DEFAULT_NEW_ELEMENT_DURATION = mediaTime({
 	ticks: 5 * TICKS_PER_SECOND,

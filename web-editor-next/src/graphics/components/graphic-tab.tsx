@@ -1,16 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { PropertyParamField } from "@/components/editor/panels/properties/components/property-param-field";
 import { useElementPlayhead } from "@/components/editor/panels/properties/hooks/use-element-playhead";
 import {
-	useKeyframedParamProperty,
 	type KeyframedParamPropertyResult,
+	useKeyframedParamProperty,
 } from "@/components/editor/panels/properties/hooks/use-keyframed-param-property";
-import type { ParamDefinition, ParamValues } from "@/params";
-import type { GraphicElement } from "@/timeline";
-import { graphicsRegistry, registerDefaultGraphics, resolveGraphicElementParamsAtTime } from "@/graphics";
-import { useElementPreview } from "@/timeline/hooks/use-element-preview";
-import { useEditor } from "@/editor/use-editor";
 import {
 	Section,
 	SectionContent,
@@ -18,12 +13,21 @@ import {
 	SectionHeader,
 	SectionTitle,
 } from "@/components/section";
-import { PropertyParamField } from "@/components/editor/panels/properties/components/property-param-field";
 import { Button } from "@/components/ui/button";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { MinusSignIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
+import { useEditor } from "@/editor/use-editor";
+import {
+	graphicsRegistry,
+	registerDefaultGraphics,
+	resolveGraphicElementParamsAtTime,
+} from "@/graphics";
+import type { ParamDefinition, ParamValues } from "@/params";
+import type { GraphicElement } from "@/timeline";
+import { useElementPreview } from "@/timeline/hooks/use-element-preview";
 import { cn } from "@/utils/ui";
 import type { MediaTime } from "@/wasm";
+import { MinusSignIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useRef } from "react";
 
 registerDefaultGraphics();
 

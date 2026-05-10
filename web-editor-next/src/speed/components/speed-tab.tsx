@@ -1,18 +1,4 @@
-import { useRef } from "react";
-import { useEditor } from "@/editor/use-editor";
-import { NumberField } from "@/components/ui/number-field";
-import { Switch } from "@/components/ui/switch";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { DashboardSpeed02Icon } from "@hugeicons/core-free-icons";
-import { buildConstantRetime } from "@/retime";
-import {
-	DEFAULT_RETIME_RATE,
-	MIN_RETIME_RATE,
-	MAX_RETIME_RATE,
-	clampRetimeRate,
-	canMaintainPitch,
-} from "@/retime/rate";
-import type { AudioElement, VideoElement } from "@/timeline";
+import { usePropertyDraft } from "@/components/editor/panels/properties/hooks/use-property-draft";
 import {
 	Section,
 	SectionContent,
@@ -21,12 +7,26 @@ import {
 	SectionHeader,
 	SectionTitle,
 } from "@/components/section";
-import { usePropertyDraft } from "@/components/editor/panels/properties/hooks/use-property-draft";
+import { NumberField } from "@/components/ui/number-field";
+import { Switch } from "@/components/ui/switch";
+import { useEditor } from "@/editor/use-editor";
+import { buildConstantRetime } from "@/retime";
+import {
+	DEFAULT_RETIME_RATE,
+	MAX_RETIME_RATE,
+	MIN_RETIME_RATE,
+	canMaintainPitch,
+	clampRetimeRate,
+} from "@/retime/rate";
+import type { AudioElement, VideoElement } from "@/timeline";
 import {
 	formatNumberForDisplay,
 	getFractionDigitsForStep,
 	snapToStep,
 } from "@/utils/math";
+import { DashboardSpeed02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useRef } from "react";
 
 const SPEED_STEP = 0.01;
 const SPEED_FRACTION_DIGITS = getFractionDigitsForStep({ step: SPEED_STEP });
@@ -39,7 +39,7 @@ function rateToDisplay({ rate }: { rate: number }): string {
 }
 
 function parseSpeedInput({ input }: { input: string }): number | null {
-	const parsed = parseFloat(input);
+	const parsed = Number.parseFloat(input);
 	if (Number.isNaN(parsed)) return null;
 	return clampRetimeRate({
 		rate: snapToStep({ value: parsed, step: SPEED_STEP }),

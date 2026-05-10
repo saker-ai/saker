@@ -1,9 +1,9 @@
-import type { WheelEvent as ReactWheelEvent } from "react";
 import { TIMELINE_ZOOM_ANCHOR_PLAYHEAD_THRESHOLD } from "@/timeline/components/interaction";
 import { timelineTimeToPixels } from "@/timeline/pixel-utils";
 import { TIMELINE_ZOOM_MAX } from "@/timeline/scale";
 import { zoomToSlider } from "@/timeline/zoom-utils";
 import type { MediaTime } from "@/wasm";
+import type { WheelEvent as ReactWheelEvent } from "react";
 
 type ZoomUpdater = number | ((prev: number) => number);
 

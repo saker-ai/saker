@@ -1,14 +1,14 @@
-import { useEffect, useReducer, useRef } from "react";
-import { useEditor } from "@/editor/use-editor";
-import { useKeyframeSelection } from "./use-keyframe-selection";
 import { registerCanceller } from "@/editor/cancel-interaction";
+import { useEditor } from "@/editor/use-editor";
+import type { TimelineElement } from "@/timeline";
 import {
-	KeyframeDragController,
 	type KeyframeDragConfig,
+	KeyframeDragController,
 	type KeyframeDragState,
 } from "@/timeline/controllers/keyframe-drag-controller";
-import type { TimelineElement } from "@/timeline";
 import type { MediaTime } from "@/wasm";
+import { useEffect, useReducer, useRef } from "react";
+import { useKeyframeSelection } from "./use-keyframe-selection";
 
 export type { KeyframeDragState };
 

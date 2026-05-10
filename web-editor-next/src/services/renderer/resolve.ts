@@ -1,29 +1,29 @@
-import { mediaTimeToSeconds, roundMediaTime } from "@/wasm";
 import { getElementLocalTime } from "@/animation";
 import { resolveEffectParamsAtTime } from "@/animation/effect-param-channel";
+import { resolveColorAtTime, resolveOpacityAtTime } from "@/animation/values";
+import { effectsRegistry, resolveEffectPasses } from "@/effects";
 import {
 	buildGaussianBlurPasses,
 	intensityToSigma,
 } from "@/effects/definitions/blur";
-import { effectsRegistry, resolveEffectPasses } from "@/effects";
 import type { Effect, EffectPass } from "@/effects/types";
-import { getSourceTimeAtClipTime } from "@/retime";
 import {
 	DEFAULT_GRAPHIC_SOURCE_SIZE,
 	resolveGraphicElementParamsAtTime,
 } from "@/graphics";
+import { resolveTransformAtTime } from "@/rendering/animation-values";
+import { getSourceTimeAtClipTime } from "@/retime";
+import { videoCache } from "@/services/video-cache/service";
 import {
 	getTextMeasurementContext,
 	measureTextElement,
 } from "@/text/measure-element";
-import { resolveColorAtTime, resolveOpacityAtTime } from "@/animation/values";
-import { resolveTransformAtTime } from "@/rendering/animation-values";
-import { videoCache } from "@/services/video-cache/service";
+import { mediaTimeToSeconds, roundMediaTime } from "@/wasm";
 import type { CanvasRenderer } from "./canvas-renderer";
 import type { AnyBaseNode } from "./nodes/base-node";
 import {
-	BlurBackgroundNode,
 	type BackdropSource,
+	BlurBackgroundNode,
 	type ResolvedBlurBackgroundNodeState,
 } from "./nodes/blur-background-node";
 import {
@@ -36,7 +36,7 @@ import {
 } from "./nodes/graphic-node";
 import { ImageNode, loadImageSource } from "./nodes/image-node";
 import { StickerNode, loadStickerSource } from "./nodes/sticker-node";
-import { TextNode, type ResolvedTextNodeState } from "./nodes/text-node";
+import { type ResolvedTextNodeState, TextNode } from "./nodes/text-node";
 import { VideoNode } from "./nodes/video-node";
 import type {
 	ResolvedVisualNodeState,
@@ -204,7 +204,9 @@ async function resolveVideoNode({
 	const frame = await videoCache.getFrameAt({
 		mediaId: node.params.mediaId,
 		file: node.params.file,
-		time: mediaTimeToSeconds({ time: roundMediaTime({ time: sourceTimeTicks }) }),
+		time: mediaTimeToSeconds({
+			time: roundMediaTime({ time: sourceTimeTicks }),
+		}),
 	});
 	if (!frame) {
 		return null;
@@ -421,7 +423,9 @@ async function resolveBackdropSource({
 		const frame = await videoCache.getFrameAt({
 			mediaId: node.params.mediaId,
 			file: node.params.file,
-			time: mediaTimeToSeconds({ time: roundMediaTime({ time: sourceTimeTicks }) }),
+			time: mediaTimeToSeconds({
+				time: roundMediaTime({ time: sourceTimeTicks }),
+			}),
 		});
 		if (!frame) {
 			return null;

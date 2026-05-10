@@ -1,23 +1,23 @@
 import { Command, type CommandResult } from "@/commands/base-command";
 import { EditorCore } from "@/core";
+import { floatToFrameRate } from "@/fps/utils";
+import { graphicsRegistry, registerDefaultGraphics } from "@/graphics";
+import type { MediaAsset } from "@/media/types";
 import type {
 	CreateTimelineElement,
 	SceneTracks,
 	TimelineElement,
 	TrackType,
 } from "@/timeline";
-import { generateUUID } from "@/utils/id";
-import { requiresMediaId } from "@/timeline/element-utils";
-import type { MediaAsset } from "@/media/types";
 import { DEFAULT_NEW_ELEMENT_DURATION } from "@/timeline/creation";
-import { floatToFrameRate } from "@/fps/utils";
-import { graphicsRegistry, registerDefaultGraphics } from "@/graphics";
+import { requiresMediaId } from "@/timeline/element-utils";
 import {
 	applyPlacement,
 	canElementGoOnTrack,
 	resolveTrackPlacement,
 	validateElementTrackCompatibility,
 } from "@/timeline/placement";
+import { generateUUID } from "@/utils/id";
 import { roundMediaTime } from "@/wasm";
 
 type InsertElementPlacement =

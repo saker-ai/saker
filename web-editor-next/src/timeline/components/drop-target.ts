@@ -1,14 +1,14 @@
-import type { TimelineTrack, TimelineElement } from "@/timeline";
+import type { TimelineElement, TimelineTrack } from "@/timeline";
 import type { ComputeDropTargetParams, DropTarget } from "@/timeline";
 import { resolveTrackPlacement } from "@/timeline/placement";
+import {
+	type MediaTime,
+	TICKS_PER_SECOND,
+	mediaTime,
+	roundMediaTime,
+} from "@/wasm";
 import { TIMELINE_TRACK_GAP_PX } from "./layout";
 import { getTrackHeight } from "./track-layout";
-import {
-	mediaTime,
-	type MediaTime,
-	roundMediaTime,
-	TICKS_PER_SECOND,
-} from "@/wasm";
 
 function findElementAtPosition({
 	mouseX,
@@ -133,7 +133,9 @@ export function computeDropTarget({
 		const placementResult = resolveTrackPlacement({
 			tracks,
 			elementType,
-			timeSpans: [{ startTime: xPosition, duration: elementDuration, excludeElementId }],
+			timeSpans: [
+				{ startTime: xPosition, duration: elementDuration, excludeElementId },
+			],
 			strategy: {
 				type: "preferIndex",
 				trackIndex: 0,
@@ -168,7 +170,9 @@ export function computeDropTarget({
 		const placementResult = resolveTrackPlacement({
 			tracks,
 			elementType,
-			timeSpans: [{ startTime: xPosition, duration: elementDuration, excludeElementId }],
+			timeSpans: [
+				{ startTime: xPosition, duration: elementDuration, excludeElementId },
+			],
 			strategy: {
 				type: "preferIndex",
 				trackIndex: isAboveAllTracks ? 0 : orderedTracks.length - 1,
@@ -218,7 +222,9 @@ export function computeDropTarget({
 	const placementResult = resolveTrackPlacement({
 		tracks,
 		elementType,
-		timeSpans: [{ startTime: xPosition, duration: elementDuration, excludeElementId }],
+		timeSpans: [
+			{ startTime: xPosition, duration: elementDuration, excludeElementId },
+		],
 		strategy: {
 			type: "preferIndex",
 			trackIndex,

@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { usePreviewViewport } from "@/preview/components/preview-viewport";
+import { registerCanceller } from "@/editor/cancel-interaction";
 import { useEditor } from "@/editor/use-editor";
 import { useShiftKey } from "@/hooks/use-shift-key";
 import { masksRegistry } from "@/masks";
@@ -8,18 +7,19 @@ import {
 	parseCustomMaskSegmentHandleId,
 } from "@/masks/custom-path";
 import { appendPointToCustomMask } from "@/masks/definitions/custom";
+import type { Mask, MaskInteractionResult } from "@/masks/types";
+import { usePreviewViewport } from "@/preview/components/preview-viewport";
 import {
-	getVisibleElementsWithBounds,
 	type ElementBounds,
+	getVisibleElementsWithBounds,
 } from "@/preview/element-bounds";
 import {
 	SNAP_THRESHOLD_SCREEN_PIXELS,
 	type SnapLine,
 } from "@/preview/preview-snap";
 import type { SelectedMaskPointSelection } from "@/selection/editor-selection";
-import type { Mask, MaskInteractionResult } from "@/masks/types";
 import type { MaskableElement } from "@/timeline";
-import { registerCanceller } from "@/editor/cancel-interaction";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface DragState {
 	trackId: string;

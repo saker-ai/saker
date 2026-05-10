@@ -1,24 +1,24 @@
 import EventEmitter from "eventemitter3";
 
+import type { ExportFormat, ExportQuality } from "@/export";
+import { frameRateToFloat } from "@/fps/utils";
+import { TICKS_PER_SECOND } from "@/wasm";
 import {
-	Output,
-	Mp4OutputFormat,
-	WebMOutputFormat,
+	AudioBufferSource,
 	BufferTarget,
 	CanvasSource,
-	AudioBufferSource,
+	Mp4OutputFormat,
+	Output,
+	QUALITY_HIGH,
 	QUALITY_LOW,
 	QUALITY_MEDIUM,
-	QUALITY_HIGH,
 	QUALITY_VERY_HIGH,
+	WebMOutputFormat,
 } from "mediabunny";
 import type { FrameRate } from "opencut-wasm";
 import { mediaTimeToSeconds } from "opencut-wasm";
-import { TICKS_PER_SECOND } from "@/wasm";
-import { frameRateToFloat } from "@/fps/utils";
-import type { RootNode } from "./nodes/root-node";
-import type { ExportFormat, ExportQuality } from "@/export";
 import { CanvasRenderer } from "./canvas-renderer";
+import type { RootNode } from "./nodes/root-node";
 
 type ExportParams = {
 	width: number;

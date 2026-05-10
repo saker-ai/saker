@@ -1,11 +1,11 @@
-import type { Bookmark } from "@/timeline";
 import {
 	EMPTY_PREVIEW_OVERLAY_SOURCE_RESULT,
 	type PreviewOverlayDefinition,
 	type PreviewOverlaySourceResult,
 } from "@/preview/overlays";
-import { getBookmarksActiveAtTime } from "./utils";
+import type { Bookmark } from "@/timeline";
 import type { MediaTime } from "@/wasm";
+import { getBookmarksActiveAtTime } from "./utils";
 
 export const bookmarkNotesPreviewOverlay: PreviewOverlayDefinition = {
 	id: "bookmark-notes",

@@ -1,18 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { useResizeObserver } from "@/hooks/use-resize-observer";
-import { TIMELINE_AUDIO_WAVEFORM_COLOR } from "./theme";
 import {
+	type SourceWaveformSummary,
 	buildWaveformSampleBuckets,
 	sampleSourceWaveformSummary,
-	type SourceWaveformSummary,
 } from "@/media/waveform-summary";
+import { waveformCache } from "@/services/waveform-cache/service";
 import type { RetimeConfig } from "@/timeline";
 import { getBarFractionFromOutputAmplitude } from "@/timeline/audio-display";
-import { waveformCache } from "@/services/waveform-cache/service";
 import { findScrollParent } from "@/utils/browser";
 import { cn } from "@/utils/ui";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { TIMELINE_AUDIO_WAVEFORM_COLOR } from "./theme";
 
 const BAR_WIDTH = 1;
 const BAR_GAP = 1;

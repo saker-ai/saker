@@ -1,38 +1,38 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { Suspense, useMemo, useState } from "react";
-import {
-	ResizablePanelGroup,
-	ResizablePanel,
-	ResizableHandle,
-} from "@/components/ui/resizable";
+import { useBridgeImporter } from "@/bridge/use-bridge-importer";
+import { EditorHeader } from "@/components/editor/editor-header";
+import { MobileGate } from "@/components/editor/mobile-gate";
 import { AssetsPanel } from "@/components/editor/panels/assets";
 import { PropertiesPanel } from "@/components/editor/panels/properties";
-import { Timeline } from "@/timeline/components";
-import { PreviewPanel } from "@/preview/components";
-import { EditorHeader } from "@/components/editor/editor-header";
 import { EditorProvider } from "@/components/providers/editor-provider";
-import { MigrationDialog } from "@/project/components/migration-dialog";
-import { usePanelStore } from "@/editor/panel-store";
-import { usePasteMedia } from "@/media/use-paste-media";
-import { MobileGate } from "@/components/editor/mobile-gate";
-import { useEditor } from "@/editor/use-editor";
-import { useBridgeImporter } from "@/bridge/use-bridge-importer";
-import { Cancel01Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
+import {
+	ResizableHandle,
+	ResizablePanel,
+	ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { usePanelStore } from "@/editor/panel-store";
+import { useEditor } from "@/editor/use-editor";
+import { getGuidePreviewOverlaySource } from "@/guides";
+import { usePasteMedia } from "@/media/use-paste-media";
+import { PreviewPanel } from "@/preview/components";
 import {
 	createPreviewOverlayControl,
 	isPreviewOverlayVisible,
 	mergePreviewOverlaySources,
 } from "@/preview/overlays";
 import { usePreviewStore } from "@/preview/preview-store";
-import { getGuidePreviewOverlaySource } from "@/guides";
+import { MigrationDialog } from "@/project/components/migration-dialog";
 import {
 	bookmarkNotesPreviewOverlay,
 	getBookmarkPreviewOverlaySource,
 } from "@/timeline/bookmarks/index";
+import { Timeline } from "@/timeline/components";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
 
 export default function EditorPage() {
 	return (

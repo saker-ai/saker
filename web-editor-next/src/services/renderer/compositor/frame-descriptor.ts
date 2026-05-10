@@ -1,9 +1,10 @@
-import { drawCssBackground } from "@/gradients";
-import { masksRegistry } from "@/masks";
 import { incrementCounter } from "@/diagnostics/render-perf";
-import type { AnyBaseNode } from "../nodes/base-node";
+import { drawCssBackground } from "@/gradients";
+import { DEFAULT_GRAPHIC_SOURCE_SIZE } from "@/graphics";
+import { masksRegistry } from "@/masks";
 import type { CanvasRenderer } from "../canvas-renderer";
 import { createOffscreenCanvas } from "../canvas-utils";
+import type { AnyBaseNode } from "../nodes/base-node";
 import { BlurBackgroundNode } from "../nodes/blur-background-node";
 import { ColorNode } from "../nodes/color-node";
 import { EffectLayerNode } from "../nodes/effect-layer-node";
@@ -14,7 +15,7 @@ import {
 import { ImageNode } from "../nodes/image-node";
 import { RootNode } from "../nodes/root-node";
 import { StickerNode } from "../nodes/sticker-node";
-import { renderTextToContext, TextNode } from "../nodes/text-node";
+import { TextNode, renderTextToContext } from "../nodes/text-node";
 import { VideoNode } from "../nodes/video-node";
 import type { ResolvedVisualSourceNodeState } from "../nodes/visual-node";
 import type {
@@ -25,7 +26,6 @@ import type {
 	TextureCanvasDrawFn,
 	TextureUploadDescriptor,
 } from "./types";
-import { DEFAULT_GRAPHIC_SOURCE_SIZE } from "@/graphics";
 
 export async function buildFrameDescriptor({
 	node,

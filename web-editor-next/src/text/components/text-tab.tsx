@@ -1,10 +1,12 @@
 "use client";
 
-import { Textarea } from "@/components/ui/textarea";
-import { FontPicker } from "@/components/ui/font-picker";
-import type { TextElement } from "@/timeline";
-import { NumberField } from "@/components/ui/number-field";
-import { useRef } from "react";
+import { resolveColorAtTime, resolveNumberAtTime } from "@/animation/values";
+import { KeyframeToggle } from "@/components/editor/panels/properties/components/keyframe-toggle";
+import { useElementPlayhead } from "@/components/editor/panels/properties/hooks/use-element-playhead";
+import { useKeyframedColorProperty } from "@/components/editor/panels/properties/hooks/use-keyframed-color-property";
+import { useKeyframedNumberProperty } from "@/components/editor/panels/properties/hooks/use-keyframed-number-property";
+import { usePropertyDraft } from "@/components/editor/panels/properties/hooks/use-property-draft";
+import { OcTextHeightIcon, OcTextWidthIcon } from "@/components/icons";
 import {
 	Section,
 	SectionContent,
@@ -13,36 +15,31 @@ import {
 	SectionHeader,
 	SectionTitle,
 } from "@/components/section";
-import { ColorPicker } from "@/components/ui/color-picker";
 import { Button } from "@/components/ui/button";
-import { uppercase } from "@/utils/string";
-import { clamp, formatNumberForDisplay } from "@/utils/math";
+import { ColorPicker } from "@/components/ui/color-picker";
+import { FontPicker } from "@/components/ui/font-picker";
+import { NumberField } from "@/components/ui/number-field";
+import { Textarea } from "@/components/ui/textarea";
 import { useEditor } from "@/editor/use-editor";
+import { isPropertyAtDefault } from "@/rendering/components/transform-tab";
 import { CORNER_RADIUS_MAX, CORNER_RADIUS_MIN } from "@/text/background";
 import {
 	DEFAULT_TEXT_COLOR,
 	MAX_FONT_SIZE,
 	MIN_FONT_SIZE,
 } from "@/text/typography";
-import { usePropertyDraft } from "@/components/editor/panels/properties/hooks/use-property-draft";
-import { useKeyframedColorProperty } from "@/components/editor/panels/properties/hooks/use-keyframed-color-property";
-import { useKeyframedNumberProperty } from "@/components/editor/panels/properties/hooks/use-keyframed-number-property";
-import { useElementPlayhead } from "@/components/editor/panels/properties/hooks/use-element-playhead";
-import { KeyframeToggle } from "@/components/editor/panels/properties/components/keyframe-toggle";
-import { isPropertyAtDefault } from "@/rendering/components/transform-tab";
-import {
-	resolveColorAtTime,
-	resolveNumberAtTime,
-} from "@/animation/values";
-import { HugeiconsIcon } from "@hugeicons/react";
+import type { TextElement } from "@/timeline";
+import { DEFAULTS } from "@/timeline/defaults";
+import { clamp, formatNumberForDisplay } from "@/utils/math";
+import { uppercase } from "@/utils/string";
+import { cn } from "@/utils/ui";
 import {
 	MinusSignIcon,
 	PlusSignIcon,
 	TextFontIcon,
 } from "@hugeicons/core-free-icons";
-import { OcTextHeightIcon, OcTextWidthIcon } from "@/components/icons";
-import { DEFAULTS } from "@/timeline/defaults";
-import { cn } from "@/utils/ui";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useRef } from "react";
 
 export function TextTab({
 	element,
@@ -134,7 +131,7 @@ function TypographySection({
 	const fontSize = usePropertyDraft({
 		displayValue: element.fontSize.toString(),
 		parse: (input) => {
-			const parsed = parseFloat(input);
+			const parsed = Number.parseFloat(input);
 			if (Number.isNaN(parsed)) return null;
 			return clamp({
 				value: Math.round(parsed),
@@ -240,7 +237,7 @@ function SpacingSection({
 			element.letterSpacing ?? DEFAULTS.text.letterSpacing,
 		).toString(),
 		parse: (input) => {
-			const parsed = parseFloat(input);
+			const parsed = Number.parseFloat(input);
 			return Number.isNaN(parsed) ? null : Math.round(parsed);
 		},
 		onPreview: (value) =>
@@ -258,7 +255,7 @@ function SpacingSection({
 			fractionDigits: 1,
 		}),
 		parse: (input) => {
-			const parsed = parseFloat(input);
+			const parsed = Number.parseFloat(input);
 			return Number.isNaN(parsed)
 				? null
 				: Math.max(0.1, Math.round(parsed * 10) / 10);
@@ -412,7 +409,7 @@ function BackgroundSection({
 		isPlayheadWithinElementRange,
 		displayValue: Math.round(resolvedPaddingX).toString(),
 		parse: (input) => {
-			const parsed = parseFloat(input);
+			const parsed = Number.parseFloat(input);
 			return Number.isNaN(parsed) ? null : Math.max(0, Math.round(parsed));
 		},
 		valueAtPlayhead: resolvedPaddingX,
@@ -431,7 +428,7 @@ function BackgroundSection({
 		isPlayheadWithinElementRange,
 		displayValue: Math.round(resolvedPaddingY).toString(),
 		parse: (input) => {
-			const parsed = parseFloat(input);
+			const parsed = Number.parseFloat(input);
 			return Number.isNaN(parsed) ? null : Math.max(0, Math.round(parsed));
 		},
 		valueAtPlayhead: resolvedPaddingY,
@@ -450,7 +447,7 @@ function BackgroundSection({
 		isPlayheadWithinElementRange,
 		displayValue: Math.round(resolvedOffsetX).toString(),
 		parse: (input) => {
-			const parsed = parseFloat(input);
+			const parsed = Number.parseFloat(input);
 			return Number.isNaN(parsed) ? null : Math.round(parsed);
 		},
 		valueAtPlayhead: resolvedOffsetX,
@@ -469,7 +466,7 @@ function BackgroundSection({
 		isPlayheadWithinElementRange,
 		displayValue: Math.round(resolvedOffsetY).toString(),
 		parse: (input) => {
-			const parsed = parseFloat(input);
+			const parsed = Number.parseFloat(input);
 			return Number.isNaN(parsed) ? null : Math.round(parsed);
 		},
 		valueAtPlayhead: resolvedOffsetY,
@@ -488,7 +485,7 @@ function BackgroundSection({
 		isPlayheadWithinElementRange,
 		displayValue: Math.round(resolvedCornerRadius).toString(),
 		parse: (input) => {
-			const parsed = parseFloat(input);
+			const parsed = Number.parseFloat(input);
 			if (Number.isNaN(parsed)) return null;
 			return clamp({
 				value: Math.round(parsed),

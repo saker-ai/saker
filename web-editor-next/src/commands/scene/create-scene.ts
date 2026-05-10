@@ -9,7 +9,7 @@ export class CreateSceneCommand extends Command {
 
 	constructor(
 		private name: string,
-		private isMain: boolean = false,
+		private isMain = false,
 	) {
 		super();
 	}

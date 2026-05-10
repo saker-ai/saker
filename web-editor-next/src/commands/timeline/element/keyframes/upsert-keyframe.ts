@@ -1,19 +1,19 @@
-import { EditorCore } from "@/core";
-import { Command, type CommandResult } from "@/commands/base-command";
 import { upsertPathKeyframe } from "@/animation";
+import type {
+	AnimationInterpolation,
+	AnimationPath,
+	AnimationValue,
+} from "@/animation/types";
+import { Command, type CommandResult } from "@/commands/base-command";
+import { EditorCore } from "@/core";
 import { updateElementInSceneTracks } from "@/timeline";
 import type { SceneTracks } from "@/timeline";
 import { resolveAnimationTarget } from "@/timeline/animation-targets";
-import type {
-	AnimationPath,
-	AnimationInterpolation,
-	AnimationValue,
-} from "@/animation/types";
 import {
 	type MediaTime,
+	ZERO_MEDIA_TIME,
 	maxMediaTime,
 	minMediaTime,
-	ZERO_MEDIA_TIME,
 } from "@/wasm";
 
 export class UpsertKeyframeCommand extends Command {

@@ -1,16 +1,16 @@
-import { useCallback, useRef, useMemo } from "react";
+import type { ElementKeyframe, SelectedKeyframeRef } from "@/animation/types";
 import { useBoxSelect } from "@/selection/hooks/use-box-select";
-import {
-	useKeyframeSelection,
-	getSelectedKeyframeId,
-} from "./use-keyframe-selection";
-import type { SelectedKeyframeRef, ElementKeyframe } from "@/animation/types";
-import type { ExpandedRow } from "@/timeline/components/expanded-layout";
 import { timelineTimeToSnappedPixels } from "@/timeline";
+import type { ExpandedRow } from "@/timeline/components/expanded-layout";
 import {
-	KEYFRAME_LANE_HEIGHT_PX,
 	KEYFRAME_DIAMOND_SIZE_PX,
+	KEYFRAME_LANE_HEIGHT_PX,
 } from "@/timeline/components/layout";
+import { useCallback, useMemo, useRef } from "react";
+import {
+	getSelectedKeyframeId,
+	useKeyframeSelection,
+} from "./use-keyframe-selection";
 
 export function useKeyframeBoxSelect({
 	trackId,

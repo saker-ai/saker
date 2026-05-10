@@ -1,11 +1,11 @@
+import { BatchCommand, RemoveMediaAssetCommand } from "@/commands";
 import type { EditorCore } from "@/core";
-import { toast } from "sonner";
 import type { MediaAsset } from "@/media/types";
 import { storageService } from "@/services/storage/service";
-import { generateUUID } from "@/utils/id";
 import { videoCache } from "@/services/video-cache/service";
 import { waveformCache } from "@/services/waveform-cache/service";
-import { BatchCommand, RemoveMediaAssetCommand } from "@/commands";
+import { generateUUID } from "@/utils/id";
+import { toast } from "sonner";
 
 export class MediaManager {
 	private assets: MediaAsset[] = [];
@@ -97,14 +97,14 @@ export class MediaManager {
 	async clearProjectMedia({ projectId }: { projectId: string }): Promise<void> {
 		waveformCache.clearAll();
 
-		this.assets.forEach((asset) => {
+		for (const asset of this.assets) {
 			if (asset.url) {
 				URL.revokeObjectURL(asset.url);
 			}
 			if (asset.thumbnailUrl) {
 				URL.revokeObjectURL(asset.thumbnailUrl);
 			}
-		});
+		}
 
 		const mediaIds = this.assets.map((asset) => asset.id);
 		this.assets = [];
@@ -125,14 +125,14 @@ export class MediaManager {
 		videoCache.clearAll();
 		waveformCache.clearAll();
 
-		this.assets.forEach((asset) => {
+		for (const asset of this.assets) {
 			if (asset.url) {
 				URL.revokeObjectURL(asset.url);
 			}
 			if (asset.thumbnailUrl) {
 				URL.revokeObjectURL(asset.thumbnailUrl);
 			}
-		});
+		}
 
 		this.assets = [];
 		this.notify();
@@ -157,8 +157,8 @@ export class MediaManager {
 	}
 
 	private notify(): void {
-		this.listeners.forEach((fn) => {
+		for (const fn of this.listeners) {
 			fn();
-		});
+		}
 	}
 }

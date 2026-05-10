@@ -81,8 +81,12 @@ describe("animated params", () => {
 				{ value: "multiply", label: "Multiply" },
 			],
 		};
-		expect(coerceAnimationParamValue({ param, value: "normal" })).toBe("normal");
-		expect(coerceAnimationParamValue({ param, value: "multiply" })).toBe("multiply");
+		expect(coerceAnimationParamValue({ param, value: "normal" })).toBe(
+			"normal",
+		);
+		expect(coerceAnimationParamValue({ param, value: "multiply" })).toBe(
+			"multiply",
+		);
 	});
 
 	test("rejects select values outside the allowed options", () => {
@@ -136,7 +140,9 @@ describe("animated params", () => {
 			type: "color" as const,
 			default: "#ffffff",
 		};
-		expect(coerceAnimationParamValue({ param, value: "#ff0000" })).toBe("#ff0000");
+		expect(coerceAnimationParamValue({ param, value: "#ff0000" })).toBe(
+			"#ff0000",
+		);
 		expect(coerceAnimationParamValue({ param, value: 0xff0000 })).toBeNull();
 		expect(coerceAnimationParamValue({ param, value: null })).toBeNull();
 	});

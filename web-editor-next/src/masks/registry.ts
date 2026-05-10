@@ -1,5 +1,4 @@
 import { MAX_FEATHER } from "@/masks/feather";
-import type { ParamDefinition } from "@/params";
 import type {
 	BaseMaskParams,
 	MaskDefaultContext,
@@ -9,8 +8,9 @@ import type {
 	MaskSnapResult,
 	MaskType,
 } from "@/masks/types";
-import type { HugeiconsIconProps } from "@hugeicons/react";
+import type { ParamDefinition } from "@/params";
 import { DefinitionRegistry } from "@/params/registry";
+import type { HugeiconsIconProps } from "@hugeicons/react";
 
 export type MaskIconProps = {
 	icon: HugeiconsIconProps["icon"];

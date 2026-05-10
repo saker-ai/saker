@@ -65,10 +65,14 @@ export type AnimationValueForPath<TPath extends AnimationPath> =
 			? DynamicAnimationPathValue
 			: never;
 export type AnimationNumericPropertyPath = {
-	[K in AnimationPropertyPath]: AnimationValueForPath<K> extends number ? K : never;
+	[K in AnimationPropertyPath]: AnimationValueForPath<K> extends number
+		? K
+		: never;
 }[AnimationPropertyPath];
 export type AnimationColorPropertyPath = {
-	[K in AnimationPropertyPath]: AnimationValueForPath<K> extends string ? K : never;
+	[K in AnimationPropertyPath]: AnimationValueForPath<K> extends string
+		? K
+		: never;
 }[AnimationPropertyPath];
 
 export type ContinuousKeyframeInterpolation = "linear" | "hold" | "bezier";

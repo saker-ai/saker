@@ -1,24 +1,24 @@
-import type { MouseEvent as ReactMouseEvent } from "react";
-import type { FrameRate } from "opencut-wasm";
+import { getKeyframeById } from "@/animation";
+import type { SelectedKeyframeRef } from "@/animation/types";
+import { BatchCommand } from "@/commands";
+import type { Command } from "@/commands/base-command";
+import { RetimeKeyframeCommand } from "@/commands/timeline/element/keyframes/retime-keyframe";
+import { timelineTimeToSnappedPixels } from "@/timeline";
+import type { TimelineElement } from "@/timeline";
+import { TIMELINE_DRAG_THRESHOLD_PX } from "@/timeline/components/interaction";
 import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
 import {
+	type MediaTime,
+	TICKS_PER_SECOND,
+	ZERO_MEDIA_TIME,
 	addMediaTime,
 	clampMediaTime,
-	type MediaTime,
 	mediaTime,
 	roundFrameTicks,
 	snapSeekMediaTime,
-	TICKS_PER_SECOND,
-	ZERO_MEDIA_TIME,
 } from "@/wasm";
-import { TIMELINE_DRAG_THRESHOLD_PX } from "@/timeline/components/interaction";
-import { timelineTimeToSnappedPixels } from "@/timeline";
-import { getKeyframeById } from "@/animation";
-import { RetimeKeyframeCommand } from "@/commands/timeline/element/keyframes/retime-keyframe";
-import { BatchCommand } from "@/commands";
-import type { SelectedKeyframeRef } from "@/animation/types";
-import type { TimelineElement } from "@/timeline";
-import type { Command } from "@/commands/base-command";
+import type { FrameRate } from "opencut-wasm";
+import type { MouseEvent as ReactMouseEvent } from "react";
 
 // --- Session ---
 
@@ -282,14 +282,14 @@ export class KeyframeDragController {
 					elementId: ref.elementId,
 					propertyPath: ref.propertyPath,
 					keyframeId: ref.keyframeId,
-				nextTime: clampMediaTime({
-					time: addMediaTime({
-						a: keyframe.time,
-						b: mediaTime({ ticks: deltaTicks }),
+					nextTime: clampMediaTime({
+						time: addMediaTime({
+							a: keyframe.time,
+							b: mediaTime({ ticks: deltaTicks }),
+						}),
+						min: ZERO_MEDIA_TIME,
+						max: element.duration,
 					}),
-					min: ZERO_MEDIA_TIME,
-					max: element.duration,
-				}),
 				}),
 			];
 		});

@@ -1,7 +1,16 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
+import { usePropertyDraft } from "@/components/editor/panels/properties/hooks/use-property-draft";
+import { OcSquarePlusIcon } from "@/components/icons";
+import {
+	Section,
+	SectionContent,
+	SectionHeader,
+	SectionTitle,
+} from "@/components/section";
+import { Button } from "@/components/ui/button";
+import { NumberField } from "@/components/ui/number-field";
 import {
 	Select,
 	SelectContent,
@@ -9,28 +18,19 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEditorStore } from "@/editor/editor-store";
+import { useEditor } from "@/editor/use-editor";
 import { FPS_PRESETS } from "@/fps/presets";
 import { floatToFrameRate, frameRateToFloat } from "@/fps/utils";
-import { useEditor } from "@/editor/use-editor";
-import {
-	Section,
-	SectionContent,
-	SectionHeader,
-	SectionTitle,
-} from "@/components/section";
-import { BackgroundContent } from "./background";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { NumberField } from "@/components/ui/number-field";
-import { useEditorStore } from "@/editor/editor-store";
-import { usePropertyDraft } from "@/components/editor/panels/properties/hooks/use-property-draft";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Tick02Icon } from "@hugeicons/core-free-icons";
-import { cn } from "@/utils/ui";
+import type { TCanvasSize } from "@/project/types";
 import { dimensionToAspectRatio } from "@/utils/geometry";
 import { formatNumberForDisplay } from "@/utils/math";
-import { OcSquarePlusIcon } from "@/components/icons";
-import type { TCanvasSize } from "@/project/types";
+import { cn } from "@/utils/ui";
+import { Tick02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useRef, useState } from "react";
+import { BackgroundContent } from "./background";
 
 type SettingsView = "project-info" | "background";
 
@@ -115,14 +115,15 @@ export function SettingsView() {
 		};
 	});
 
-	const selectedPresetId = canvasSizeMode === "preset"
-		? (presetItems.find((preset) =>
-				areCanvasSizesEqual({
-					left: preset.canvasSize,
-					right: currentCanvasSize,
-				}),
-			)?.id ?? null)
-		: null;
+	const selectedPresetId =
+		canvasSizeMode === "preset"
+			? (presetItems.find((preset) =>
+					areCanvasSizesEqual({
+						left: preset.canvasSize,
+						right: currentCanvasSize,
+					}),
+				)?.id ?? null)
+			: null;
 
 	const updateCustomCanvasSize = ({
 		canvasSize,
@@ -233,12 +234,14 @@ export function SettingsView() {
 					<Section showTopBorder={false}>
 						<SectionHeader className="justify-between">
 							<SectionTitle className="flex-1">Frame rate</SectionTitle>
-					<Select
-							value={String(Math.round(frameRateToFloat(activeProject.settings.fps)))}
-							onValueChange={(value) => {
-								const fps = floatToFrameRate(parseFloat(value));
-								editor.project.updateSettings({ settings: { fps } });
-							}}
+							<Select
+								value={String(
+									Math.round(frameRateToFloat(activeProject.settings.fps)),
+								)}
+								onValueChange={(value) => {
+									const fps = floatToFrameRate(Number.parseFloat(value));
+									editor.project.updateSettings({ settings: { fps } });
+								}}
 							>
 								<SelectTrigger className="bg-transparent border-none p-1 h-auto">
 									<SelectValue placeholder="Select a frame rate" />

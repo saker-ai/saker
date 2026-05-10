@@ -58,9 +58,7 @@ function migrateScene({ scene }: { scene: unknown }): unknown {
 	}
 
 	if (Array.isArray(tracks.overlay)) {
-		nextTracks.overlay = tracks.overlay.map((track) =>
-			migrateTrack({ track }),
-		);
+		nextTracks.overlay = tracks.overlay.map((track) => migrateTrack({ track }));
 	}
 
 	if (Array.isArray(tracks.audio)) {
@@ -114,9 +112,9 @@ function migrateAnimations({
 	const nextBindings: ProjectRecord = { ...animations.bindings };
 	const nextChannels: ProjectRecord = { ...animations.channels };
 
-	delete nextBindings["transform.position"];
-	delete nextChannels["transform.position:x"];
-	delete nextChannels["transform.position:y"];
+	nextBindings["transform.position"] = undefined;
+	nextChannels["transform.position:x"] = undefined;
+	nextChannels["transform.position:y"] = undefined;
 
 	nextBindings["transform.positionX"] = {
 		path: "transform.positionX",

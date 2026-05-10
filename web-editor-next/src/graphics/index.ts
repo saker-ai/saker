@@ -1,19 +1,19 @@
 import { resolveGraphicParamsAtTime } from "@/animation";
 import type { ElementAnimations } from "@/animation/types";
-import { buildDefaultParamValues } from "@/params/registry";
 import type { ParamValues } from "@/params";
-import { graphicsRegistry } from "./registry";
+import { buildDefaultParamValues } from "@/params/registry";
 import {
-	registerDefaultGraphics,
 	ellipseGraphicDefinition,
 	polygonGraphicDefinition,
 	rectangleGraphicDefinition,
+	registerDefaultGraphics,
 	starGraphicDefinition,
 } from "./definitions";
+import { graphicsRegistry } from "./registry";
 import {
 	DEFAULT_GRAPHIC_SOURCE_SIZE,
-	type GraphicInstance,
 	type GraphicDefinition,
+	type GraphicInstance,
 } from "./types";
 
 const graphicPreviewUrlCache = new Map<string, string>();

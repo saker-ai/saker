@@ -1,9 +1,9 @@
-import type { EditorCore } from "@/core";
 import {
 	AddTrackCommand,
 	BatchCommand,
 	InsertElementCommand,
 } from "@/commands";
+import type { EditorCore } from "@/core";
 import { buildSubtitleTextElement } from "./build-subtitle-text-element";
 import type { SubtitleCue } from "./types";
 

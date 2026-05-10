@@ -1,9 +1,9 @@
 import type {
 	TAction,
+	TActionArgsMap,
 	TActionFunc,
 	TActionWithArgs,
 	TActionWithOptionalArgs,
-	TActionArgsMap,
 	TArgOfAction,
 	TInvocationTrigger,
 } from "./types";
@@ -57,7 +57,7 @@ export const invokeAction: InvokeActionFunc = <A extends TAction>(
 	args?: TArgOfAction<A>,
 	trigger?: TInvocationTrigger,
 ) => {
-	boundActions[action]?.forEach((handler) => {
+	for (const handler of boundActions[action] ?? []) {
 		handler(args, trigger);
-	});
+	}
 };

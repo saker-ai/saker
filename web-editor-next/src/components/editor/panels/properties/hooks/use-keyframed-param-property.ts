@@ -1,20 +1,18 @@
 "use client";
 
-import { useEditor } from "@/editor/use-editor";
 import {
 	buildGraphicParamPath,
 	getKeyframeAtTime,
 	hasKeyframesForPath,
 	upsertPathKeyframe,
 } from "@/animation";
-import type {
-	ElementAnimations,
-} from "@/animation/types";
 import {
 	coerceAnimationParamValue,
 	getAnimationParamDefaultInterpolation,
 	getAnimationParamValueKind,
 } from "@/animation/animated-params";
+import type { ElementAnimations } from "@/animation/types";
+import { useEditor } from "@/editor/use-editor";
 import type { ParamDefinition } from "@/params";
 import type { TimelineElement } from "@/timeline";
 import type { MediaTime } from "@/wasm";

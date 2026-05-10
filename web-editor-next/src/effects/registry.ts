@@ -1,7 +1,10 @@
-import { DefinitionRegistry } from "@/params/registry";
 import type { EffectDefinition } from "@/effects/types";
+import { DefinitionRegistry } from "@/params/registry";
 
-export class EffectsRegistry extends DefinitionRegistry<string, EffectDefinition> {
+export class EffectsRegistry extends DefinitionRegistry<
+	string,
+	EffectDefinition
+> {
 	constructor() {
 		super("effect");
 	}

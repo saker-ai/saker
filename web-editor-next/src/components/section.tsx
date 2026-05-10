@@ -1,5 +1,7 @@
 "use client";
 
+import { cn } from "@/utils/ui";
+import { ChevronDown } from "lucide-react";
 import {
 	type ComponentPropsWithoutRef,
 	type ReactNode,
@@ -7,8 +9,6 @@ import {
 	useContext,
 	useState,
 } from "react";
-import { ChevronDown } from "lucide-react";
-import { cn } from "@/utils/ui";
 
 type SectionContextValue = {
 	collapsible: boolean;
@@ -93,6 +93,7 @@ export function SectionHeader({
 			<div
 				className="flex items-center gap-1"
 				onClick={(event) => event.stopPropagation()}
+				onKeyDown={(event) => event.stopPropagation()}
 			>
 				{trailing}
 			</div>
@@ -155,10 +156,7 @@ export function SectionFields({
 	...rest
 }: SectionFieldsProps) {
 	return (
-		<div
-			className={cn("flex flex-row flex-wrap gap-2", className)}
-			{...rest}
-		>
+		<div className={cn("flex flex-row flex-wrap gap-2", className)} {...rest}>
 			{children}
 		</div>
 	);

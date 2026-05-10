@@ -1,10 +1,10 @@
-import { useEffect, useRef, type RefObject } from "react";
 import { useEditor } from "@/editor/use-editor";
 import {
-	SeekController,
 	type SeekConfig,
+	SeekController,
 } from "@/timeline/controllers/seek-controller";
 import type { MediaTime } from "@/wasm";
+import { type RefObject, useEffect, useRef } from "react";
 
 interface UseTimelineSeekProps {
 	playheadRef: RefObject<HTMLDivElement | null>;

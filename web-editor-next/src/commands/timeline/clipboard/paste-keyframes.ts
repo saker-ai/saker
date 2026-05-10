@@ -1,21 +1,21 @@
-import { EditorCore } from "@/core";
 import {
 	getKeyframeAtTime,
 	updateScalarKeyframeCurve,
 	upsertPathKeyframe,
 } from "@/animation";
-import { Command, type CommandResult } from "@/commands/base-command";
 import type { KeyframeClipboardItem } from "@/clipboard";
+import { Command, type CommandResult } from "@/commands/base-command";
+import { EditorCore } from "@/core";
 import type { SceneTracks, TimelineElement } from "@/timeline";
 import { updateElementInSceneTracks } from "@/timeline";
 import { resolveAnimationTarget } from "@/timeline/animation-targets";
 import { generateUUID } from "@/utils/id";
 import {
-	addMediaTime,
 	type MediaTime,
+	ZERO_MEDIA_TIME,
+	addMediaTime,
 	maxMediaTime,
 	minMediaTime,
-	ZERO_MEDIA_TIME,
 } from "@/wasm";
 
 function pasteKeyframesIntoElement({

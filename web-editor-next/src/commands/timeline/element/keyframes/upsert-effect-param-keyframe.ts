@@ -1,19 +1,16 @@
-import { EditorCore } from "@/core";
-import { Command, type CommandResult } from "@/commands/base-command";
-import {
-	buildEffectParamPath,
-	upsertPathKeyframe,
-} from "@/animation";
-import { updateElementInSceneTracks } from "@/timeline";
-import { isVisualElement } from "@/timeline/element-utils";
-import { resolveAnimationTarget } from "@/timeline/animation-targets";
+import { buildEffectParamPath, upsertPathKeyframe } from "@/animation";
 import type { AnimationInterpolation } from "@/animation/types";
+import { Command, type CommandResult } from "@/commands/base-command";
+import { EditorCore } from "@/core";
+import { updateElementInSceneTracks } from "@/timeline";
 import type { SceneTracks } from "@/timeline";
+import { resolveAnimationTarget } from "@/timeline/animation-targets";
+import { isVisualElement } from "@/timeline/element-utils";
 import {
 	type MediaTime,
+	ZERO_MEDIA_TIME,
 	maxMediaTime,
 	minMediaTime,
-	ZERO_MEDIA_TIME,
 } from "@/wasm";
 
 export class UpsertEffectParamKeyframeCommand extends Command {

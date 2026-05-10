@@ -21,8 +21,7 @@ function getDefaultCinematicBarsMaskParams({
 		absWidth > 0 && absHeight > 0
 			? Math.sqrt(absWidth ** 2 + absHeight ** 2)
 			: 0;
-	const fullSpanWidth =
-		absWidth > 0 ? diagonal / absWidth : Math.SQRT2;
+	const fullSpanWidth = absWidth > 0 ? diagonal / absWidth : Math.SQRT2;
 
 	return {
 		...getDefaultBaseMaskParams(),
@@ -71,65 +70,69 @@ function buildBandPath({
 	return path;
 }
 
-export const cinematicBarsMaskDefinition: MaskDefinition<RectangleMaskParams> = {
-	type: "cinematic-bars",
-	name: "Cinematic Bars",
-	features: {
-		hasPosition: true,
-		hasRotation: true,
-		sizeMode: "height-only",
-	},
-	params: BOX_LIKE_MASK_PARAMS,
-	interaction: buildBoxMaskInteraction({
-		sizeMode: "height-only",
-		buildOverlayPath({ width, height }) {
-			return `M 0,0 H ${width} V ${height} H 0 Z`;
+export const cinematicBarsMaskDefinition: MaskDefinition<RectangleMaskParams> =
+	{
+		type: "cinematic-bars",
+		name: "Cinematic Bars",
+		features: {
+			hasPosition: true,
+			hasRotation: true,
+			sizeMode: "height-only",
 		},
-	}),
-	buildDefault(context) {
-		return {
-			type: "cinematic-bars",
-			params: getDefaultCinematicBarsMaskParams(context),
-		};
-	},
-	computeParamUpdate: computeBoxMaskParamUpdate,
-	renderer: {
-		buildPath({ resolvedParams, width, height }) {
-			const params = resolvedParams as RectangleMaskParams;
-			const centerX = width / 2 + params.centerX * width;
-			const centerY = height / 2 + params.centerY * height;
-			const maskWidth = Math.max(params.width * width, width);
-			const maskHeight = Math.max(params.height, 0.01) * height;
-			const rotationRad = (params.rotation * Math.PI) / 180;
+		params: BOX_LIKE_MASK_PARAMS,
+		interaction: buildBoxMaskInteraction({
+			sizeMode: "height-only",
+			buildOverlayPath({ width, height }) {
+				return `M 0,0 H ${width} V ${height} H 0 Z`;
+			},
+		}),
+		buildDefault(context) {
+			return {
+				type: "cinematic-bars",
+				params: getDefaultCinematicBarsMaskParams(context),
+			};
+		},
+		computeParamUpdate: computeBoxMaskParamUpdate,
+		renderer: {
+			buildPath({ resolvedParams, width, height }) {
+				const params = resolvedParams as RectangleMaskParams;
+				const centerX = width / 2 + params.centerX * width;
+				const centerY = height / 2 + params.centerY * height;
+				const maskWidth = Math.max(params.width * width, width);
+				const maskHeight = Math.max(params.height, 0.01) * height;
+				const rotationRad = (params.rotation * Math.PI) / 180;
 
-			return buildBandPath({
-				centerX,
-				centerY,
-				halfWidth: maskWidth / 2,
-				halfHeight: maskHeight / 2,
-				rotationRad,
-			});
-		},
-		buildStrokePath({ resolvedParams, width, height }) {
-			const params = resolvedParams as RectangleMaskParams;
-			const centerX = width / 2 + params.centerX * width;
-			const centerY = height / 2 + params.centerY * height;
-			const rotationRad = (params.rotation * Math.PI) / 180;
-			const offset = getStrokeOffset({
-				strokeAlign: params.strokeAlign,
-				strokeWidth: params.strokeWidth,
-			});
+				return buildBandPath({
+					centerX,
+					centerY,
+					halfWidth: maskWidth / 2,
+					halfHeight: maskHeight / 2,
+					rotationRad,
+				});
+			},
+			buildStrokePath({ resolvedParams, width, height }) {
+				const params = resolvedParams as RectangleMaskParams;
+				const centerX = width / 2 + params.centerX * width;
+				const centerY = height / 2 + params.centerY * height;
+				const rotationRad = (params.rotation * Math.PI) / 180;
+				const offset = getStrokeOffset({
+					strokeAlign: params.strokeAlign,
+					strokeWidth: params.strokeWidth,
+				});
 
-			return buildBandPath({
-				centerX,
-				centerY,
-				halfWidth: Math.max((Math.max(params.width * width, width) / 2) + offset, 1),
-				halfHeight: Math.max(
-					(Math.max(params.height, 0.01) * height) / 2 + offset,
-					1,
-				),
-				rotationRad,
-			});
+				return buildBandPath({
+					centerX,
+					centerY,
+					halfWidth: Math.max(
+						Math.max(params.width * width, width) / 2 + offset,
+						1,
+					),
+					halfHeight: Math.max(
+						(Math.max(params.height, 0.01) * height) / 2 + offset,
+						1,
+					),
+					rotationRad,
+				});
+			},
 		},
-	},
-};
+	};

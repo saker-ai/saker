@@ -1,14 +1,9 @@
-import { CORNER_RADIUS_MIN } from "@/text/background";
-import { DEFAULTS } from "@/timeline/defaults";
-import type { TextBackground, TextElement } from "@/timeline";
 import { resolveNumberAtTime } from "@/animation/values";
-import {
-	getTextVisualRect,
-} from "./layout";
-import {
-	measureTextLayout,
-	type MeasuredTextLayout,
-} from "./primitives";
+import { CORNER_RADIUS_MIN } from "@/text/background";
+import type { TextBackground, TextElement } from "@/timeline";
+import { DEFAULTS } from "@/timeline/defaults";
+import { getTextVisualRect } from "./layout";
+import { type MeasuredTextLayout, measureTextLayout } from "./primitives";
 
 export interface ResolvedTextBackground extends TextBackground {
 	paddingX: number;

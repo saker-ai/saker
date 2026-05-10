@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import type { Transform } from "@/rendering";
 import type { SceneTracks, VideoElement } from "@/timeline";
 import { applyElementUpdate } from "@/timeline/update-pipeline";
-import { mediaTime, ZERO_MEDIA_TIME } from "@/wasm";
+import { ZERO_MEDIA_TIME, mediaTime } from "@/wasm";
 
 function buildTransform(): Transform {
 	return {
@@ -13,7 +13,9 @@ function buildTransform(): Transform {
 	};
 }
 
-function buildVideoElement(overrides: Partial<VideoElement> = {}): VideoElement {
+function buildVideoElement(
+	overrides: Partial<VideoElement> = {},
+): VideoElement {
 	return {
 		id: "video-1",
 		type: "video",

@@ -1,5 +1,5 @@
-import type { ElementAnimations } from "@/animation/types";
 import { resolveAnimationPathValueAtTime } from "@/animation";
+import type { ElementAnimations } from "@/animation/types";
 import type { Transform } from "./index";
 
 export function resolveTransformAtTime({

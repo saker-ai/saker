@@ -1,30 +1,30 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useTimelineStore } from "@/timeline/timeline-store";
+import { invokeAction } from "@/actions";
 import { useActionHandler } from "@/actions/use-action-handler";
+import { cancelInteraction } from "@/editor/cancel-interaction";
 import { useEditor } from "@/editor/use-editor";
-import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
 import {
+	type ScopeEntry,
+	activateScope,
+	clearActiveScope,
+} from "@/selection/scope";
+import { getElementsAtTime, hasMediaId } from "@/timeline";
+import { canToggleSourceAudio } from "@/timeline/audio-separation";
+import { useElementSelection } from "@/timeline/hooks/element/use-element-selection";
+import { useKeyframeSelection } from "@/timeline/hooks/element/use-keyframe-selection";
+import { useTimelineStore } from "@/timeline/timeline-store";
+import {
+	TICKS_PER_SECOND,
+	ZERO_MEDIA_TIME,
 	addMediaTime,
 	maxMediaTime,
 	mediaTime,
 	mediaTimeFromSeconds,
 	minMediaTime,
 	subMediaTime,
-	TICKS_PER_SECOND,
-	ZERO_MEDIA_TIME,
 } from "@/wasm";
-import { useKeyframeSelection } from "@/timeline/hooks/element/use-keyframe-selection";
-import { getElementsAtTime, hasMediaId } from "@/timeline";
-import { cancelInteraction } from "@/editor/cancel-interaction";
-import { invokeAction } from "@/actions";
-import { canToggleSourceAudio } from "@/timeline/audio-separation";
-import {
-	activateScope,
-	clearActiveScope,
-	type ScopeEntry,
-} from "@/selection/scope";
+import { useEffect, useRef } from "react";
 
 export function useEditorActions() {
 	const editor = useEditor();
@@ -138,9 +138,7 @@ export function useEditorActions() {
 		() => {
 			const fps = editor.project.getActive().settings.fps;
 			const ticksPerFrame = mediaTime({
-				ticks: Math.round(
-					(TICKS_PER_SECOND * fps.denominator) / fps.numerator,
-				),
+				ticks: Math.round((TICKS_PER_SECOND * fps.denominator) / fps.numerator),
 			});
 			editor.playback.seek({
 				time: minMediaTime({
@@ -160,9 +158,7 @@ export function useEditorActions() {
 		() => {
 			const fps = editor.project.getActive().settings.fps;
 			const ticksPerFrame = mediaTime({
-				ticks: Math.round(
-					(TICKS_PER_SECOND * fps.denominator) / fps.numerator,
-				),
+				ticks: Math.round((TICKS_PER_SECOND * fps.denominator) / fps.numerator),
 			});
 			editor.playback.seek({
 				time: maxMediaTime({

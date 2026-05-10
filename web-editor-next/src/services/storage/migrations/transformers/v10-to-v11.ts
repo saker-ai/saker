@@ -77,7 +77,7 @@ function migrateElementScale({ element }: { element: unknown }): unknown {
 		scaleX: scale,
 		scaleY: scale,
 	};
-	delete (migratedTransform as Record<string, unknown>).scale;
+	(migratedTransform as Record<string, unknown>).scale = undefined;
 
 	let migratedElement: ProjectRecord = {
 		...element,
@@ -92,7 +92,7 @@ function migrateElementScale({ element }: { element: unknown }): unknown {
 			const keyframes = (scaleChannel as { keyframes?: unknown[] }).keyframes;
 			if (Array.isArray(keyframes)) {
 				const newChannels = { ...channels };
-				delete newChannels["transform.scale"];
+				newChannels["transform.scale"] = undefined;
 				newChannels["transform.scaleX"] = {
 					...scaleChannel,
 					keyframes: [...keyframes],

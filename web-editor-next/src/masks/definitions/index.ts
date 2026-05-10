@@ -1,5 +1,15 @@
 import type { BaseMaskParams, MaskDefinition } from "@/masks/types";
-import { masksRegistry, type MaskIconProps } from "../registry";
+import {
+	CircleIcon,
+	DiamondIcon,
+	FavouriteIcon,
+	MinusSignIcon,
+	PanelRightDashedIcon,
+	SquareIcon,
+	StarsIcon,
+	TextFontIcon,
+} from "@hugeicons/core-free-icons";
+import { type MaskIconProps, masksRegistry } from "../registry";
 import { cinematicBarsMaskDefinition } from "./cinematic-bars";
 import { customMaskDefinition } from "./custom";
 import { diamondMaskDefinition } from "./diamond";
@@ -9,16 +19,6 @@ import { rectangleMaskDefinition } from "./rectangle";
 import { splitMaskDefinition } from "./split";
 import { starMaskDefinition } from "./star";
 import { textMaskDefinition } from "./text";
-import {
-	MinusSignIcon,
-	PanelRightDashedIcon,
-	SquareIcon,
-	CircleIcon,
-	FavouriteIcon,
-	DiamondIcon,
-	StarsIcon,
-	TextFontIcon,
-} from "@hugeicons/core-free-icons";
 
 function registerDefaultMask<TParams extends BaseMaskParams>({
 	definition,

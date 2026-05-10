@@ -47,4 +47,3 @@ export type ParamDefinition<TKey extends string = string> =
 	| BooleanParamDefinition<TKey>
 	| ColorParamDefinition<TKey>
 	| SelectParamDefinition<TKey>;
-

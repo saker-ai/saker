@@ -1,23 +1,17 @@
+import { MIN_TRANSFORM_SCALE } from "@/animation/transform";
 import type {
 	AnimationBindingKind,
 	AnimationInterpolation,
 	AnimationPropertyPath,
 	AnimationValue,
 } from "@/animation/types";
-import { parseColorToLinearRgba } from "./binding-values";
+import { CORNER_RADIUS_MAX, CORNER_RADIUS_MIN } from "@/text/background";
 import type { TimelineElement } from "@/timeline";
-import { MIN_TRANSFORM_SCALE } from "@/animation/transform";
-import {
-	CORNER_RADIUS_MAX,
-	CORNER_RADIUS_MIN,
-} from "@/text/background";
-import {
-	canElementHaveAudio,
-	isVisualElement,
-} from "@/timeline/element-utils";
 import { VOLUME_DB_MAX, VOLUME_DB_MIN } from "@/timeline/audio-constants";
 import { DEFAULTS } from "@/timeline/defaults";
+import { canElementHaveAudio, isVisualElement } from "@/timeline/element-utils";
 import { snapToStep } from "@/utils/math";
+import { parseColorToLinearRgba } from "./binding-values";
 
 export interface NumericSpec {
 	min?: number;
@@ -30,7 +24,9 @@ export interface AnimationPropertyDefinition {
 	defaultInterpolation: AnimationInterpolation;
 	numericRanges?: Partial<Record<string, NumericSpec>>;
 	supportsElement: ({ element }: { element: TimelineElement }) => boolean;
-	getValue: ({ element }: { element: TimelineElement }) => AnimationValue | null;
+	getValue: ({
+		element,
+	}: { element: TimelineElement }) => AnimationValue | null;
 	coerceValue: ({ value }: { value: AnimationValue }) => AnimationValue | null;
 	setValue: ({
 		element,
@@ -200,7 +196,7 @@ const ANIMATION_PROPERTY_REGISTRY: Record<
 		numericRange: { min: VOLUME_DB_MIN, max: VOLUME_DB_MAX, step: 0.01 },
 		supportsElement: ({ element }) => canElementHaveAudio(element),
 		getValue: ({ element }) =>
-			canElementHaveAudio(element) ? element.volume ?? 0 : null,
+			canElementHaveAudio(element) ? (element.volume ?? 0) : null,
 		setValue: ({ element, value }) =>
 			canElementHaveAudio(element)
 				? { ...element, volume: value as number }
@@ -307,7 +303,10 @@ const ANIMATION_PROPERTY_REGISTRY: Record<
 			element.type === "text"
 				? {
 						...element,
-						background: { ...element.background, cornerRadius: value as number },
+						background: {
+							...element.background,
+							cornerRadius: value as number,
+						},
 					}
 				: element,
 	}),

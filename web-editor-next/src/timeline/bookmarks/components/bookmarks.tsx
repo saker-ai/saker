@@ -1,38 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { EditorCore } from "@/core";
-import { useEditor } from "@/editor/use-editor";
-import type { BookmarkDragState } from "../hooks/use-bookmark-drag";
-import { DEFAULT_TIMELINE_BOOKMARK_COLOR } from "@/timeline/components/theme";
-import { TIMELINE_BOOKMARK_ROW_HEIGHT_PX } from "@/timeline/components/layout";
-import { DEFAULT_FPS } from "@/fps/defaults";
-import {
-	ArrowTurnBackwardIcon,
-	Delete02Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import type { Bookmark } from "@/timeline";
+import { Button } from "@/components/ui/button";
+import { ColorPicker } from "@/components/ui/color-picker";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	Popover,
 	PopoverAnchor,
 	PopoverContent,
 } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { ColorPicker } from "@/components/ui/color-picker";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { uppercase } from "@/utils/string";
-import { clamp, formatNumberForDisplay } from "@/utils/math";
+import type { EditorCore } from "@/core";
+import { useEditor } from "@/editor/use-editor";
+import { DEFAULT_FPS } from "@/fps/defaults";
+import type { Bookmark } from "@/timeline";
 import { timelineTimeToPixels, timelineTimeToSnappedPixels } from "@/timeline";
+import { TIMELINE_BOOKMARK_ROW_HEIGHT_PX } from "@/timeline/components/layout";
+import { DEFAULT_TIMELINE_BOOKMARK_COLOR } from "@/timeline/components/theme";
+import { clamp, formatNumberForDisplay } from "@/utils/math";
+import { uppercase } from "@/utils/string";
 import {
 	type MediaTime,
+	ZERO_MEDIA_TIME,
 	mediaTimeFromSeconds,
 	mediaTimeToSeconds,
 	snapSeekMediaTime,
 	subMediaTime,
-	ZERO_MEDIA_TIME,
 } from "@/wasm";
+import {
+	ArrowTurnBackwardIcon,
+	Delete02Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useEffect, useState } from "react";
+import type { BookmarkDragState } from "../hooks/use-bookmark-drag";
 
 const MIN_BOOKMARK_WIDTH_PX = 2;
 const BOOKMARK_MARKER_WIDTH_PX = 12;
@@ -404,7 +404,7 @@ function BookmarkPopoverContent({
 						step={0.1}
 						value={durationSeconds}
 						onChange={(event) => {
-							const parsed = parseFloat(event.target.value);
+							const parsed = Number.parseFloat(event.target.value);
 							const value = Number.isNaN(parsed)
 								? 0
 								: clamp({

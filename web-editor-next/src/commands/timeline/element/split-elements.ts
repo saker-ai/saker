@@ -1,17 +1,17 @@
+import { splitAnimationsAtTime } from "@/animation";
 import {
 	Command,
-	createElementSelectionResult,
 	type CommandResult,
+	createElementSelectionResult,
 } from "@/commands/base-command";
-import type { SceneTracks, TimelineElement } from "@/timeline";
-import { generateUUID } from "@/utils/id";
 import { EditorCore } from "@/core";
-import { isRetimableElement } from "@/timeline";
-import { splitAnimationsAtTime } from "@/animation";
 import { getSourceSpanAtClipTime } from "@/retime";
+import type { SceneTracks, TimelineElement } from "@/timeline";
+import { isRetimableElement } from "@/timeline";
+import { generateUUID } from "@/utils/id";
 import {
-	addMediaTime,
 	type MediaTime,
+	addMediaTime,
 	roundMediaTime,
 	subMediaTime,
 } from "@/wasm";

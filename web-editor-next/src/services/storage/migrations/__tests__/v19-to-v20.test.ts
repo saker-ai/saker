@@ -83,8 +83,10 @@ describe("V19 to V20 Migration", () => {
 		expect(result.skipped).toBe(false);
 		expect(result.project.version).toBe(20);
 		expect(
-			((result.project.scenes as Array<Record<string, unknown>>)[0]
-				.tracks as Array<Record<string, unknown>>)[0].elements,
+			(
+				(result.project.scenes as Array<Record<string, unknown>>)[0]
+					.tracks as Array<Record<string, unknown>>
+			)[0].elements,
 		).toEqual([
 			expect.objectContaining({
 				id: "video-1",
@@ -92,9 +94,12 @@ describe("V19 to V20 Migration", () => {
 			}),
 		]);
 		expect(
-			(((result.project.scenes as Array<Record<string, unknown>>)[0]
-				.tracks as Array<Record<string, unknown>>)[1]
-				.elements as Array<Record<string, unknown>>)[0].isSourceAudioEnabled,
+			(
+				(
+					(result.project.scenes as Array<Record<string, unknown>>)[0]
+						.tracks as Array<Record<string, unknown>>
+				)[1].elements as Array<Record<string, unknown>>
+			)[0].isSourceAudioEnabled,
 		).toBeUndefined();
 	});
 
@@ -121,9 +126,12 @@ describe("V19 to V20 Migration", () => {
 		});
 
 		expect(
-			(((result.project.scenes as Array<Record<string, unknown>>)[0]
-				.tracks as Array<Record<string, unknown>>)[0]
-				.elements as Array<Record<string, unknown>>)[0].isSourceAudioEnabled,
+			(
+				(
+					(result.project.scenes as Array<Record<string, unknown>>)[0]
+						.tracks as Array<Record<string, unknown>>
+				)[0].elements as Array<Record<string, unknown>>
+			)[0].isSourceAudioEnabled,
 		).toBe(false);
 	});
 

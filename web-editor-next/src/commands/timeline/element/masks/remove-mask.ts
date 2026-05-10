@@ -1,7 +1,7 @@
-import { EditorCore } from "@/core";
 import { Command, type CommandResult } from "@/commands/base-command";
+import { EditorCore } from "@/core";
 import { isMaskableElement, updateElementInSceneTracks } from "@/timeline";
-import type { SceneTracks, MaskableElement } from "@/timeline";
+import type { MaskableElement, SceneTracks } from "@/timeline";
 
 function removeMaskFromElement({
 	element,

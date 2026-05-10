@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useRef } from "react";
 import type {
 	TAction,
 	TActionFunc,
@@ -7,6 +6,7 @@ import type {
 	TInvocationTrigger,
 } from "@/actions";
 import { bindAction, unbindAction } from "@/actions";
+import { useCallback, useEffect, useRef } from "react";
 
 export function useActionHandler<A extends TAction>(
 	action: A,

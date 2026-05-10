@@ -1,13 +1,13 @@
 import type { EditorCore } from "@/core";
-import type { RootNode } from "@/services/renderer/nodes/root-node";
 import type { ExportOptions, ExportResult } from "@/export";
-import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
-import { SceneExporter } from "@/services/renderer/scene-exporter";
-import { buildScene } from "@/services/renderer/scene-builder";
-import { createTimelineAudioBuffer } from "@/media/audio";
-import { formatTimecode } from "opencut-wasm";
 import { frameRateToFloat } from "@/fps/utils";
+import { createTimelineAudioBuffer } from "@/media/audio";
+import { CanvasRenderer } from "@/services/renderer/canvas-renderer";
+import type { RootNode } from "@/services/renderer/nodes/root-node";
+import { buildScene } from "@/services/renderer/scene-builder";
+import { SceneExporter } from "@/services/renderer/scene-exporter";
 import { downloadBlob } from "@/utils/browser";
+import { formatTimecode } from "opencut-wasm";
 
 type SnapshotResult =
 	| { success: true; blob: Blob; filename: string }
@@ -122,7 +122,10 @@ export class RendererManager {
 				return { success: false, error: "Failed to create image" };
 			}
 
-			const timecode = formatTimecode({ time: renderTime, rate: fps })!.replace(/:/g, "-");
+			const timecode = formatTimecode({ time: renderTime, rate: fps })?.replace(
+				/:/g,
+				"-",
+			);
 			const safeName =
 				activeProject.metadata.name.replace(/[<>:"/\\|?*]/g, "-").trim() ||
 				"snapshot";
@@ -245,8 +248,8 @@ export class RendererManager {
 	}
 
 	private notify(): void {
-		this.listeners.forEach((fn) => {
+		for (const fn of this.listeners) {
 			fn();
-		});
+		}
 	}
 }

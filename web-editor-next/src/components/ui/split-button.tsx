@@ -1,7 +1,7 @@
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { type ReactNode, forwardRef } from "react";
 import { cn } from "@/utils/ui";
+import { type ReactNode, forwardRef } from "react";
 
 interface SplitButtonProps {
 	children: ReactNode;

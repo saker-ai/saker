@@ -1,12 +1,12 @@
-import { FONT_SIZE_SCALE_REFERENCE } from "@/text/typography";
 import {
 	getTextVisualRect,
 	measureTextBlock,
 	setCanvasLetterSpacing,
 } from "@/text/layout";
+import { FONT_SIZE_SCALE_REFERENCE } from "@/text/typography";
+import type { CreateTextElement } from "@/timeline";
 import { DEFAULTS } from "@/timeline/defaults";
 import { mediaTimeFromSeconds } from "@/wasm";
-import type { CreateTextElement } from "@/timeline";
 import type { SubtitleCue, SubtitleStyleOverrides } from "./types";
 
 const SUBTITLE_MAX_WIDTH_RATIO = 0.8;

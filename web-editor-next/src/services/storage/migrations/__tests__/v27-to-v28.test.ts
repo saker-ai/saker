@@ -129,7 +129,10 @@ describe("V27 to V28 Migration", () => {
 		expect(element.sourceDuration).toBe(2_197_468);
 
 		const animations = element.animations as Record<string, unknown>;
-		const channels = animations.channels as Record<string, Record<string, unknown>>;
+		const channels = animations.channels as Record<
+			string,
+			Record<string, unknown>
+		>;
 		const opacityChannel = channels.opacity;
 		expect(opacityChannel.keys).toEqual([
 			{

@@ -1,13 +1,13 @@
-import { createOffscreenCanvas } from "../canvas-utils";
 import {
 	DEFAULT_GRAPHIC_SOURCE_SIZE,
 	getGraphicDefinition,
 	registerDefaultGraphics,
 } from "@/graphics";
 import type { ParamValues } from "@/params";
+import { createOffscreenCanvas } from "../canvas-utils";
 import {
-	VisualNode,
 	type ResolvedVisualNodeState,
+	VisualNode,
 	type VisualNodeParams,
 } from "./visual-node";
 

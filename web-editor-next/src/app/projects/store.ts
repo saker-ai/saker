@@ -1,6 +1,6 @@
+import type { TProjectSortKey } from "@/project/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { TProjectSortKey } from "@/project/types";
 
 export type ProjectsViewMode = "grid" | "list";
 
