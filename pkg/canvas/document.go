@@ -61,7 +61,7 @@ func CanvasPath(dataDir, threadID string) string {
 
 // Load reads and parses a thread's canvas document. Returns an empty document
 // (not an error) when the file does not exist, matching handleCanvasLoad's
-// behaviour so callers can treat "no canvas yet" as a normal state.
+// behavior so callers can treat "no canvas yet" as a normal state.
 func Load(dataDir, threadID string) (*Document, error) {
 	if dataDir == "" {
 		return nil, errors.New("canvas: dataDir is empty")

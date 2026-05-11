@@ -14,7 +14,8 @@ func prepareSession(_ context.Context, projectRoot string, opts *sandboxenv.Land
 		return nil, fmt.Errorf("landlockenv: missing landlock config")
 	}
 
-	roPaths := []string{projectRoot}
+	roPaths := make([]string, 0, 1+len(opts.AdditionalROPaths))
+	roPaths = append(roPaths, projectRoot)
 	roPaths = append(roPaths, opts.AdditionalROPaths...)
 
 	rwPaths := append([]string(nil), opts.AdditionalRWPaths...)

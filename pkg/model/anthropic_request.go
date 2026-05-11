@@ -188,7 +188,7 @@ func isRetryable(err error) bool {
 		if netErr.Timeout() {
 			return true
 		}
-		//nolint:staticcheck // Temporary is deprecated but retained to treat non-timeout transient errors as retryable (tests rely on this behaviour).
+		//nolint:staticcheck // Temporary is deprecated but retained to treat non-timeout transient errors as retryable (tests rely on this behavior).
 		return netErr.Temporary()
 	}
 	return true

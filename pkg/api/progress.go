@@ -20,7 +20,7 @@ func newProgressMiddleware(events chan<- StreamEvent) *progressMiddleware {
 	return &progressMiddleware{emitter: progressEmitter{ch: events}}
 }
 
-// progressMiddleware centralises guarded writes to the event channel so the
+// progressMiddleware centralizes guarded writes to the event channel so the
 // middleware hooks stay terse and ordered.
 type progressMiddleware struct {
 	emitter progressEmitter

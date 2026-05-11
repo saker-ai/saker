@@ -37,7 +37,7 @@ var SupportedExtensions = map[string]bool{
 	".webm": true,
 }
 
-// Options controls video chunking behaviour.
+// Options controls video chunking behavior.
 type Options struct {
 	// Duration of each chunk in seconds (default 30).
 	Duration float64

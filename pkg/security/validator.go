@@ -26,7 +26,7 @@ type Validator struct {
 	allowShellMeta bool
 }
 
-// NewValidator initialises the validator with conservative defaults.
+// NewValidator initializes the validator with conservative defaults.
 func NewValidator() *Validator {
 	return &Validator{
 		bannedCommands: map[string]string{

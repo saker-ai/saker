@@ -51,7 +51,7 @@ func (t *runtimeToolExecutor) Execute(ctx context.Context, call agent.ToolCall, 
 	}
 
 	if t.executor == nil {
-		return agent.ToolResult{}, appendEarlyError(errors.New("tool executor not initialised"))
+		return agent.ToolResult{}, appendEarlyError(errors.New("tool executor not initialized"))
 	}
 	if !t.isAllowed(ctx, call.Name) {
 		return agent.ToolResult{}, appendEarlyError(fmt.Errorf("tool %s is not whitelisted", call.Name))

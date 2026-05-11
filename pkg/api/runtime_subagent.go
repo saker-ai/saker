@@ -19,7 +19,7 @@ import (
 )
 
 // subagentMaxIterations chooses the iteration cap for a single subagent run.
-// We always honour an explicit unlimited (-1) coming from the runtime — a
+// We always honor an explicit unlimited (-1) coming from the runtime — a
 // platform deployment that opted out of caps shouldn't have a 50 silently
 // re-imposed on its children. Otherwise we apply DefaultSubagentMaxIterations
 // (50, mirrors Claude Code's MAX_AGENT_TURNS).
