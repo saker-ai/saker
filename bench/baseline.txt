@@ -1,0 +1,77 @@
+goos: linux
+goarch: amd64
+pkg: github.com/cinience/saker/pkg/api
+cpu: 12th Gen Intel(R) Core(TM) i5-12450H
+BenchmarkShouldCompact_Old-12        	   67212	     16981 ns/op	       0 B/op	       0 allocs/op
+BenchmarkShouldCompact_Old-12        	   71498	     17655 ns/op	       0 B/op	       0 allocs/op
+BenchmarkShouldCompact_Old-12        	   72369	     17377 ns/op	       0 B/op	       0 allocs/op
+BenchmarkShouldCompact_Old-12        	   65132	     18424 ns/op	       0 B/op	       0 allocs/op
+BenchmarkShouldCompact_Old-12        	   66890	     17141 ns/op	       0 B/op	       0 allocs/op
+BenchmarkShouldCompact_New-12        	711350326	         1.775 ns/op	       0 B/op	       0 allocs/op
+BenchmarkShouldCompact_New-12        	663984523	         1.781 ns/op	       0 B/op	       0 allocs/op
+BenchmarkShouldCompact_New-12        	768939750	         1.656 ns/op	       0 B/op	       0 allocs/op
+BenchmarkShouldCompact_New-12        	650751038	         1.866 ns/op	       0 B/op	       0 allocs/op
+BenchmarkShouldCompact_New-12        	613930006	         1.803 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLooksLikeBase64_Short-12    	1000000000	         1.000 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLooksLikeBase64_Short-12    	1000000000	         0.9814 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLooksLikeBase64_Short-12    	1000000000	         1.061 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLooksLikeBase64_Short-12    	1000000000	         1.109 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLooksLikeBase64_Short-12    	1000000000	         1.072 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLooksLikeBase64_Long-12     	  665348	      1572 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLooksLikeBase64_Long-12     	  715440	      1598 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLooksLikeBase64_Long-12     	  834939	      1639 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLooksLikeBase64_Long-12     	  710697	      1690 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLooksLikeBase64_Long-12     	  692516	      1557 ns/op	       0 B/op	       0 allocs/op
+BenchmarkStripMediaContent-12        	  342208	      3659 ns/op	    8192 B/op	       1 allocs/op
+BenchmarkStripMediaContent-12        	  323470	      3629 ns/op	    8192 B/op	       1 allocs/op
+BenchmarkStripMediaContent-12        	  348744	      3622 ns/op	    8192 B/op	       1 allocs/op
+BenchmarkStripMediaContent-12        	  299480	      3624 ns/op	    8192 B/op	       1 allocs/op
+BenchmarkStripMediaContent-12        	  342705	      3705 ns/op	    8192 B/op	       1 allocs/op
+PASS
+ok  	github.com/cinience/saker/pkg/api	31.809s
+goos: linux
+goarch: amd64
+pkg: github.com/cinience/saker/pkg/tool
+cpu: 12th Gen Intel(R) Core(TM) i5-12450H
+BenchmarkRegistryRegister-12    	  125223	     10840 ns/op	   18816 B/op	      23 allocs/op
+BenchmarkRegistryRegister-12    	  123951	     10573 ns/op	   18816 B/op	      23 allocs/op
+BenchmarkRegistryRegister-12    	  101686	     10593 ns/op	   18816 B/op	      23 allocs/op
+BenchmarkRegistryRegister-12    	  112772	     10848 ns/op	   18816 B/op	      23 allocs/op
+BenchmarkRegistryRegister-12    	  109816	     10859 ns/op	   18816 B/op	      23 allocs/op
+BenchmarkRegistryGet-12         	63982627	        17.65 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRegistryGet-12         	68322904	        16.27 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRegistryGet-12         	75823452	        19.06 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRegistryGet-12         	67530030	        19.26 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRegistryGet-12         	65750145	        17.58 ns/op	       0 B/op	       0 allocs/op
+BenchmarkRegistryList-12        	  166417	      7137 ns/op	    1240 B/op	       4 allocs/op
+BenchmarkRegistryList-12        	  185766	      6874 ns/op	    1240 B/op	       4 allocs/op
+BenchmarkRegistryList-12        	  175634	      6956 ns/op	    1240 B/op	       4 allocs/op
+BenchmarkRegistryList-12        	  184370	      6848 ns/op	    1240 B/op	       4 allocs/op
+BenchmarkRegistryList-12        	  171792	      6708 ns/op	    1240 B/op	       4 allocs/op
+PASS
+ok  	github.com/cinience/saker/pkg/tool	19.407s
+PASS
+ok  	github.com/cinience/saker/pkg/tool/builtin	0.005s
+PASS
+ok  	github.com/cinience/saker/pkg/tool/builtin/aigo	0.004s
+goos: linux
+goarch: amd64
+pkg: github.com/cinience/saker/pkg/middleware
+cpu: 12th Gen Intel(R) Core(TM) i5-12450H
+BenchmarkTraceMiddleware_BeforeAgent-12    	    8629	   4450447 ns/op	 5263298 B/op	    4429 allocs/op
+BenchmarkTraceMiddleware_BeforeAgent-12    	    9577	   5014030 ns/op	 5932940 B/op	    4904 allocs/op
+BenchmarkTraceMiddleware_BeforeAgent-12    	   10000	   6926399 ns/op	 6191916 B/op	    5117 allocs/op
+BenchmarkTraceMiddleware_BeforeAgent-12    	    9270	   5159709 ns/op	 5720757 B/op	    4751 allocs/op
+BenchmarkTraceMiddleware_BeforeAgent-12    	    9709	   7466485 ns/op	 6002885 B/op	    4971 allocs/op
+BenchmarkTraceMiddleware_FullCycle-12      	     314	  11650507 ns/op	 9588054 B/op	   47818 allocs/op
+BenchmarkTraceMiddleware_FullCycle-12      	     301	  11354980 ns/op	 9220281 B/op	   45870 allocs/op
+BenchmarkTraceMiddleware_FullCycle-12      	     288	  11312693 ns/op	 8905850 B/op	   43921 allocs/op
+BenchmarkTraceMiddleware_FullCycle-12      	     315	  12518138 ns/op	 9552836 B/op	   47967 allocs/op
+BenchmarkTraceMiddleware_FullCycle-12      	     292	  11037302 ns/op	 8947324 B/op	   44519 allocs/op
+BenchmarkSanitizeSessionComponent-12       	15086361	        79.00 ns/op	      20 B/op	       0 allocs/op
+BenchmarkSanitizeSessionComponent-12       	15491974	        77.10 ns/op	      20 B/op	       0 allocs/op
+BenchmarkSanitizeSessionComponent-12       	16661964	        75.90 ns/op	      20 B/op	       0 allocs/op
+BenchmarkSanitizeSessionComponent-12       	15589843	        79.82 ns/op	      20 B/op	       0 allocs/op
+BenchmarkSanitizeSessionComponent-12       	14013270	        74.69 ns/op	      20 B/op	       0 allocs/op
+PASS
+ok  	github.com/cinience/saker/pkg/middleware	301.982s
