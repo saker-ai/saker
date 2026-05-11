@@ -13,6 +13,7 @@ import (
 	"github.com/cinience/saker/pkg/api"
 	"github.com/cinience/saker/pkg/config"
 	"github.com/cinience/saker/pkg/logging"
+	"github.com/cinience/saker/pkg/middleware"
 	"github.com/cinience/saker/pkg/project"
 	"github.com/cinience/saker/pkg/sandbox/landlockenv"
 	"github.com/cinience/saker/pkg/server"
@@ -71,6 +72,26 @@ func runServerMode(stdout, stderr io.Writer, opts api.Options, addr, dataDir, st
 
 	if logger != nil {
 		ctx = logging.WithLogger(ctx, logger)
+	}
+
+	// Wire OpenTelemetry tracing when OTEL_EXPORTER_OTLP_ENDPOINT is set.
+	// When unset, the global tracer remains a noop and HTTP middleware adds
+	// near-zero overhead.
+	if otlpCfg, enabled := middleware.OTLPConfigFromEnv(); enabled {
+		shutdown, otelErr := middleware.SetupOTLP(ctx, otlpCfg)
+		if otelErr != nil {
+			fmt.Fprintf(stderr, "Warning: OTLP setup failed: %v\n", otelErr)
+		} else {
+			fmt.Fprintf(stdout, "OTLP tracing enabled: endpoint=%s service=%s\n",
+				otlpCfg.Endpoint, otlpCfg.ServiceName)
+			defer func() {
+				shutCtx, shutCancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer shutCancel()
+				if err := shutdown(shutCtx); err != nil && logger != nil {
+					logger.Warn("OTLP shutdown error", "error", err)
+				}
+			}()
+		}
 	}
 
 	rt, err := runtimeFactory(ctx, opts)

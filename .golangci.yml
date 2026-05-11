@@ -24,12 +24,21 @@ linters:
     - errcheck     # Ensures errors are not silently dropped
     - staticcheck  # Comprehensive static analysis (SA*, S*, ST*, QF* checks)
     - ineffassign  # Detects assignments whose values are never used
+    - bodyclose    # HTTP response bodies must be closed
+    - unconvert    # Detects unnecessary type conversions
 
     # Simplification & style
     # Note: gosimple was merged into staticcheck in golangci-lint v2 (S* checks now run via staticcheck).
     - unused       # Finds unused code (functions, types, constants, variables)
     - gocritic     # Opinionated but practical code suggestions
     - revive       # Flexible, fast drop-in replacement for golint
+    - prealloc     # Suggests slice pre-allocation when length is known
+
+    # Security
+    - gosec        # Security audit — detects unsafe patterns, weak crypto, etc.
+
+    # Complexity
+    - gocognit     # Cognitive complexity (more accurate than cyclomatic)
 
     # Spelling
     - misspell     # Fixes common English misspellings in comments and strings
@@ -49,11 +58,15 @@ linters:
     rules:
       # errcheck: test files often intentionally ignore errors (e.g. t.Log, defer f.Close)
       # gocritic/revive: test helpers and exported test types need less strictness
+      # gosec/gocognit: tests intentionally trigger edge cases and have helper bodies
       - path: "_test\\.go"
         linters:
           - errcheck
           - gocritic
           - revive
+          - gosec
+          - gocognit
+          - bodyclose
 
       # Generated protobuf files — skip all analysis
       - path: ".*\\.pb\\.go"
@@ -63,11 +76,15 @@ linters:
           - staticcheck
           - gocritic
           - revive
+          - gosec
+          - gocognit
 
       # Examples are illustrative; relax doc-comment requirements
       - path: "examples/"
         linters:
           - revive
+          - gosec
+          - gocognit
 
   settings:
     govet:
@@ -108,6 +125,26 @@ linters:
 
     misspell:
       locale: US
+
+    gocognit:
+      # Cognitive complexity threshold. Set to 50 — captures only the worst
+      # offenders; tighten over time as we refactor existing legacy code.
+      min-complexity: 50
+
+    gosec:
+      # Suppress checks that don't fit our context (sandboxed Bash tool, CLI).
+      excludes:
+        - G104  # Errors unhandled — already covered by errcheck
+        - G304  # File path provided as taint input — saker is a file-touching agent
+        - G401  # SHA1 — used only for non-security cache keys
+        - G501  # SHA1 import — same as above
+        - G601  # Range value copy implicit — Go 1.22+ fixed the loopvar issue
+
+    prealloc:
+      # Only flag clearly-bounded loops; default is too aggressive.
+      simple: true
+      range-loops: true
+      for-loops: false
 
     staticcheck:
       # SA* = bugs/correctness, S* = simplifications, ST* = style, QF* = quickfixes
