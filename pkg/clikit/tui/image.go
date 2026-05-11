@@ -114,13 +114,14 @@ func renderKitty(data []byte, maxCellWidth int) string {
 			}
 			chunk := b64[i:end]
 
-			if i == 0 {
+			switch {
+			case i == 0:
 				// First chunk: include all parameters.
 				fmt.Fprintf(&sb, "\033_Ga=T,f=100,t=d,c=%d,r=%d,m=1;%s\033\\", cols, rows, chunk)
-			} else if end == len(b64) {
+			case end == len(b64):
 				// Last chunk.
 				fmt.Fprintf(&sb, "\033_Gm=0;%s\033\\", chunk)
-			} else {
+			default:
 				// Middle chunk.
 				fmt.Fprintf(&sb, "\033_Gm=1;%s\033\\", chunk)
 			}

@@ -41,14 +41,14 @@ func DefaultTheme() Theme {
 		Secondary:    lipgloss.Color("#B1B9F9"), // suggestion blue-purple
 		Accent:       lipgloss.Color("#D77757"), // same as primary
 		Muted:        lipgloss.Color("#505050"), // subtle rgb(80,80,80)
-		Error:        lipgloss.Color("#FF6B80"), // rgb(255,107,128)
-		Success:      lipgloss.Color("#4EBA65"), // rgb(78,186,101)
-		Warning:      lipgloss.Color("#FFC107"), // rgb(255,193,7)
+		Error:        lipgloss.Color("#FF6B80"), // soft red
+		Success:      lipgloss.Color("#4EBA65"), // success green
+		Warning:      lipgloss.Color("#FFC107"), // amber
 		Fg:           lipgloss.Color("#FFFFFF"), // white
-		FgDim:        lipgloss.Color("#999999"), // inactive rgb(153,153,153)
+		FgDim:        lipgloss.Color("#999999"), // inactive grey
 		Bg:           lipgloss.Color("#000000"), // black
-		PromptBorder: lipgloss.Color("#888888"), // rgb(136,136,136)
-		UserMsgBg:    lipgloss.Color("#373737"), // rgb(55,55,55)
+		PromptBorder: lipgloss.Color("#888888"), // mid grey
+		UserMsgBg:    lipgloss.Color("#373737"), // dark grey
 	}
 }
 

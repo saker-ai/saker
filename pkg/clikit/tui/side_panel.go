@@ -200,7 +200,7 @@ func (p *SidePanel) View() string {
 	// Top border with title
 	titleRendered := titleStyle.Render(displayTitle)
 	titleW := lipgloss.Width(titleRendered)
-	fillW := max(0, innerW-titleW)
+	fillW := maxInt(0, innerW-titleW)
 	b.WriteString(fmt.Sprintf("─ %s %s", titleRendered, strings.Repeat("─", fillW)))
 	b.WriteString("\n")
 
@@ -261,7 +261,7 @@ func padRight(s string, w int) string {
 	return s + strings.Repeat(" ", w-vw)
 }
 
-func max(a, b int) int {
+func maxInt(a, b int) int {
 	if a > b {
 		return a
 	}

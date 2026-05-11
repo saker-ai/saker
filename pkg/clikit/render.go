@@ -64,19 +64,19 @@ func summarizeOutput(v any) string {
 	return strings.TrimSpace(string(raw))
 }
 
-func truncateSummary(s string, max int) string {
+func truncateSummary(s string, maxLen int) string {
 	s = normalizeSummaryText(s)
-	if max <= 0 {
+	if maxLen <= 0 {
 		return s
 	}
 	runes := []rune(s)
-	if len(runes) <= max {
+	if len(runes) <= maxLen {
 		return s
 	}
-	if max <= 3 {
-		return string(runes[:max])
+	if maxLen <= 3 {
+		return string(runes[:maxLen])
 	}
-	return string(runes[:max-3]) + "..."
+	return string(runes[:maxLen-3]) + "..."
 }
 
 func truncateSummaryHeadTail(s string, head, tail int) string {
@@ -99,13 +99,13 @@ func runeCount(s string) int {
 	return len([]rune(s))
 }
 
-func renderDurationBar(dur, max int64, width int) string {
+func renderDurationBar(dur, maxDur int64, width int) string {
 	if width <= 0 {
 		return ""
 	}
 	filled := 1
-	if max > 0 {
-		filled = int(float64(width) * float64(dur) / float64(max))
+	if maxDur > 0 {
+		filled = int(float64(width) * float64(dur) / float64(maxDur))
 		if filled < 1 {
 			filled = 1
 		}

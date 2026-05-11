@@ -11,6 +11,10 @@ import (
 	"github.com/cinience/saker/pkg/api"
 )
 
+// branching; refactoring would push the same complexity into helpers without
+// reducing per-call decisions. Tracked as legacy debt.
+//
+//nolint:gocognit // CLI stream loop: dispatch on event kind drives the
 func RunStream(parent context.Context, out, errOut io.Writer, eng StreamEngine, sessionID, prompt string, timeoutMs int, verbose bool, waterfallMode string) error {
 	runStartedAt := time.Now()
 	if out == nil {
