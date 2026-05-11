@@ -141,6 +141,10 @@ type conversationModel struct {
 	compactor          *compactor
 	sessionID          string
 	detectedLanguage   string // auto-detected from user prompt; overrides default in dynamic block
+
+	// tracer optionally emits a span around the streaming model call. nil
+	// tracer skips span creation entirely (CLI without OTLP).
+	tracer Tracer
 }
 
 func (m *conversationModel) Generate(ctx context.Context, _ *agent.Context) (*agent.ModelOutput, error) {
@@ -232,15 +236,37 @@ func (m *conversationModel) Generate(ctx context.Context, _ *agent.Context) (*ag
 	genStart := time.Now()
 	genLogger.Debug("model.Generate calling CompleteStream", "messages", len(snapshot))
 
+	modelName := ""
+	if namer, ok := m.base.(model.ModelNamer); ok {
+		modelName = namer.ModelName()
+	}
+	var modelSpan SpanContext
+	if m.tracer != nil {
+		modelSpan = m.tracer.StartModelSpan(spanFromContext(ctx), modelName)
+	}
+
 	var resp *model.Response
-	if err := m.base.CompleteStream(ctx, req, func(sr model.StreamResult) error {
+	streamErr := m.base.CompleteStream(ctx, req, func(sr model.StreamResult) error {
 		if sr.Final && sr.Response != nil {
 			resp = sr.Response
 		}
 		return nil
-	}); err != nil {
-		genLogger.Error("model.Generate failed", "error", err, "duration_ms", time.Since(genStart).Milliseconds())
-		return nil, err
+	})
+	if modelSpan != nil {
+		attrs := map[string]any{
+			"model.duration_ms": time.Since(genStart).Milliseconds(),
+		}
+		if resp != nil {
+			attrs["model.input_tokens"] = resp.Usage.InputTokens
+			attrs["model.output_tokens"] = resp.Usage.OutputTokens
+			attrs["model.stop_reason"] = resp.StopReason
+			attrs["model.tool_calls"] = len(resp.Message.ToolCalls)
+		}
+		m.tracer.EndSpan(modelSpan, attrs, streamErr)
+	}
+	if streamErr != nil {
+		genLogger.Error("model.Generate failed", "error", streamErr, "duration_ms", time.Since(genStart).Milliseconds())
+		return nil, streamErr
 	}
 	if resp == nil {
 		return nil, errors.New("model returned no final response")

@@ -17,6 +17,10 @@ type runtimeToolExecutor struct {
 	yolo      bool // skip all whitelist and permission checks
 
 	permissionResolver tool.PermissionResolver
+
+	// tracer optionally emits a span around each tool dispatch. nil tracer
+	// is the common case (no OTLP wired up) and skips span allocation.
+	tracer Tracer
 }
 
 type registeredToolRefs struct {

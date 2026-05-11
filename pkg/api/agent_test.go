@@ -727,7 +727,7 @@ func TestRuntimeToolExecutor_UninitializedExecutorAddsToolResult(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected initialization error")
 	}
-	if got, want := err.Error(), "tool executor not initialised"; got != want {
+	if got, want := err.Error(), "tool executor not initialized"; got != want {
 		t.Fatalf("error = %q, want %q", got, want)
 	}
 	if res.Name != "" || res.Output != "" || len(res.Metadata) != 0 {
@@ -744,7 +744,7 @@ func TestRuntimeToolExecutor_UninitializedExecutorAddsToolResult(t *testing.T) {
 	if msgs[0].ToolCalls[0].ID != call.ID || msgs[0].ToolCalls[0].Name != call.Name {
 		t.Fatalf("unexpected tool call in history: %+v", msgs[0].ToolCalls[0])
 	}
-	if got, want := msgs[0].ToolCalls[0].Result, "Tool execution failed: tool executor not initialised"; got != want {
+	if got, want := msgs[0].ToolCalls[0].Result, "Tool execution failed: tool executor not initialized"; got != want {
 		t.Fatalf("tool result = %q, want %q", got, want)
 	}
 }
