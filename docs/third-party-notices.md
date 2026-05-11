@@ -1,6 +1,10 @@
 # Third-Party Notices
 
-Generated from `package-lock.json` metadata on 2026-05-09.
+Generated from npm package metadata on 2026-05-09. The repo is now a
+pnpm workspace (root `pnpm-lock.yaml`); the generator script
+(`scripts/generate-third-party-notices.mjs`) reads each workspace's
+`package.json` + transitive resolution to produce this table. Re-run it
+when dependencies change.
 
 This inventory is a release aid, not a substitute for a full legal review. The root project license is SKL-1.0; third-party dependencies keep their own licenses.
 

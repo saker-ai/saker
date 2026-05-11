@@ -82,6 +82,7 @@ The CLI supports multiple sandbox backends:
 --sandbox-backend host
 --sandbox-backend landlock
 --sandbox-backend gvisor
+--sandbox-backend docker
 --sandbox-backend govm
 ```
 

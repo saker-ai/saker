@@ -17,6 +17,7 @@ import (
 	"github.com/cinience/saker/pkg/core/events"
 	"github.com/cinience/saker/pkg/pipeline"
 	"github.com/cinience/saker/pkg/runtime/tasks"
+	"github.com/cinience/saker/pkg/security"
 	"github.com/cinience/saker/pkg/tool"
 )
 
@@ -259,8 +260,12 @@ func (s *StreamMonitorTool) start(ctx context.Context, params map[string]any) (*
 		if err != nil {
 			return nil, fmt.Errorf("stream_monitor: invalid webhook_url: %w", err)
 		}
-		if isBlockedHost(parsed.Hostname()) {
-			return nil, fmt.Errorf("stream_monitor: webhook_url targets a blocked network")
+		// Pre-flight SSRF check — same fail-closed behavior as webhook tool.
+		// Per-event delivery does its own per-request pinning so a TOCTOU
+		// here is harmless, but blocking up-front gives early operator
+		// feedback when the URL is obviously misconfigured.
+		if _, err := security.CheckSSRF(ctx, parsed.Hostname()); err != nil {
+			return nil, fmt.Errorf("stream_monitor: webhook_url rejected: %w", err)
 		}
 	}
 
@@ -674,9 +679,11 @@ func (s *StreamMonitorTool) dispatchEvent(handle *monitorHandle, ev pipeline.Eve
 	}
 }
 
-// ssrfSafeClient is a package-level SSRF-safe HTTP client shared by webhook
-// and stream monitor. It validates IPs at connect time and blocks redirects
-// to private networks.
+// ssrfSafeClient is a package-level SSRF-safe HTTP client used for stream
+// sources where the destination URL is not known up-front (go2rtc upstreams,
+// etc.). It validates IPs at connect time and blocks redirects to private
+// networks. Webhook delivery does NOT use this client — it builds a per-event
+// pinned client in sendWebhook to defeat DNS rebinding.
 var ssrfSafeClient = NewSSRFSafeClient()
 
 func (s *StreamMonitorTool) sendWebhook(webhookURL, taskID, streamURL string, ev pipeline.Event) {
@@ -693,6 +700,25 @@ func (s *StreamMonitorTool) sendWebhook(webhookURL, taskID, streamURL string, ev
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	// Per-event SSRF re-validation + IP pinning. The user-supplied webhook URL
+	// could resolve to a private IP between when the monitor was started and
+	// when this event fires (DNS rebinding, TTL changes), so re-check and pin.
+	parsed, err := url.Parse(webhookURL)
+	if err != nil {
+		slog.Error("stream_monitor: webhook url parse failed", "url", webhookURL, "error", err)
+		return
+	}
+	ssrfResult, err := security.CheckSSRF(ctx, parsed.Hostname())
+	if err != nil {
+		slog.Error("stream_monitor: webhook SSRF check failed", "url", webhookURL, "error", err)
+		return
+	}
+	port := parsed.Port()
+	if port == "" {
+		port = defaultPortForScheme(parsed.Scheme)
+	}
+	client := newSSRFPinnedClient(ssrfResult, port)
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, webhookURL, bytes.NewReader(payload))
 	if err != nil {
 		slog.Error("stream_monitor: webhook request create error", "error", err)
@@ -700,7 +726,7 @@ func (s *StreamMonitorTool) sendWebhook(webhookURL, taskID, streamURL string, ev
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := ssrfSafeClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		slog.Error("stream_monitor: webhook POST failed", "url", webhookURL, "error", err)
 		return

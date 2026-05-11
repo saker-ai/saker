@@ -47,13 +47,23 @@
    └─────────────────────────────────────────────────────┘
 ```
 
+## 🎯 为什么选择 Saker
+
+| 痛点 | 业界做法 | Saker 的取舍 |
+|------|----------|--------------|
+| **创意流程被工具切碎** | 提示工程器 / 媒体生成器 / 编辑器各跑一份后端 | 单一二进制内嵌 Web + 编辑器，状态同源、无跨服务 schema |
+| **沙箱要么不够安全要么不够通用** | 仅 Docker 或仅 host | 5 种后端（host / landlock / gVisor / Docker / govm），按宿主能力降级 |
+| **Tool/LLM 锁死单家供应商** | 紧耦合一家 API | 多 provider + 故障转移 + 智能路由，工具表 37+ 可热插拔 |
+| **远程多租户场景难落地** | 本地 CLI 无法直接服务 Web | 内置 OAuth/LDAP/Bearer、CSRF、CORS、SSRF、路径穿越等加固 |
+| **可观测性事后接** | 自己接 OTel | 内建 Prometheus + 结构化 slog + 请求 ID 贯穿全栈 |
+
 ## 🚀 快速开始
 
 ### 环境要求
 
 - Go 1.26 或更高版本
 - Node.js 22 或更高版本
-- npm
+- pnpm（用于 web/ + web-editor-next/ workspace）
 - Docker（可选，用于沙箱和端到端测试）
 
 ### 安装与运行
@@ -63,10 +73,8 @@
 git clone https://github.com/cinience/saker.git
 cd saker
 
-# 2. 安装前端依赖
-cd web && npm ci
-cd ../web-editor-next && npm ci
-cd ..
+# 2. 安装前端依赖（pnpm workspace，根目录一次安装所有子包）
+pnpm install
 
 # 3. 构建并运行（包含嵌入式前端）
 make run
@@ -105,7 +113,7 @@ make web-editor-dev   # 编辑器开发服务器
 | **预算保护** | 累计成本或 Token 数超限时自动终止 |
 | **重复检测** | 检测到相同连续工具调用时自动终止，支持自我修正提示 |
 | **SSE 流式** | Anthropic 兼容的 SSE 协议，支持智能体专用事件扩展 |
-| **会话管理** | 默认支持 1000 个并发会话，带生命周期追踪 |
+| **会话管理** | 内存中保留最近 N 条会话历史（默认 N=1000，可调）；live 并发以实际机器与上游限流为准 |
 | **上下文压缩** | 提示摘要和历史剪枝（compact & microcompact） |
 | **配置隔离** | 命名配置实现设置、内存和历史的完全隔离 |
 
@@ -177,7 +185,7 @@ make web-editor-dev   # 编辑器开发服务器
 | [开发指南](docs/development.md) | 本地开发和贡献指南 |
 | [配置说明](docs/configuration.md) | 详细配置选项 |
 | [部署指南](docs/deployment.md) | 生产环境部署 |
-| [安全策略](../SECURITY.md) | 安全报告和政策 |
+| [安全策略](SECURITY.md) | 安全报告和政策 |
 | [安全模型](docs/security.md) | 安全架构详解 |
 | [API 参考](docs/api-reference.md) | REST API 文档 |
 | [第三方声明](docs/third-party-notices.md) | 依赖许可清单 |
@@ -264,8 +272,9 @@ make build            # 生产构建
 ### 前端检查
 
 ```bash
-cd web && npm run test && npm run build
-cd ../web-editor-next && npm run build
+pnpm --filter ./web run test
+pnpm --filter ./web run build
+pnpm --filter ./web-editor-next run build
 ```
 
 ## 🔑 配置

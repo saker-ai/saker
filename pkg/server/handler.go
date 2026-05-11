@@ -298,7 +298,7 @@ func (h *Handler) initDispatch() map[string]rpcHandler {
 		"sessions/list":   h.adaptNone(h.handleSessionsList),
 
 		// Model
-		"model/switch": h.adaptNone(h.handleModelSwitch),
+		"model/switch": h.adaptCtx(h.handleModelSwitch),
 
 		// Auth & user
 		"auth/update":          h.adaptCtx(h.handleAuthUpdate),

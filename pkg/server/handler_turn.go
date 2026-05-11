@@ -365,7 +365,7 @@ func (h *Handler) executeTurnWithBlocks(ctx context.Context, threadID, turnID, p
 					if !strings.HasPrefix(a.URL, "http://") && !strings.HasPrefix(a.URL, "https://") {
 						continue
 					}
-					cached := h.cacheArtifactMedia(a)
+					cached := h.cacheArtifactMedia(ctx, a)
 					if cached.URL != a.URL {
 						itemArtifacts[i] = cached
 						continue

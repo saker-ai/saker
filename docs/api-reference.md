@@ -4,7 +4,13 @@ Saker exposes a REST and WebSocket API for interacting with the runtime, managin
 
 ## OpenAPI Specification
 
-The full OpenAPI (Swagger) specification is auto-generated from handler annotations in the `pkg/server/` package. To regenerate the spec:
+The full OpenAPI (Swagger) specification is auto-generated from handler annotations in the `pkg/server/` package and the global `@title`/`@host`/`@securityDefinitions` block in `cmd/saker/main.go`. To regenerate the spec, first install the `swag` CLI once:
+
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+
+Then run:
 
 ```bash
 make swagger
@@ -64,6 +70,27 @@ To explore the API interactively, you can load `swagger.json` or `swagger.yaml` 
 | GET | `/api/apps/{appId}/runs/{runId}` | Poll app run status |
 | POST | `/api/apps/{appId}/runs/{runId}/cancel` | Cancel an app run |
 | PUT | `/api/apps/{appId}/published-version` | Set the published version pointer |
+
+### App API Keys
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/apps/{appId}/keys` | List API keys (without secrets) |
+| POST | `/api/apps/{appId}/keys` | Create a new API key (plaintext returned once) |
+| DELETE | `/api/apps/{appId}/keys/{keyId}` | Revoke an API key |
+| POST | `/api/apps/{appId}/keys/{keyId}/rotate` | Rotate an API key (new plaintext returned once) |
+
+### App Share Tokens
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/apps/{appId}/share` | List share tokens (preview only) |
+| POST | `/api/apps/{appId}/share` | Create a share token for anonymous access |
+| DELETE | `/api/apps/{appId}/share/{token}` | Revoke a share token |
+| GET | `/api/apps/public/{token}` | Read public app schema (no auth) |
+| POST | `/api/apps/public/{token}/run` | Start an anonymous run via share token |
+| GET | `/api/apps/public/{token}/runs/{runId}` | Poll anonymous run status |
+| POST | `/api/apps/public/{token}/runs/{runId}/cancel` | Cancel an anonymous run |
 
 ### RPC over HTTP
 

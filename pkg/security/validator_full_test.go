@@ -13,7 +13,10 @@ func TestValidatorBlocksBannedCommands(t *testing.T) {
 		cmd  string
 		want string
 	}{
-		{name: "rm -rf / blocked by fragment", cmd: "rm -rf /", want: "fragment"},
+		// `rm -rf /` is now caught by checkDangerousRecursiveDelete (args-aware)
+		// rather than the old fragment substring match. New error wording:
+		// "recursive `rm` is blocked".
+		{name: "rm -rf / blocked as recursive", cmd: "rm -rf /", want: "recursive"},
 		{name: "mkfs command", cmd: "mkfs /dev/sda", want: "mkfs"},
 		{name: "dd command", cmd: "dd if=/dev/zero of=/dev/null", want: "dd"},
 		{name: "format command", cmd: "format disk", want: "format"},
@@ -166,32 +169,41 @@ func TestSandboxForwardsAllowShellMetachars(t *testing.T) {
 		t.Fatalf("sandbox should allow metacharacters when enabled: %v", err)
 	}
 
-	if err := sb.ValidateCommand("rm -rf /"); err == nil || !strings.Contains(err.Error(), "fragment") {
-		t.Fatalf("banned fragments must still be enforced, got %v", err)
+	// `rm -rf /` now blocked by the args-aware recursive check; error message
+	// changed from "fragment" to "recursive `rm` is blocked".
+	if err := sb.ValidateCommand("rm -rf /"); err == nil || !strings.Contains(err.Error(), "recursive") {
+		t.Fatalf("recursive rm must still be enforced, got %v", err)
 	}
 }
 
 func TestValidatorBannedFragmentsExhaustive(t *testing.T) {
 	t.Parallel()
 	v := NewValidator()
-	cases := []string{
-		"rm -rf /",
-		"echo --no-preserve-root",
-		"echo --preserve-root=false",
-		"rm -fr /tmp",
-		"rm -r /tmp",
-		"rm --recursive /tmp",
-		"rmdir -p /tmp",
-		"rm *",
-		"rm /",
+	// After H1 hardening, dangerous `rm`/`rmdir` invocations are caught by
+	// args-aware checks (clearer error than the old fragment substring match).
+	// `--no-preserve-root` etc. remain fragment matches. The `want` field is
+	// the substring expected in the error message for that input.
+	cases := []struct {
+		cmd  string
+		want string
+	}{
+		{"rm -rf /", "recursive"},
+		{"echo --no-preserve-root", "fragment"},
+		{"echo --preserve-root=false", "fragment"},
+		{"rm -fr /tmp", "recursive"},
+		{"rm -r /tmp", "recursive"},
+		{"rm --recursive /tmp", "recursive"},
+		{"rmdir -p /tmp", "rmdir -p"},
+		{"rm *", "blocked"},
+		{"rm /", "blocked"},
 	}
 
-	for _, cmd := range cases {
-		cmd := cmd
-		t.Run(cmd, func(t *testing.T) {
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.cmd, func(t *testing.T) {
 			t.Helper()
-			if err := v.Validate(cmd); err == nil || !strings.Contains(err.Error(), "fragment") {
-				t.Fatalf("expected fragment error for %q, got %v", cmd, err)
+			if err := v.Validate(tc.cmd); err == nil || !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("expected error containing %q for %q, got %v", tc.want, tc.cmd, err)
 			}
 		})
 	}
