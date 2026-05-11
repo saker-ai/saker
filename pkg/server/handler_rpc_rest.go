@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// rpcRESTPath is the URL prefix for the generic RPC-over-HTTP adapter.
+// The generic RPC-over-HTTP adapter is mounted at /api/rpc/.
 //
 // POST /api/rpc/{method} — body is the JSON-RPC params object (or empty),
 // the response body is the bare result on success, or {code,message} on error.
@@ -19,8 +19,7 @@ import (
 // bound to a long-lived clientID — they must keep going through /ws.
 //
 // Routes are registered onto the gin engine in registerRPCRoutes
-// (gin_routes_rpc.go); the dispatcher body lives in dispatchRPCREST there.
-const rpcRESTPath = "/api/rpc/"
+// (gin_routes_rpc.go); the dispatcher body lives in ginRPCDispatch there.
 
 // methodsRequireWebsocket lists JSON-RPC methods whose return value
 // or side-effects depend on a registered WebSocket subscriber. They

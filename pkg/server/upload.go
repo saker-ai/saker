@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -44,11 +45,9 @@ type uploadResponse struct {
 // @Failure 413 {string} string "file too large (max 50MB)"
 // @Failure 500 {string} string "internal error"
 // @Router /api/upload [post]
-func (s *Server) handleUpload(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+func (s *Server) handleUpload(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
 
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize+1024) // small overhead for headers
 	if err := r.ParseMultipartForm(maxUploadSize); err != nil {

@@ -33,7 +33,7 @@ func loginAs(t *testing.T, am *AuthManager, username, password string) *http.Coo
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	am.HandleLogin(rec, req)
+	callGinHandler(rec, req, am.HandleLogin)
 	if rec.Code != http.StatusOK {
 		t.Fatalf("login as %s: expected 200, got %d; body: %s", username, rec.Code, rec.Body.String())
 	}
@@ -111,7 +111,7 @@ func TestMultiUser_DisabledUserRejected(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	am.HandleLogin(rec, req)
+	callGinHandler(rec, req, am.HandleLogin)
 
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("expected 401 for disabled user, got %d", rec.Code)
@@ -126,7 +126,7 @@ func TestMultiUser_UnknownUserRejected(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	am.HandleLogin(rec, req)
+	callGinHandler(rec, req, am.HandleLogin)
 
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("expected 401 for unknown user, got %d", rec.Code)
@@ -141,7 +141,7 @@ func TestMultiUser_WrongPasswordRejected(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	am.HandleLogin(rec, req)
+	callGinHandler(rec, req, am.HandleLogin)
 
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("expected 401 for wrong password, got %d", rec.Code)
@@ -183,7 +183,7 @@ func TestMultiUser_LoginResponseIncludesRole(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	am.HandleLogin(rec, req)
+	callGinHandler(rec, req, am.HandleLogin)
 
 	var adminResp map[string]any
 	if err := json.NewDecoder(rec.Body).Decode(&adminResp); err != nil {
@@ -198,7 +198,7 @@ func TestMultiUser_LoginResponseIncludesRole(t *testing.T) {
 	req = httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rec = httptest.NewRecorder()
-	am.HandleLogin(rec, req)
+	callGinHandler(rec, req, am.HandleLogin)
 
 	var userResp map[string]any
 	if err := json.NewDecoder(rec.Body).Decode(&userResp); err != nil {
@@ -241,7 +241,7 @@ func TestMultiUser_UserLogoutInvalidatesSession(t *testing.T) {
 	logoutReq := httptest.NewRequest(http.MethodPost, "/api/auth/logout", nil)
 	logoutReq.AddCookie(cookie)
 	logoutRec := httptest.NewRecorder()
-	am.HandleLogout(logoutRec, logoutReq)
+	callGinHandler(logoutRec, logoutReq, am.HandleLogout)
 
 	// Session should be invalid.
 	handler := am.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

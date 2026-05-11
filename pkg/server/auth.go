@@ -13,6 +13,7 @@ import (
 
 	"github.com/cinience/saker/pkg/config"
 	"github.com/cinience/saker/pkg/project"
+	"github.com/gin-gonic/gin"
 )
 
 // contextKey is an unexported type for context keys to avoid collisions.
@@ -244,7 +245,9 @@ func NewAuthManager(cfg *config.WebAuthConfig, logger *slog.Logger) *AuthManager
 // @Failure 401 {object} map[string]string "invalid credentials"
 // @Failure 405 {string} string "method not allowed"
 // @Router /api/auth/login [post]
-func (a *AuthManager) HandleLogin(w http.ResponseWriter, r *http.Request) {
+func (a *AuthManager) HandleLogin(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
 	if r.Method != http.MethodPost {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -319,7 +322,9 @@ func (a *AuthManager) HandleLogin(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Success 200 {object} map[string]bool "required and authenticated flags"
 // @Router /api/auth/status [get]
-func (a *AuthManager) HandleStatus(w http.ResponseWriter, r *http.Request) {
+func (a *AuthManager) HandleStatus(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
 	required := a.cfg != nil && a.cfg.Password != ""
 	authenticated := false
 
@@ -344,7 +349,9 @@ func (a *AuthManager) HandleStatus(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Success 200 {object} map[string]bool "ok: true"
 // @Router /api/auth/logout [post]
-func (a *AuthManager) HandleLogout(w http.ResponseWriter, r *http.Request) {
+func (a *AuthManager) HandleLogout(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
 	if cookie, err := r.Cookie(sessionCookieName); err == nil {
 		a.revokeToken(cookie.Value)
 	}
@@ -389,14 +396,16 @@ func (a *AuthManager) authenticateWithProviders(ctx context.Context, username, p
 // @Failure 401 {string} string "authentication failed"
 // @Failure 404 {string} string "OIDC not configured"
 // @Router /api/auth/oidc/callback [get]
-func (a *AuthManager) HandleOIDCCallback(w http.ResponseWriter, r *http.Request) {
+func (a *AuthManager) HandleOIDCCallback(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
 	if a.oidcProvider == nil {
 		http.Error(w, "OIDC not configured", http.StatusNotFound)
 		return
 	}
 
-	code := r.URL.Query().Get("code")
-	state := r.URL.Query().Get("state")
+	code := c.Query("code")
+	state := c.Query("state")
 	if code == "" || state == "" {
 		http.Error(w, "missing code or state", http.StatusBadRequest)
 		return
@@ -447,12 +456,12 @@ func (a *AuthManager) HandleOIDCCallback(w http.ResponseWriter, r *http.Request)
 // @Failure 404 {string} string "OIDC not configured"
 // @Failure 503 {string} string "OIDC login unavailable (discovery failed)"
 // @Router /api/auth/oidc/login [get]
-func (a *AuthManager) HandleOIDCLogin(w http.ResponseWriter, r *http.Request) {
+func (a *AuthManager) HandleOIDCLogin(c *gin.Context) {
 	if a.oidcProvider == nil {
-		http.Error(w, "OIDC not configured", http.StatusNotFound)
+		http.Error(c.Writer, "OIDC not configured", http.StatusNotFound)
 		return
 	}
-	a.oidcProvider.HandleOIDCLogin(w, r)
+	a.oidcProvider.HandleOIDCLogin(c.Writer, c.Request)
 }
 
 // HandleProviders returns the list of enabled auth providers for the frontend.
@@ -463,7 +472,7 @@ func (a *AuthManager) HandleOIDCLogin(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Success 200 {object} map[string]any "providers list"
 // @Router /api/auth/providers [get]
-func (a *AuthManager) HandleProviders(w http.ResponseWriter, r *http.Request) {
+func (a *AuthManager) HandleProviders(c *gin.Context) {
 	type providerInfo struct {
 		Name string `json:"name"`
 		Type string `json:"type"`
@@ -481,6 +490,7 @@ func (a *AuthManager) HandleProviders(w http.ResponseWriter, r *http.Request) {
 		providers = append(providers, providerInfo{Name: "oidc", Type: "redirect"})
 	}
 
+	w := c.Writer
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{"providers": providers})
 }

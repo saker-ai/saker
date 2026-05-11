@@ -14,11 +14,9 @@ import (
 	"github.com/cinience/saker/pkg/apps"
 )
 
-// appsRESTPath is the URL prefix the apps REST API is mounted at. Routes
-// are registered onto the gin engine in registerAppsRoutes
-// (gin_routes_apps.go); per-handler bodies live in this file and the
-// apps_rest_*.go siblings, invoked via thin gin → net/http adapters.
-const appsRESTPath = "/api/apps/"
+// Routes for the apps REST API are mounted at /api/apps/ and registered
+// onto the gin engine in registerAppsRoutes (gin_routes_apps.go).
+// Per-handler bodies live in this file and the apps_rest_*.go siblings.
 
 // classifyAppsError maps an apps package error to (status, public message).
 // 4xx covers sentinel errors and validation failures whose strings are safe

@@ -9,9 +9,8 @@ import (
 )
 
 // registerCanvasRoutes wires the canvas REST API onto a gin router group
-// using native parameterised routes instead of the legacy path-split
-// dispatcher (handleCanvasREST). Per-handler bodies in canvas_rest.go are
-// reused unchanged via thin gin → net/http adapters.
+// using native parameterised routes. Per-handler bodies live in canvas_rest.go
+// as gin.HandlerFunc.
 //
 // Routes registered (multi-tenant, when s.handler.projects != nil):
 //
@@ -25,17 +24,17 @@ import (
 func (s *Server) registerCanvasRoutes(authed *gin.RouterGroup) {
 	if s.handler.projects != nil {
 		grp := authed.Group("/api/canvas/:projectId", s.projectScopeMiddleware())
-		grp.POST("/:threadId/execute", s.ginCanvasExecute())
-		grp.GET("/:threadId/document", s.ginCanvasDocument())
-		grp.GET("/runs/:runId", s.ginCanvasRunStatus())
-		grp.POST("/runs/:runId/cancel", s.ginCanvasRunCancel())
+		grp.POST("/:threadId/execute", s.handleCanvasExecuteREST)
+		grp.GET("/:threadId/document", s.handleCanvasDocumentREST)
+		grp.GET("/runs/:runId", s.handleCanvasRunStatusREST)
+		grp.POST("/runs/:runId/cancel", s.handleCanvasRunCancelREST)
 		return
 	}
 	grp := authed.Group("/api/canvas")
-	grp.POST("/:threadId/execute", s.ginCanvasExecute())
-	grp.GET("/:threadId/document", s.ginCanvasDocument())
-	grp.GET("/runs/:runId", s.ginCanvasRunStatus())
-	grp.POST("/runs/:runId/cancel", s.ginCanvasRunCancel())
+	grp.POST("/:threadId/execute", s.handleCanvasExecuteREST)
+	grp.GET("/:threadId/document", s.handleCanvasDocumentREST)
+	grp.GET("/runs/:runId", s.handleCanvasRunStatusREST)
+	grp.POST("/runs/:runId/cancel", s.handleCanvasRunCancelREST)
 }
 
 // projectScopeMiddleware extracts :projectId from the route, resolves the
@@ -83,36 +82,5 @@ func (s *Server) projectScopeMiddleware() gin.HandlerFunc {
 		}
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
-	}
-}
-
-// ── gin → net/http adapters ─────────────────────────────────────────────────
-//
-// Each adapter pulls the path parameters out of the gin context and calls
-// the existing net/http handler with the same signature it had under the
-// hand-rolled dispatcher. Per-handler tests that invoke these net/http
-// functions directly continue to work unchanged.
-
-func (s *Server) ginCanvasExecute() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleCanvasExecuteREST(c.Writer, c.Request, c.Param("threadId"))
-	}
-}
-
-func (s *Server) ginCanvasDocument() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleCanvasDocumentREST(c.Writer, c.Request, c.Param("threadId"))
-	}
-}
-
-func (s *Server) ginCanvasRunStatus() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleCanvasRunREST(c.Writer, c.Request, []string{c.Param("runId")})
-	}
-}
-
-func (s *Server) ginCanvasRunCancel() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleCanvasRunREST(c.Writer, c.Request, []string{c.Param("runId"), "cancel"})
 	}
 }

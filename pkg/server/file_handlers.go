@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 // handleHealth responds with a simple liveness check.
@@ -18,7 +20,8 @@ import (
 // @Success 200 {object} map[string]string "ok"
 // @Failure 503 {object} map[string]string "unavailable"
 // @Router /health [get]
-func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleHealth(c *gin.Context) {
+	w := c.Writer
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(map[string]any{
@@ -45,9 +48,17 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {string} string "path outside project root"
 // @Failure 404 {string} string "file not found"
 // @Router /api/files/{path} [get]
-func (s *Server) handleServeFile(w http.ResponseWriter, r *http.Request) {
-	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/")
-	filePath = strings.TrimPrefix(filePath, "/api/files")
+func (s *Server) handleServeFile(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	// gin's *path wildcard prepends a leading "/" — preserve the legacy
+	// behaviour by stripping it here. r.URL.Path still works for non-gin
+	// callers (e.g. older tests).
+	filePath := c.Param("path")
+	if filePath == "" {
+		filePath = strings.TrimPrefix(r.URL.Path, "/api/files/")
+		filePath = strings.TrimPrefix(filePath, "/api/files")
+	}
 	filePath = strings.TrimPrefix(filePath, "/")
 	if filePath == "" {
 		http.Error(w, "file path required", http.StatusBadRequest)

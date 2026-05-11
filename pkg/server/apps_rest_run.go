@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/cinience/saker/pkg/canvas"
+	"github.com/gin-gonic/gin"
 )
 
 // handleAppsRun validates inputs and dispatches a canvas run. Returns the
@@ -29,17 +30,16 @@ import (
 // @Failure 401 {string} string "authentication required"
 // @Failure 405 {string} string "POST required"
 // @Router /api/apps/{appId}/run [post]
-func (s *Server) handleAppsRun(w http.ResponseWriter, r *http.Request, appID string) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "POST required", http.StatusMethodNotAllowed)
-		return
-	}
+func (s *Server) handleAppsRun(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
 	// Bearer API-key auth fallback: only runs when the cookie middleware did
 	// NOT establish a user (no session cookie) AND the caller supplied an
 	// Authorization header. Requests with neither (e.g. no-auth deployments
 	// or test servers) pass through so the legacy behaviour is preserved.
 	if UserFromContext(r.Context()) == "" && r.Header.Get("Authorization") != "" {
-		if !s.appsAuthBearer(w, r, appID) {
+		if !s.appsAuthBearer(c, appID) {
 			return
 		}
 	}
@@ -86,22 +86,21 @@ func (s *Server) handleAppsRun(w http.ResponseWriter, r *http.Request, appID str
 // @Failure 404 {string} string "run not found"
 // @Failure 405 {string} string "GET required"
 // @Router /api/apps/{appId}/runs/{runId} [get]
-func (s *Server) handleAppsRunStatus(w http.ResponseWriter, r *http.Request, appID string, parts []string) {
-	if len(parts) == 0 || strings.TrimSpace(parts[0]) == "" {
+func (s *Server) handleAppsRunStatus(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
+	runID := c.Param("runId")
+	if strings.TrimSpace(runID) == "" {
 		http.Error(w, "missing runId", http.StatusBadRequest)
-		return
-	}
-	if r.Method != http.MethodGet {
-		http.Error(w, "GET required", http.StatusMethodNotAllowed)
 		return
 	}
 	// Bearer API-key auth fallback (mirrors handleAppsRun).
 	if UserFromContext(r.Context()) == "" && r.Header.Get("Authorization") != "" {
-		if !s.appsAuthBearer(w, r, appID) {
+		if !s.appsAuthBearer(c, appID) {
 			return
 		}
 	}
-	runID := parts[0]
 	exec := s.handler.canvasExecutorFor(r.Context())
 	summary, ok := exec.Tracker.Get(runID)
 	if !ok {
@@ -129,14 +128,14 @@ func (s *Server) handleAppsRunStatus(w http.ResponseWriter, r *http.Request, app
 // @Failure 404 {string} string "run not found"
 // @Failure 405 {string} string "POST required"
 // @Router /api/apps/{appId}/runs/{runId}/cancel [post]
-func (s *Server) handleAppsRunCancel(w http.ResponseWriter, r *http.Request, appID, runID string) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "POST required", http.StatusMethodNotAllowed)
-		return
-	}
+func (s *Server) handleAppsRunCancel(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
+	runID := c.Param("runId")
 	// Bearer API-key auth fallback (mirrors handleAppsRun).
 	if UserFromContext(r.Context()) == "" && r.Header.Get("Authorization") != "" {
-		if !s.appsAuthBearer(w, r, appID) {
+		if !s.appsAuthBearer(c, appID) {
 			return
 		}
 	}
@@ -158,6 +157,8 @@ func (s *Server) handleAppsRunCancel(w http.ResponseWriter, r *http.Request, app
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
+// handleAppsPublicRun is the share-token variant of handleAppsRun; called
+// from handleAppsPublic after the token has been validated.
 func (s *Server) handleAppsPublicRun(w http.ResponseWriter, r *http.Request, appID string) {
 	body := struct {
 		Inputs map[string]any `json:"inputs"`
@@ -183,6 +184,8 @@ func (s *Server) handleAppsPublicRun(w http.ResponseWriter, r *http.Request, app
 	})
 }
 
+// handleAppsPublicRunStatus is the share-token variant of handleAppsRunStatus;
+// called from handleAppsPublic after the token has been validated.
 func (s *Server) handleAppsPublicRunStatus(w http.ResponseWriter, r *http.Request, runID string) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "GET required", http.StatusMethodNotAllowed)
