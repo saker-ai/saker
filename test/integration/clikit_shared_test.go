@@ -102,7 +102,7 @@ func TestSharedClikitReplSupportsSlashCommands(t *testing.T) {
 	var errOut bytes.Buffer
 	input := io.NopCloser(strings.NewReader("/skills\n/quit\n"))
 	clikit.PrintBanner(&out, engine.ModelName(), engine.Skills())
-	clikit.RunREPL(context.Background(), input, &out, &errOut, engine, 0, false, clikit.WaterfallModeOff, "sess-1")
+	_ = clikit.RunInteractiveShell(context.Background(), input, &out, &errOut, engine, 0, false, clikit.WaterfallModeOff, "sess-1")
 
 	got := out.String()
 	for _, sub := range []string{"Agentkit CLI", "- alpha", "- beta", "bye"} {

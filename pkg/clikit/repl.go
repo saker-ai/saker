@@ -44,14 +44,10 @@ func PrintBanner(out io.Writer, modelName string, metas []SkillMeta) {
 	if out == nil {
 		return
 	}
-	fmt.Fprintf(out, "\nAgentkit CLI\n")
+	fmt.Fprintf(out, "\nAgentkit CLI (legacy REPL — pass --tui=on for the interactive bubbletea UI)\n")
 	fmt.Fprintf(out, "Model: %s\n", modelName)
 	fmt.Fprintf(out, "Skills: %d loaded\n", len(metas))
 	fmt.Fprintf(out, "Commands: /btw /skills /new /session /model /help /quit\n")
-}
-
-func RunREPL(ctx context.Context, in io.ReadCloser, out, errOut io.Writer, eng ReplEngine, timeoutMs int, verbose bool, waterfallMode string, initialSessionID string) {
-	_ = RunInteractiveShell(ctx, in, out, errOut, eng, timeoutMs, verbose, waterfallMode, initialSessionID)
 }
 
 // RunInteractiveShellOpts is the options variant of RunInteractiveShell that

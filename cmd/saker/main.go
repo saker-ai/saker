@@ -38,7 +38,6 @@ var runtimeFactory = func(ctx context.Context, opts api.Options) (runtimeClient,
 	return api.New(ctx, opts)
 }
 var clikitRunStream = clikit.RunStream
-var clikitRunREPL = clikit.RunREPL
 var clikitRunInteractiveShell = clikit.RunInteractiveShell
 var runGVisorHelper = gvisorhelper.Run
 var runLandlockHelper = landlockhelper.Run
@@ -136,7 +135,7 @@ Options:
 	waterfall := flags.String("waterfall", clikit.WaterfallModeOff, "Waterfall output mode: off|summary|full")
 	skillsRecursive := flags.Bool("skills-recursive", true, "Discover SKILL.md recursively")
 	acpMode := flags.Bool("acp", false, "Run ACP server over stdio")
-	tuiMode := flags.Bool("tui", true, "Use bubbletea TUI (set false for legacy readline REPL)")
+	tuiMode := flags.String("tui", "auto", "TUI rendering mode: auto|on|off (auto picks TUI when stdin and stdout are TTYs; otherwise legacy REPL)")
 	pipelineFile := flags.String("pipeline", "", "Load pipeline definition from JSON file")
 	showTimeline := flags.Bool("timeline", false, "Print pipeline timeline events")
 	lineageFormat := flags.String("lineage", "", "Output lineage graph (dot)")
@@ -431,7 +430,11 @@ Options:
 		}
 		updateNotice := versionpkg.FormatUpdateNotice(updateInfo)
 
-		if *tuiMode {
+		useTUI, err := resolveTUIMode(*tuiMode)
+		if err != nil {
+			return err
+		}
+		if useTUI {
 			return tui.Run(context.Background(), tui.AppConfig{
 				Engine:           adapter,
 				InitialSessionID: resolvedSessionID,
