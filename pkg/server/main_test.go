@@ -25,6 +25,9 @@ func TestMain(m *testing.M) {
 		// always reach the teardown path. Bound to package-scope auth state.
 		goleak.IgnoreTopFunction("github.com/cinience/saker/pkg/server.(*AuthManager).cleanupRevokedLoop"),
 		goleak.IgnoreTopFunction("github.com/cinience/saker/pkg/server.(*AuthManager).cleanupUserInfoCacheLoop"),
+		// TaskTracker background cleanup loop; no Close method, lives for
+		// the test process lifetime. Same pattern as the AuthManager loops.
+		goleak.IgnoreTopFunction("github.com/cinience/saker/pkg/server.(*TaskTracker).cleanup"),
 		// Hooks executor onceTracker background sweeper; Close() exists, but
 		// many embedded handler tests share an executor without explicit
 		// teardown. Loop is select-blocked on stopCh.
