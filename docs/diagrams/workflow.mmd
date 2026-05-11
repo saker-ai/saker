@@ -1,0 +1,25 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "-apple-system, BlinkMacSystemFont, Inter, Segoe UI, system-ui, sans-serif",
+    "fontSize": "15px",
+    "primaryColor": "#fbf6ec",
+    "primaryBorderColor": "#c2410c",
+    "primaryTextColor": "#1a1815",
+    "lineColor": "#a8907a",
+    "secondaryColor": "#f0e5d2",
+    "tertiaryColor": "#e7dfd1",
+    "edgeLabelBackground": "#fefcf7",
+    "titleColor": "#c2410c"
+  }
+}}%%
+flowchart LR
+    Prompt["<b>Prompting</b><br/><span style='color:#6b5d4f'>plan, draft, review concepts</span>"]
+    Gen["<b>Media generation</b><br/><span style='color:#6b5d4f'>image, video, audio, voice</span>"]
+    Review["<b>Review &amp; automation</b><br/><span style='color:#6b5d4f'>edit, schedule, ship</span>"]
+
+    Prompt -->|"agent loop"| Gen
+    Gen -->|"canvas DAG"| Review
+
+    classDef step fill:#fbf6ec,stroke:#c2410c,stroke-width:2px,color:#1a1815,rx:8,ry:8
+    class Prompt,Gen,Review step

@@ -1,4 +1,4 @@
-.PHONY: test test-unit test-race test-integration test-short coverage lint lint-new bench fuzz docs-sync notices oss-check build saker saker-full install clean test-pipeline test-pipeline-race test-pipeline-bench test-pipeline-stress test-all test-eval test-eval-bench test-eval-llm test-eval-all test-eval-tb2 test-eval-tb2-smoke eval-tb2 eval-tb2-smoke demo-pipeline server web-deps web-dev web-clean web-build web-editor-deps web-editor-dev web-editor-build web-editor-clean desktop run e2e-build e2e-run e2e-clean changelog swagger check-no-binaries
+.PHONY: test test-unit test-race test-integration test-short coverage lint lint-new bench fuzz docs-sync notices oss-check build saker saker-full install clean test-pipeline test-pipeline-race test-pipeline-bench test-pipeline-stress test-all test-eval test-eval-bench test-eval-llm test-eval-all test-eval-tb2 test-eval-tb2-smoke eval-tb2 eval-tb2-smoke demo-pipeline server web-deps web-dev web-clean web-build web-editor-deps web-editor-dev web-editor-build web-editor-clean desktop run e2e-build e2e-run e2e-clean changelog swagger check-no-binaries diagrams
 
 GO ?= go
 PKG ?= ./...
@@ -248,3 +248,14 @@ changelog:
 # Generate OpenAPI/Swagger specification from swaggo annotations
 swagger:
 	swag init -g cmd/saker/main.go -o docs/swagger --parseDependency --parseInternal
+
+# Render Mermaid sources in docs/diagrams/ to SVGs in docs/images/.
+# Requires pnpm; downloads mermaid-cli on first run.
+# Set PUPPETEER_CONFIG to a JSON file if your environment needs a custom Chrome.
+MMDC ?= pnpm dlx @mermaid-js/mermaid-cli@11
+PUPPETEER_CONFIG ?=
+MMDC_FLAGS = -b transparent --quiet $(if $(PUPPETEER_CONFIG),-p $(PUPPETEER_CONFIG))
+
+diagrams:
+	$(MMDC) -i docs/diagrams/architecture.mmd -o docs/images/architecture.svg $(MMDC_FLAGS)
+	$(MMDC) -i docs/diagrams/workflow.mmd     -o docs/images/workflow.svg     $(MMDC_FLAGS)
