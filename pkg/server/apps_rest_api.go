@@ -40,6 +40,27 @@ func (s *Server) appsAuthBearer(w http.ResponseWriter, r *http.Request, appID st
 // ── API Key management ────────────────────────────────────────────────────────
 
 // handleAppsKeysCollection handles GET and POST on /api/apps/{appId}/keys.
+//
+// @Summary List API keys
+// @Description Returns every API key registered for an app (without the secret hash).
+// @Tags apps-keys
+// @Produce json
+// @Param appId path string true "App ID"
+// @Success 200 {array} apps.ApiKey "API keys (hash field is always empty)"
+// @Failure 404 {string} string "app not found"
+// @Router /api/apps/{appId}/keys [get]
+//
+// @Summary Create API key
+// @Description Generates a new API key. The plaintext apiKey is returned ONCE in the response and never again — store it immediately.
+// @Tags apps-keys
+// @Accept json
+// @Produce json
+// @Param appId path string true "App ID"
+// @Param body body object true "Key creation payload: {name, expiresInDays?}"
+// @Success 201 {object} map[string]any "Created key: {id, name, prefix, apiKey, createdAt, expiresAt}"
+// @Failure 400 {string} string "invalid body or missing name"
+// @Failure 500 {string} string "key generation failed"
+// @Router /api/apps/{appId}/keys [post]
 func (s *Server) handleAppsKeysCollection(w http.ResponseWriter, r *http.Request, appID string) {
 	switch r.Method {
 	case http.MethodGet:
@@ -114,6 +135,16 @@ func (s *Server) handleAppsKeysCollection(w http.ResponseWriter, r *http.Request
 }
 
 // handleAppsKeysItem handles DELETE on /api/apps/{appId}/keys/{keyId}.
+//
+// @Summary Delete API key
+// @Description Permanently removes the API key. The key stops authenticating immediately.
+// @Tags apps-keys
+// @Produce json
+// @Param appId path string true "App ID"
+// @Param keyId path string true "API key ID"
+// @Success 200 {object} map[string]bool "{ok: true}"
+// @Failure 404 {string} string "key not found"
+// @Router /api/apps/{appId}/keys/{keyId} [delete]
 func (s *Server) handleAppsKeysItem(w http.ResponseWriter, r *http.Request, appID, keyID string) {
 	if r.Method != http.MethodDelete {
 		http.Error(w, "DELETE required", http.StatusMethodNotAllowed)
@@ -151,6 +182,20 @@ func (s *Server) handleAppsKeysItem(w http.ResponseWriter, r *http.Request, appI
 // expiry, resets LastUsedAt + CreatedAt. Returns the new plaintext (one-shot)
 // so the caller can swap it into their secret store before the old key
 // stops authenticating — the old hash is overwritten in the same write.
+//
+// @Summary Rotate API key
+// @Description Generates a new secret for an existing key, optionally updating its name and expiry. Returns the new plaintext apiKey ONCE — the previous secret stops authenticating immediately.
+// @Tags apps-keys
+// @Accept json
+// @Produce json
+// @Param appId path string true "App ID"
+// @Param keyId path string true "API key ID"
+// @Param body body object false "Optional rotation payload: {name?, expiresInDays?}"
+// @Success 200 {object} map[string]any "Rotated key: {id, name, prefix, apiKey, createdAt, expiresAt}"
+// @Failure 400 {string} string "invalid body"
+// @Failure 404 {string} string "key not found"
+// @Failure 500 {string} string "key generation failed"
+// @Router /api/apps/{appId}/keys/{keyId}/rotate [post]
 func (s *Server) handleAppsKeysRotate(w http.ResponseWriter, r *http.Request, appID, keyID string) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "POST required", http.StatusMethodNotAllowed)

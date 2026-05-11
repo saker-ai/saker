@@ -22,6 +22,27 @@ type apiShareToken struct {
 }
 
 // handleAppsShareCollection handles GET and POST on /api/apps/{appId}/share.
+//
+// @Summary List share tokens
+// @Description Returns every share token registered for an app, with the token value masked as a tokenPreview.
+// @Tags apps-share
+// @Produce json
+// @Param appId path string true "App ID"
+// @Success 200 {array} apiShareToken "Share tokens (preview only)"
+// @Failure 404 {string} string "app not found"
+// @Router /api/apps/{appId}/share [get]
+//
+// @Summary Create share token
+// @Description Generates a new share token for anonymous access to the app's run endpoint. Returns the token value ONCE.
+// @Tags apps-share
+// @Accept json
+// @Produce json
+// @Param appId path string true "App ID"
+// @Param body body object false "Optional creation payload: {expiresInDays?, rateLimit?}"
+// @Success 201 {object} map[string]any "Created token: {token, createdAt, expiresAt, rateLimit}"
+// @Failure 400 {string} string "invalid body"
+// @Failure 500 {string} string "token generation failed"
+// @Router /api/apps/{appId}/share [post]
 func (s *Server) handleAppsShareCollection(w http.ResponseWriter, r *http.Request, appID string) {
 	switch r.Method {
 	case http.MethodGet:
@@ -96,6 +117,16 @@ func (s *Server) handleAppsShareCollection(w http.ResponseWriter, r *http.Reques
 }
 
 // handleAppsShareItem handles DELETE on /api/apps/{appId}/share/{token}.
+//
+// @Summary Revoke share token
+// @Description Permanently removes the share token. Anonymous callers using this token stop authenticating immediately.
+// @Tags apps-share
+// @Produce json
+// @Param appId path string true "App ID"
+// @Param token path string true "Share token value"
+// @Success 200 {object} map[string]bool "{ok: true}"
+// @Failure 404 {string} string "share token not found"
+// @Router /api/apps/{appId}/share/{token} [delete]
 func (s *Server) handleAppsShareItem(w http.ResponseWriter, r *http.Request, appID, token string) {
 	if r.Method != http.MethodDelete {
 		http.Error(w, "DELETE required", http.StatusMethodNotAllowed)
@@ -218,6 +249,18 @@ type publicSchemaResponse struct {
 	Outputs     []apps.AppOutputField `json:"outputs"`
 }
 
+// handleAppsPublicSchema returns a stripped meta + inputs/outputs schema for
+// the published version, accessible only via a valid share token.
+//
+// @Summary Get public app schema
+// @Description Returns the published app's name, description, icon, and inputs/outputs schema for anonymous callers using a share token. No authentication required.
+// @Tags apps-public
+// @Produce json
+// @Param token path string true "Share token"
+// @Success 200 {object} publicSchemaResponse "Public app schema"
+// @Failure 404 {string} string "share token not found, app not found, or app not published"
+// @Failure 429 {string} string "rate limit exceeded"
+// @Router /api/apps/public/{token} [get]
 func (s *Server) handleAppsPublicSchema(w http.ResponseWriter, r *http.Request, appID string) {
 	store := s.handler.appsStoreFor(r.Context())
 	meta, err := store.Get(r.Context(), appID)

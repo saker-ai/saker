@@ -225,14 +225,18 @@ func detectMediaPaths(text string) []mediaPathResult {
 // When an object store is configured (h.objectStore != nil), new writes are
 // routed through it and the returned URL is /media/<key>. Otherwise we fall
 // back to the legacy on-disk path under <projectRoot>/.saker/canvas-media.
-func (h *Handler) cacheArtifactMedia(a Artifact) Artifact {
+//
+// The caller's ctx provides cancellation/scope; a 2-minute upper bound is
+// added on top so a stuck upstream cannot pin the request indefinitely.
+// Pass context.TODO() only from boot/test paths that have no live request.
+func (h *Handler) cacheArtifactMedia(ctx context.Context, a Artifact) Artifact {
 	if !strings.HasPrefix(a.URL, "http://") && !strings.HasPrefix(a.URL, "https://") {
 		return a
 	}
 	if store, cfg := h.objectStoreSnapshot(); store != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		fetchCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 		defer cancel()
-		url, err := cacheMediaToStore(ctx, store, cfg, "", a.URL, a.Type)
+		url, err := cacheMediaToStore(fetchCtx, store, cfg, "", a.URL, a.Type)
 		if err != nil {
 			h.logger.Warn("failed to cache media artifact via object store", "url", a.URL, "error", err)
 			return a
@@ -270,7 +274,10 @@ func (h *Handler) cacheArtifactAsync(store *SessionStore, threadID, itemID strin
 	}
 	defer h.cacheInflight.Delete(a.URL)
 
-	cached := h.cacheArtifactMedia(a)
+	// This goroutine is intentionally detached from the request — the
+	// caller documented that the request ctx is gone by now. Use a fresh
+	// background ctx so cacheArtifactMedia's 2-min timeout applies cleanly.
+	cached := h.cacheArtifactMedia(context.Background(), a)
 	if cached.URL == a.URL {
 		// Caching failed — remember for cooldown. Log so signed-URL
 		// expiration and similar issues are visible: without this the

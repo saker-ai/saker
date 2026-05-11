@@ -566,7 +566,7 @@ func TestMediaCacheArtifactMediaNonHTTP(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			got := h.cacheArtifactMedia(tc.art)
+			got := h.cacheArtifactMedia(context.Background(), tc.art)
 			if got != tc.art {
 				t.Errorf("cacheArtifactMedia(%v) = %v, want unchanged", tc.art, got)
 			}
@@ -593,7 +593,7 @@ func TestMediaCacheArtifactMediaHTTPViaProjectRoot(t *testing.T) {
 	h, projectRoot := newMediaTestHandler(t)
 
 	art := Artifact{Type: "image", URL: server.URL + "/test.png", Name: "Bash"}
-	got := h.cacheArtifactMedia(art)
+	got := h.cacheArtifactMedia(context.Background(), art)
 
 	if got.URL == art.URL {
 		t.Errorf("expected URL to be cached (changed from %q), got %q", art.URL, got.URL)

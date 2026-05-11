@@ -1,4 +1,4 @@
-.PHONY: test test-unit test-race test-integration test-short coverage lint notices oss-check build saker saker-full install clean test-pipeline test-pipeline-race test-pipeline-bench test-pipeline-stress test-all test-eval test-eval-bench test-eval-llm test-eval-all test-eval-tb2 test-eval-tb2-smoke eval-tb2 eval-tb2-smoke demo-pipeline server web-deps web-dev web-clean web-build web-editor-deps web-editor-dev web-editor-build web-editor-clean desktop run e2e-build e2e-run e2e-clean changelog swagger
+.PHONY: test test-unit test-race test-integration test-short coverage lint notices oss-check build saker saker-full install clean test-pipeline test-pipeline-race test-pipeline-bench test-pipeline-stress test-all test-eval test-eval-bench test-eval-llm test-eval-all test-eval-tb2 test-eval-tb2-smoke eval-tb2 eval-tb2-smoke demo-pipeline server web-deps web-dev web-clean web-build web-editor-deps web-editor-dev web-editor-build web-editor-clean desktop run e2e-build e2e-run e2e-clean changelog swagger check-no-binaries
 
 GO ?= go
 PKG ?= ./...
@@ -30,8 +30,27 @@ coverage:
 	$(GO) test -covermode=atomic -coverprofile=$(COVERAGE_FILE) $(PKG)
 	$(GO) tool cover -func=$(COVERAGE_FILE)
 
-lint:
+lint: check-no-binaries
 	golangci-lint run
+
+# check-no-binaries fails the build if any GIT-TRACKED file is an executable
+# (ELF / Mach-O / PE / shell-script binary > 1MB). This is a pre-commit /
+# CI guard against accidentally committing build artifacts. The 728 MB
+# `cli` / `saker` / `bin/saker` binaries that bloated the working tree on
+# 2026-05 must not slip past `.gitignore` again (e.g. via `git add -f`).
+#
+# Allowed binary file types are explicitly listed; everything else with
+# executable magic bytes triggers a failure with a punch list of offenders.
+# Run standalone: `make check-no-binaries` — exits non-zero on violation.
+check-no-binaries:
+	@offenders=$$(git ls-files -z 2>/dev/null | xargs -0 -r file -F '|' 2>/dev/null \
+		| awk -F'|' '/(ELF |Mach-O |PE32|PE32\+|MS-DOS executable)/ {print $$1}' \
+		| grep -v '^scripts/' || true); \
+	if [ -n "$$offenders" ]; then \
+		echo "ERROR: tracked binary files detected (move to release artifacts, not the repo):"; \
+		echo "$$offenders" | sed 's/^/  /'; \
+		exit 1; \
+	fi
 
 notices:
 	node scripts/generate-third-party-notices.mjs

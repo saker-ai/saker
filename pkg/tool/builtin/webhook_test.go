@@ -110,11 +110,13 @@ func TestWebhookTool_Non2xxNotSuccess(t *testing.T) {
 	}
 }
 
-func TestIsBlockedHost_DNSFailureAllowsThrough(t *testing.T) {
-	// A hostname that can't be resolved should NOT be blocked —
-	// the SSRF-safe client's DialContext validates IPs at connect time.
-	if isBlockedHost("this-host-does-not-exist-12345.example.invalid") {
-		t.Error("expected DNS failure to allow through, not block")
+func TestIsBlockedHost_DNSFailureBlocks(t *testing.T) {
+	// Fail-closed: DNS lookup failure must BLOCK (not allow). Otherwise an
+	// attacker with control of an authoritative resolver could return
+	// NXDOMAIN to bypass SSRF protection during the validation pass and a
+	// private IP at dial time.
+	if !isBlockedHost("this-host-does-not-exist-12345.example.invalid") {
+		t.Error("expected DNS failure to block (fail-closed), not allow through")
 	}
 }
 
@@ -138,8 +140,15 @@ func TestWebhookTool_SSRFBlocked(t *testing.T) {
 	}
 	for _, u := range blocked {
 		_, err := wh.Execute(context.Background(), map[string]any{"url": u})
-		if err == nil || !strings.Contains(err.Error(), "private/internal") {
-			t.Errorf("expected SSRF block for %s, got err=%v", u, err)
+		if err == nil {
+			t.Errorf("expected SSRF block for %s, got nil error", u)
+			continue
+		}
+		// CheckSSRF errors are prefixed with "ssrf:" — accept any of the
+		// concrete forms ("not routable", "non-routable ip", "host ... is blocked").
+		msg := err.Error()
+		if !strings.Contains(msg, "ssrf:") {
+			t.Errorf("expected SSRF-prefixed error for %s, got %q", u, msg)
 		}
 	}
 }

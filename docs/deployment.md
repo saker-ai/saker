@@ -6,8 +6,11 @@
 docker compose up -d
 ```
 
-The container listens on port 8080 by default. Set `ANTHROPIC_API_KEY` in
-`.env` or via the `environment` section in `docker-compose.yml`.
+The container listens on port `10112` by default (matches `Dockerfile`'s
+`EXPOSE 10112`, the `docker-compose.yml` port mapping, and the
+`--server-addr :10112` default in `cmd/saker/main.go`). Set
+`ANTHROPIC_API_KEY` in `.env` or via the `environment` section in
+`docker-compose.yml`.
 
 ## systemd Service (Linux)
 
@@ -98,12 +101,20 @@ Start the server with `--debug` to enable profiling endpoints:
 saker --server --debug
 ```
 
-Then access:
+Quick captures:
 
 - CPU profile: `go tool pprof http://localhost:10112/debug/pprof/profile?seconds=30`
-- Memory profile: `go tool pprof http://localhost:10112/debug/pprof/heap`
-- Goroutine dump: `curl http://localhost:10112/debug/pprof/goroutine?debug=1`
+- Heap: `go tool pprof http://localhost:10112/debug/pprof/heap`
+- Goroutines: `curl http://localhost:10112/debug/pprof/goroutine?debug=2 > stacks.txt`
+- Allocs / block / mutex / threadcreate: same pattern under `/debug/pprof/<name>`
 - Trace: `curl http://localhost:10112/debug/pprof/trace?seconds=5 > trace.out && go tool trace trace.out`
 
-**Warning:** Do not enable `--debug` in production without auth, as pprof
-endpoints expose internal state.
+For a full bundle (cpu + heap + goroutine + allocs + block + mutex +
+threadcreate + full stack dump in one timestamped directory) use
+`scripts/pprof-snapshot.sh`. See the **Profiling (pprof)** section of
+[`observability.md`](./observability.md#profiling-pprof) for the
+runbook covering when to capture which profile and how to interpret it.
+
+**Warning:** `--debug` exposes pprof without authentication. Bind to
+localhost or put it behind a VPN/SSH tunnel; never run with `--debug`
+on a public listener.

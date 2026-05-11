@@ -54,8 +54,12 @@ func TestIsAllowedWSOrigin_ExplicitOrigins(t *testing.T) {
 }
 
 func TestIsAllowedWSOrigin_Wildcard(t *testing.T) {
+	// Wildcard "*" is intentionally NOT honored: WebSocket upgrades carry
+	// the session cookie (credentialed), and combining "*" with credentials
+	// would let any origin read user data. Operators must list explicit
+	// origins. Verify that an explicit "*" entry does NOT bypass the check.
 	allowed := []string{"*"}
-	if !isAllowedWSOrigin("http://anything.com", allowed) {
-		t.Error("wildcard should allow any origin")
+	if isAllowedWSOrigin("http://anything.com", allowed) {
+		t.Error("wildcard must not honor arbitrary origins (credentialed-CORS rule)")
 	}
 }

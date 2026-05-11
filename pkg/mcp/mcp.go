@@ -67,7 +67,9 @@ const (
 )
 
 type connectConfig struct {
-	bus *coreevents.Bus
+	bus                *coreevents.Bus
+	configureTransport func(Transport) error
+	toolListHandler    func(context.Context, *ClientSession)
 }
 
 type ConnectOption func(*connectConfig)
@@ -80,6 +82,30 @@ func WithEventBus(bus *coreevents.Bus) ConnectOption {
 			return
 		}
 		cfg.bus = bus
+	}
+}
+
+// WithTransportConfigurer runs fn against the freshly built Transport before
+// the client dials. Use it to apply per-transport tweaks (HTTP headers, env)
+// without exposing the raw transport build step to callers.
+func WithTransportConfigurer(fn func(Transport) error) ConnectOption {
+	return func(cfg *connectConfig) {
+		if cfg == nil {
+			return
+		}
+		cfg.configureTransport = fn
+	}
+}
+
+// WithToolListChangedHandler registers an additional callback fired whenever
+// the MCP server emits notifications/tools/list_changed. The event-bus publish
+// path still runs.
+func WithToolListChangedHandler(fn func(context.Context, *ClientSession)) ConnectOption {
+	return func(cfg *connectConfig) {
+		if cfg == nil {
+			return
+		}
+		cfg.toolListHandler = fn
 	}
 }
 
@@ -146,11 +172,28 @@ func ConnectSessionWithOptions(ctx context.Context, spec string, opts ...Connect
 	if err != nil {
 		return nil, fmt.Errorf("build transport: %w", err)
 	}
+	return ConnectSessionWithTransport(ctx, spec, transport, opts...)
+}
+
+// ConnectSessionWithTransport establishes a ClientSession using a pre-built
+// Transport. Use this when callers already have a Transport (e.g., tests
+// injecting a stub) and want the same connect/notification wiring as
+// ConnectSessionWithOptions.
+func ConnectSessionWithTransport(ctx context.Context, spec string, transport Transport, opts ...ConnectOption) (*ClientSession, error) {
+	ctx = nonNilContext(ctx)
+	if transport == nil {
+		return nil, fmt.Errorf("mcp transport is nil")
+	}
 
 	cfg := connectConfig{}
 	for _, opt := range opts {
 		if opt != nil {
 			opt(&cfg)
+		}
+	}
+	if cfg.configureTransport != nil {
+		if err := cfg.configureTransport(transport); err != nil {
+			return nil, err
 		}
 	}
 
@@ -164,6 +207,9 @@ func ConnectSessionWithOptions(ctx context.Context, spec string, opts ...Connect
 				return
 			}
 			publishToolsChanged(ctx, cfg.bus, serverID, req.Session)
+			if cfg.toolListHandler != nil {
+				cfg.toolListHandler(ctx, req.Session)
+			}
 		},
 	})
 

@@ -181,12 +181,12 @@ func (h *Handler) handleSessionsList(req Request) Response {
 	return h.success(req.ID, sessions)
 }
 
-func (h *Handler) handleModelSwitch(req Request) Response {
+func (h *Handler) handleModelSwitch(ctx context.Context, req Request) Response {
 	modelName, _ := req.Params["model"].(string)
 	if strings.TrimSpace(modelName) == "" {
 		return h.invalidParams(req.ID, "model name is required")
 	}
-	if err := h.runtime.SetModel(context.Background(), modelName); err != nil {
+	if err := h.runtime.SetModel(ctx, modelName); err != nil {
 		return h.internalError(req.ID, err.Error())
 	}
 	return h.success(req.ID, map[string]string{"model": modelName, "status": "switched"})

@@ -45,9 +45,18 @@ func SecurityHeadersMiddleware() gin.HandlerFunc {
 
 // CORSMiddleware adds CORS headers for allowed origins.
 // If allowedOrigins is empty, only localhost origins are permitted.
+//
+// Wildcard "*" is rejected from the allow-list because the responses set
+// Access-Control-Allow-Credentials: true, and the combination would let any
+// origin perform credentialed cross-origin requests. Operators must list
+// explicit origins.
 func CORSMiddleware(allowedOrigins []string) gin.HandlerFunc {
 	allowedSet := make(map[string]bool, len(allowedOrigins))
 	for _, o := range allowedOrigins {
+		if o == "*" {
+			// Skip wildcard with credentials — silently drop.
+			continue
+		}
 		allowedSet[o] = true
 	}
 
@@ -144,6 +153,76 @@ func RateLimitMiddleware(rps float64, burst int) (gin.HandlerFunc, func()) {
 	return middleware, cleanup
 }
 
+// BearerRateLimitMiddleware rate-limits ONLY requests carrying a Bearer
+// API key. Cookie-authenticated and localhost-admin requests pass straight
+// through (they already have human-paced UI throttling and benefit nothing
+// from being throttled). Per-IP keying: 30 req/s burst 60 is generous for
+// legitimate machine clients but blocks unattended brute-force scanning.
+//
+// Returns the middleware and a cleanup function — the cleanup must be
+// called on shutdown to stop the background visitor-eviction goroutine.
+//
+// Why split from RateLimitMiddleware: the auth-endpoint limiter has very
+// different RPS targets (5/s for login attempts vs ~30/s for app runs)
+// and must keep its own visitor map so the two limit windows don't bleed.
+func BearerRateLimitMiddleware(rps float64, burst int) (gin.HandlerFunc, func()) {
+	type visitor struct {
+		limiter  *rate.Limiter
+		lastSeen time.Time
+	}
+
+	var (
+		mu       sync.Mutex
+		visitors = make(map[string]*visitor)
+		stopCh   = make(chan struct{})
+	)
+
+	go func() {
+		ticker := time.NewTicker(3 * time.Minute)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-stopCh:
+				return
+			case <-ticker.C:
+				mu.Lock()
+				for ip, v := range visitors {
+					if time.Since(v.lastSeen) > 10*time.Minute {
+						delete(visitors, ip)
+					}
+				}
+				mu.Unlock()
+			}
+		}
+	}()
+
+	cleanup := func() { close(stopCh) }
+
+	middleware := func(c *gin.Context) {
+		if !hasBearerAPIKey(c.Request) {
+			c.Next()
+			return
+		}
+		ip := c.ClientIP()
+		mu.Lock()
+		v, exists := visitors[ip]
+		if !exists {
+			v = &visitor{limiter: rate.NewLimiter(rate.Limit(rps), burst)}
+			visitors[ip] = v
+		}
+		v.lastSeen = time.Now()
+		mu.Unlock()
+
+		if !v.limiter.Allow() {
+			c.AbortWithStatusJSON(429, gin.H{"error": "rate limit exceeded for bearer-keyed request"})
+			return
+		}
+		c.Next()
+	}
+
+	return middleware, cleanup
+}
+
 // BodySizeLimitMiddleware limits request body size.
 func BodySizeLimitMiddleware(maxBytes int64) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -173,12 +252,16 @@ func isLocalhostOrigin(origin string) bool {
 // is permitted. It uses the same logic as the HTTP CORS middleware:
 // if explicit allowed origins are configured, match against that list;
 // otherwise, only localhost origins are permitted.
+//
+// Wildcard "*" is intentionally NOT honored here: WebSocket upgrades carry
+// the session cookie (credentialed), and combining "*" with credentials
+// allows any origin to read user data. Operators must list explicit origins.
 func isAllowedWSOrigin(origin string, allowedOrigins []string) bool {
 	if len(allowedOrigins) == 0 {
 		return isLocalhostOrigin(origin)
 	}
 	for _, o := range allowedOrigins {
-		if o == origin || o == "*" {
+		if o == origin {
 			return true
 		}
 	}

@@ -41,7 +41,14 @@ func NewValidator() *Validator {
 			"halt":      "system power management is forbidden",
 			"poweroff":  "system power management is forbidden",
 			"mount":     "mount can expose host filesystem",
+			"umount":    "umount can disrupt host mounts",
 			"sudo":      "privilege escalation is forbidden",
+			"su":        "privilege escalation is forbidden",
+			"doas":      "privilege escalation is forbidden",
+			"chroot":    "namespace escape primitive",
+			"unshare":   "namespace escape primitive",
+			"nsenter":   "namespace escape primitive",
+			"setpriv":   "privilege manipulation is forbidden",
 		},
 		bannedArguments: []string{
 			"--no-preserve-root",
@@ -49,18 +56,12 @@ func NewValidator() *Validator {
 			"/dev/",
 			"../",
 		},
-		// bannedFragments 捕捉危险的删除模式，而不是彻底禁止 rm/rmdir
+		// bannedFragments 捕捉残余的危险字符串模式（substring match）。
+		// 主要的 rm 递归删除检测在 checkDangerousRecursiveDelete 内基于
+		// args 解析进行，能正确处理 `rm  -rf`、`rm -r -f`、`rm -fr` 等变体。
 		bannedFragments: []string{
-			"-rf /",
 			"--no-preserve-root",
 			"--preserve-root=false",
-			"rm -rf",
-			"rm -fr",
-			"rm -r",
-			"rm --recursive",
-			"rmdir -p",
-			"rm *",
-			"rm /",
 		},
 		maxCommandBytes: 32768,
 		maxArgs:         512,
@@ -138,6 +139,10 @@ func (v *Validator) Validate(input string) error {
 		return fmt.Errorf("security: %s (%s)", base, reason)
 	}
 
+	if err := checkDangerousRecursiveDelete(base, args); err != nil {
+		return err
+	}
+
 	lowerCmd := strings.ToLower(cmd)
 	for _, fragment := range fragments {
 		if fragment == "" {
@@ -156,6 +161,49 @@ func (v *Validator) Validate(input string) error {
 		}
 	}
 
+	return nil
+}
+
+// checkDangerousRecursiveDelete blocks recursive removal regardless of how the
+// flags are arranged. Catches `rm -rf`, `rm  -rf` (extra space), `rm -r -f`,
+// `rm -fr`, `rm -R`, `rm --recursive`, `rm --force --recursive`, `rmdir -p`,
+// and the bare wildcard target `rm *` or `rm /`.
+func checkDangerousRecursiveDelete(base string, args []string) error {
+	switch base {
+	case "rm":
+		recursive := false
+		for _, a := range args[1:] {
+			la := strings.ToLower(a)
+			if la == "--recursive" || la == "-r" || la == "-r=true" || la == "-r=1" {
+				recursive = true
+				continue
+			}
+			// Short-flag bundle like "-rf", "-fr", "-Rfv", "-rvf"...
+			if len(la) >= 2 && la[0] == '-' && la[1] != '-' {
+				for _, c := range la[1:] {
+					if c == 'r' || c == 'R' {
+						recursive = true
+						break
+					}
+				}
+			}
+		}
+		if recursive {
+			return fmt.Errorf("security: recursive `rm` is blocked; remove individual paths instead")
+		}
+		// Bare-wildcard or root targets are dangerous even without -r.
+		for _, a := range args[1:] {
+			if a == "*" || a == "/" || strings.HasPrefix(a, "/*") {
+				return fmt.Errorf("security: `rm` target %q is blocked", a)
+			}
+		}
+	case "rmdir":
+		for _, a := range args[1:] {
+			if a == "-p" || a == "--parents" {
+				return fmt.Errorf("security: recursive `rmdir -p` is blocked")
+			}
+		}
+	}
 	return nil
 }
 

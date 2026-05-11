@@ -76,6 +76,10 @@ type Server struct {
 	// rateLimiterCleanup stops the RateLimitMiddleware background goroutine
 	// on shutdown. nil when no rate limiter is active.
 	rateLimiterCleanup func()
+
+	// bearerRateLimiterCleanup stops the BearerRateLimitMiddleware visitor
+	// eviction goroutine on shutdown. nil when no Bearer limiter is active.
+	bearerRateLimiterCleanup func()
 }
 
 // ProjectStore returns the multi-tenant metadata store, or nil if the server
@@ -203,6 +207,10 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	if s.rateLimiterCleanup != nil {
 		s.rateLimiterCleanup()
 		s.rateLimiterCleanup = nil
+	}
+	if s.bearerRateLimiterCleanup != nil {
+		s.bearerRateLimiterCleanup()
+		s.bearerRateLimiterCleanup = nil
 	}
 	if s.autoSyncCancel != nil {
 		s.autoSyncCancel()

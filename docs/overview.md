@@ -17,6 +17,9 @@ Important packages:
 - `pkg/server`: embedded web server and API endpoints.
 - `pkg/canvas`, `pkg/artifact`, `pkg/media`: creative project and media layers.
 - `pkg/sandbox`: host, Landlock, gVisor, Docker, and govm-related backends.
+- `pkg/metrics`: Prometheus collectors for sessions, agent runs, tool
+  calls, and model requests; injected at the runtime, registry, and
+  model boundaries (see `docs/observability.md`).
 
 ## Frontends
 

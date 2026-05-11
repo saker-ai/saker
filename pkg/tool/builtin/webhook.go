@@ -12,15 +12,20 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cinience/saker/pkg/security"
 	"github.com/cinience/saker/pkg/tool"
 )
 
-// NewSSRFSafeClient returns an HTTP client hardened against SSRF attacks:
-//   - Custom dialer that validates resolved IPs against blocked ranges (prevents DNS rebinding)
-//   - CheckRedirect that validates each redirect target (prevents redirect-based SSRF)
-//   - 30-second timeout
+// NewSSRFSafeClient returns an HTTP client hardened against SSRF attacks
+// when the target URL is not yet known. It rejects connections to private
+// networks AND fails closed on DNS resolution errors.
+//
+// IMPORTANT: this client still performs an extra DNS lookup at dial time
+// independent of any earlier hostname check, so it remains theoretically
+// vulnerable to DNS rebinding. Prefer newSSRFPinnedClient(host, port) when
+// the destination URL is known up-front (the typical webhook / stream
+// monitor case) — that path pins the connection to the validated IP set.
 func NewSSRFSafeClient() *http.Client {
-	dialer := &net.Dialer{Timeout: 10 * time.Second}
 	return &http.Client{
 		Timeout: 30 * time.Second,
 		Transport: &http.Transport{
@@ -29,17 +34,15 @@ func NewSSRFSafeClient() *http.Client {
 				if err != nil {
 					return nil, fmt.Errorf("ssrf: invalid address %q: %w", addr, err)
 				}
-				ips, err := net.DefaultResolver.LookupIPAddr(ctx, host)
+				result, err := security.CheckSSRF(ctx, host)
 				if err != nil {
-					return nil, fmt.Errorf("ssrf: dns lookup failed for %q: %w", host, err)
+					return nil, err
 				}
-				for _, ip := range ips {
-					if isBlockedIP(ip.IP) {
-						return nil, fmt.Errorf("ssrf: resolved IP %s for %q is in a blocked range", ip.IP, host)
-					}
+				pinned := security.NewSSRFSafeDialer(result, port)
+				if pinned == nil {
+					return nil, fmt.Errorf("ssrf: no resolved IPs for %q", host)
 				}
-				// Connect to the first valid IP to prevent TOCTOU via DNS rebinding.
-				return dialer.DialContext(ctx, network, net.JoinHostPort(ips[0].IP.String(), port))
+				return pinned(ctx, network, addr)
 			},
 		},
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -54,62 +57,62 @@ func NewSSRFSafeClient() *http.Client {
 	}
 }
 
-// ssrfBlockedNets lists private/reserved IP ranges that webhooks must not reach.
-var ssrfBlockedNets = func() []*net.IPNet {
-	cidrs := []string{
-		"127.0.0.0/8",    // loopback
-		"10.0.0.0/8",     // RFC 1918
-		"172.16.0.0/12",  // RFC 1918
-		"192.168.0.0/16", // RFC 1918
-		"169.254.0.0/16", // link-local
-		"::1/128",        // IPv6 loopback
-		"fc00::/7",       // IPv6 unique local
-		"fe80::/10",      // IPv6 link-local
+// newSSRFPinnedClient builds a one-shot HTTP client that only ever connects
+// to the supplied pre-validated IP set. The validation and the dial use the
+// SAME IPs, eliminating the DNS rebinding window present in NewSSRFSafeClient.
+func newSSRFPinnedClient(result *security.SSRFResult, port string) *http.Client {
+	dial := security.NewSSRFSafeDialer(result, port)
+	return &http.Client{
+		Timeout: 30 * time.Second,
+		Transport: &http.Transport{
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				if dial == nil {
+					return nil, fmt.Errorf("ssrf: empty resolved IP set")
+				}
+				return dial(ctx, network, addr)
+			},
+		},
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 10 {
+				return fmt.Errorf("ssrf: too many redirects")
+			}
+			// Re-validate the redirect target since it may differ from the
+			// pinned host. CheckSSRF is fail-closed.
+			if _, err := security.CheckSSRF(req.Context(), req.URL.Hostname()); err != nil {
+				return fmt.Errorf("ssrf: redirect blocked: %w", err)
+			}
+			return nil
+		},
 	}
-	nets := make([]*net.IPNet, 0, len(cidrs))
-	for _, c := range cidrs {
-		_, n, _ := net.ParseCIDR(c)
-		nets = append(nets, n)
+}
+
+// defaultPortForScheme returns the default port for the given URL scheme.
+func defaultPortForScheme(scheme string) string {
+	switch strings.ToLower(scheme) {
+	case "https", "wss":
+		return "443"
+	default:
+		return "80"
 	}
-	return nets
-}()
+}
 
 // isBlockedHost resolves a hostname and returns true if any resolved IP falls
-// within a private/reserved network range (SSRF protection).
-// For hostnames that fail DNS resolution, returns false — the SSRF-safe HTTP
-// client's DialContext performs a second IP validation at connect time, so
-// legitimate hosts with transient DNS issues are not permanently blocked.
+// within a private/reserved network range. **Fail-closed**: returns true on
+// DNS lookup failure so callers cannot bypass SSRF protection by pointing at
+// an attacker-controlled DNS server that returns NXDOMAIN.
+//
+// This helper is kept for backwards compatibility (stream monitor, webhook
+// redirect check). Prefer security.CheckSSRF directly which also returns the
+// validated IP set for connection pinning.
 func isBlockedHost(hostname string) bool {
-	// Strip port if present
 	host := hostname
 	if h, _, err := net.SplitHostPort(hostname); err == nil {
 		host = h
 	}
-
-	// Check if it's a direct IP
-	if ip := net.ParseIP(host); ip != nil {
-		return isBlockedIP(ip)
-	}
-
-	// Resolve hostname — if DNS fails, allow through and let the SSRF-safe
-	// client's DialContext catch blocked IPs at connect time.
-	ips, err := net.LookupIP(host)
-	if err != nil {
-		return false
-	}
-	for _, ip := range ips {
-		if isBlockedIP(ip) {
-			return true
-		}
-	}
-	return false
-}
-
-func isBlockedIP(ip net.IP) bool {
-	for _, n := range ssrfBlockedNets {
-		if n.Contains(ip) {
-			return true
-		}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if _, err := security.CheckSSRF(ctx, host); err != nil {
+		return true
 	}
 	return false
 }
@@ -170,13 +173,24 @@ func (w *WebhookTool) Execute(ctx context.Context, params map[string]any) (*tool
 		return nil, fmt.Errorf("webhook: url must start with http:// or https://")
 	}
 
-	// SSRF protection: block requests to private/reserved networks
+	// SSRF protection: block requests to private/reserved networks AND pin
+	// the connection to the validated IPs to defeat DNS rebinding.
 	parsed, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, fmt.Errorf("webhook: invalid url: %w", err)
 	}
-	if !w.AllowedHosts[parsed.Host] && isBlockedHost(parsed.Host) {
-		return nil, fmt.Errorf("webhook: requests to private/internal networks are blocked")
+
+	var pinnedClient *http.Client
+	if !w.AllowedHosts[parsed.Host] {
+		ssrfResult, err := security.CheckSSRF(ctx, parsed.Host)
+		if err != nil {
+			return nil, fmt.Errorf("webhook: %w", err)
+		}
+		port := parsed.Port()
+		if port == "" {
+			port = defaultPortForScheme(parsed.Scheme)
+		}
+		pinnedClient = newSSRFPinnedClient(ssrfResult, port)
 	}
 
 	method := "POST"
@@ -211,7 +225,11 @@ func (w *WebhookTool) Execute(ctx context.Context, params map[string]any) (*tool
 
 	client := w.Client
 	if client == nil {
-		client = NewSSRFSafeClient()
+		if pinnedClient != nil {
+			client = pinnedClient
+		} else {
+			client = NewSSRFSafeClient()
+		}
 	}
 
 	resp, err := client.Do(req)

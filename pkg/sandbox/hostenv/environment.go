@@ -36,24 +36,34 @@ func (e *Environment) RunCommand(context.Context, *sandboxenv.PreparedSession, s
 	return nil, errors.New("sandbox hostenv: command execution is not implemented")
 }
 
-func (e *Environment) ReadFile(_ context.Context, _ *sandboxenv.PreparedSession, path string) ([]byte, error) {
-	return os.ReadFile(cleanHostPath(e.projectRoot, path))
+func (e *Environment) ReadFile(_ context.Context, ps *sandboxenv.PreparedSession, path string) ([]byte, error) {
+	resolved, err := cleanHostPath(e.sessionRoot(ps), path)
+	if err != nil {
+		return nil, err
+	}
+	return os.ReadFile(resolved)
 }
 
-func (e *Environment) WriteFile(_ context.Context, _ *sandboxenv.PreparedSession, path string, data []byte) error {
-	path = cleanHostPath(e.projectRoot, path)
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+func (e *Environment) WriteFile(_ context.Context, ps *sandboxenv.PreparedSession, path string, data []byte) error {
+	resolved, err := cleanHostPath(e.sessionRoot(ps), path)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(resolved), 0o755); err != nil {
 		return fmt.Errorf("hostenv: ensure directory: %w", err)
 	}
-	if err := os.WriteFile(path, data, 0o666); err != nil { //nolint:gosec // respect umask for created files
+	if err := os.WriteFile(resolved, data, 0o666); err != nil { //nolint:gosec // respect umask for created files
 		return fmt.Errorf("hostenv: write file: %w", err)
 	}
 	return nil
 }
 
 func (e *Environment) EditFile(ctx context.Context, ps *sandboxenv.PreparedSession, req sandboxenv.EditRequest) error {
-	path := cleanHostPath(e.projectRoot, req.Path)
-	data, err := e.ReadFile(ctx, ps, path)
+	resolved, err := cleanHostPath(e.sessionRoot(ps), req.Path)
+	if err != nil {
+		return err
+	}
+	data, err := os.ReadFile(resolved)
 	if err != nil {
 		return err
 	}
@@ -63,11 +73,21 @@ func (e *Environment) EditFile(ctx context.Context, ps *sandboxenv.PreparedSessi
 	} else {
 		content = strings.Replace(content, req.OldText, req.NewText, 1)
 	}
-	return e.WriteFile(ctx, ps, path, []byte(content))
+	if err := os.MkdirAll(filepath.Dir(resolved), 0o755); err != nil {
+		return fmt.Errorf("hostenv: ensure directory: %w", err)
+	}
+	if err := os.WriteFile(resolved, []byte(content), 0o666); err != nil { //nolint:gosec // respect umask for created files
+		return fmt.Errorf("hostenv: write file: %w", err)
+	}
+	return nil
 }
 
-func (e *Environment) Glob(_ context.Context, _ *sandboxenv.PreparedSession, pattern string) ([]string, error) {
-	return filepath.Glob(cleanHostPath(e.projectRoot, pattern))
+func (e *Environment) Glob(_ context.Context, ps *sandboxenv.PreparedSession, pattern string) ([]string, error) {
+	resolved, err := cleanHostPath(e.sessionRoot(ps), pattern)
+	if err != nil {
+		return nil, err
+	}
+	return filepath.Glob(resolved)
 }
 
 func (e *Environment) Grep(_ context.Context, _ *sandboxenv.PreparedSession, _ sandboxenv.GrepRequest) ([]sandboxenv.GrepMatch, error) {
@@ -78,9 +98,58 @@ func (e *Environment) CloseSession(_ context.Context, _ *sandboxenv.PreparedSess
 	return nil
 }
 
-func cleanHostPath(root, path string) string {
-	if filepath.IsAbs(path) {
-		return filepath.Clean(path)
+// sessionRoot prefers the prepared session's GuestCwd (per-session view) over
+// the environment-wide projectRoot. Falling back to projectRoot keeps callers
+// that bypass PrepareSession working, but the calling code is encouraged to
+// always pass a PreparedSession so each session is sandboxed.
+func (e *Environment) sessionRoot(ps *sandboxenv.PreparedSession) string {
+	if ps != nil && ps.GuestCwd != "" {
+		return ps.GuestCwd
 	}
-	return filepath.Clean(filepath.Join(root, path))
+	return e.projectRoot
+}
+
+// cleanHostPath resolves path relative to root and rejects any result that
+// escapes root via "..", absolute paths, or symlinks. An empty root disables
+// the escape check (callers without a project context still get path cleanup
+// but no sandbox guarantee — log loudly if this branch fires in production).
+func cleanHostPath(root, path string) (string, error) {
+	if path == "" {
+		return "", fmt.Errorf("hostenv: empty path")
+	}
+
+	var resolved string
+	if filepath.IsAbs(path) {
+		resolved = filepath.Clean(path)
+	} else {
+		base := root
+		if base == "" {
+			base = "."
+		}
+		resolved = filepath.Clean(filepath.Join(base, path))
+	}
+
+	if root == "" {
+		return resolved, nil
+	}
+
+	cleanRoot := filepath.Clean(root)
+	rel, err := filepath.Rel(cleanRoot, resolved)
+	if err != nil {
+		return "", fmt.Errorf("hostenv: cannot relativize %q against root %q: %w", path, cleanRoot, err)
+	}
+	if rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return "", fmt.Errorf("hostenv: path %q escapes project root %q", path, cleanRoot)
+	}
+
+	// Defensive: if the resolved path exists, ensure its symlink-resolved form
+	// also lives within root. New files (ENOENT) are accepted for Write.
+	if eval, err := filepath.EvalSymlinks(resolved); err == nil {
+		evalRel, err := filepath.Rel(cleanRoot, eval)
+		if err != nil || evalRel == ".." || strings.HasPrefix(evalRel, ".."+string(filepath.Separator)) {
+			return "", fmt.Errorf("hostenv: path %q resolves outside project root via symlink", path)
+		}
+	}
+
+	return resolved, nil
 }

@@ -28,13 +28,18 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleServeFile serves local files for media preview (images, audio, video).
-// URL format: /api/files/<path> — absolute or relative to project root.
+// URL format: /api/files/<relative-path> — relative to the project root only.
+//
+// Hardened against path traversal: all requests are joined to the project
+// root and the resulting absolute path must remain inside that root after
+// cleaning AND symlink resolution. Absolute paths and any traversal segment
+// (`..`) are rejected before any filesystem access.
 //
 // @Summary Serve local file
-// @Description Serves local files for media preview (images, audio, video). Resolves absolute paths or paths relative to project root. Blocks path traversal above project root.
+// @Description Serves local files for media preview (images, audio, video). Paths are project-root relative; absolute paths and traversal are blocked.
 // @Tags files
 // @Produce octet-stream
-// @Param path path string true "File path (absolute or relative to project root)"
+// @Param path path string true "File path (relative to project root)"
 // @Success 200 {file} file "File content"
 // @Failure 400 {string} string "bad request — file path required or not a file"
 // @Failure 403 {string} string "path outside project root"
@@ -43,27 +48,45 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleServeFile(w http.ResponseWriter, r *http.Request) {
 	filePath := strings.TrimPrefix(r.URL.Path, "/api/files/")
 	filePath = strings.TrimPrefix(filePath, "/api/files")
-	if filePath == "" || filePath == "/" {
+	filePath = strings.TrimPrefix(filePath, "/")
+	if filePath == "" {
 		http.Error(w, "file path required", http.StatusBadRequest)
 		return
 	}
 
-	// Resolve path: try as absolute first (leading / consumed by route prefix),
-	// then fall back to project-relative.
-	resolved := filepath.Clean(filePath)
-	if !filepath.IsAbs(resolved) {
-		absCandidate := "/" + resolved
-		if _, err := os.Stat(absCandidate); err == nil {
-			resolved = absCandidate
-		} else {
-			projectRoot := s.runtime.ProjectRoot()
-			resolved = filepath.Join(projectRoot, resolved)
-			// Block path traversal above project root for relative paths.
-			if !strings.HasPrefix(resolved, projectRoot) {
-				http.Error(w, "path outside project root", http.StatusForbidden)
-				return
-			}
+	projectRoot := s.runtime.ProjectRoot()
+	if projectRoot == "" {
+		http.Error(w, "server has no project root configured", http.StatusInternalServerError)
+		return
+	}
+	cleanRoot, err := filepath.Abs(projectRoot)
+	if err != nil {
+		http.Error(w, "invalid project root", http.StatusInternalServerError)
+		return
+	}
+
+	// Reject absolute paths outright — this endpoint is project-relative.
+	if filepath.IsAbs(filePath) {
+		http.Error(w, "absolute paths are not allowed", http.StatusForbidden)
+		return
+	}
+
+	// Clean and verify the join stays inside the project root.
+	resolved := filepath.Clean(filepath.Join(cleanRoot, filePath))
+	rel, err := filepath.Rel(cleanRoot, resolved)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		http.Error(w, "path outside project root", http.StatusForbidden)
+		return
+	}
+
+	// Defense-in-depth: block symlinks that escape the root.
+	if eval, err := filepath.EvalSymlinks(resolved); err == nil {
+		evalRel, err := filepath.Rel(cleanRoot, eval)
+		if err != nil || evalRel == ".." || strings.HasPrefix(evalRel, ".."+string(filepath.Separator)) {
+			http.Error(w, "path resolves outside project root via symlink", http.StatusForbidden)
+			return
 		}
+		resolved = eval
 	}
 
 	info, err := os.Stat(resolved)

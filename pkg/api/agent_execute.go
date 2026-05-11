@@ -10,6 +10,7 @@ import (
 	"github.com/cinience/saker/pkg/config"
 	coreevents "github.com/cinience/saker/pkg/core/events"
 	"github.com/cinience/saker/pkg/logging"
+	"github.com/cinience/saker/pkg/metrics"
 	"github.com/cinience/saker/pkg/middleware"
 	"github.com/cinience/saker/pkg/model"
 	"github.com/cinience/saker/pkg/runtime/skills"
@@ -40,6 +41,11 @@ func (rt *Runtime) runAgentWithMiddleware(prep preparedRun, extras ...middleware
 
 	// Wrap with failover if configured
 	selectedModel = rt.wrapWithFailover(selectedModel)
+
+	// Wrap with metrics last so the instrumentation captures the
+	// outermost model surface (post-failover). Provider is left empty;
+	// the wrapper infers it from the model name at observation time.
+	selectedModel = metrics.WrapModel(selectedModel, "")
 
 	// Determine cache enablement: request-level overrides global default
 	enableCache := rt.opts.DefaultEnableCache

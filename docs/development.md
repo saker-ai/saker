@@ -3,9 +3,8 @@
 ## Setup
 
 ```bash
-cd web && npm ci
-cd ../web-editor-next && npm ci
-cd ..
+# pnpm workspace — installs web/ and web-editor-next/ in one shot.
+pnpm install
 ```
 
 Go dependencies are resolved through the root `go.mod`. The `godeps`
@@ -36,8 +35,9 @@ go test ./pkg/...
 Frontend checks:
 
 ```bash
-cd web && npm run test && npm run build
-cd ../web-editor-next && npm run build
+pnpm --filter ./web run test
+pnpm --filter ./web run build
+pnpm --filter ./web-editor-next run build
 ```
 
 Docker-based suites are available through:

@@ -10,6 +10,16 @@ Saker 是一个 source-available 的创意 Agent 运行时。它把 Go 后端 Ag
 
 [English](README.md)
 
+## 为什么选择 Saker
+
+| 痛点 | 业界做法 | Saker 的取舍 |
+| --- | --- | --- |
+| **创意流程被工具切碎** | 提示工程器 / 媒体生成器 / 编辑器各跑一份后端 | 单一二进制内嵌 Web + 编辑器，状态同源、无跨服务 schema |
+| **沙箱要么不够安全要么不够通用** | 仅 Docker 或仅 host | 5 种后端（host / landlock / gVisor / Docker / govm），按宿主能力降级 |
+| **Tool/LLM 锁死单家供应商** | 紧耦合一家 API | 多 provider + 故障转移 + 智能路由，工具表 37+ 可热插拔 |
+| **远程多租户场景难落地** | 本地 CLI 无法直接服务 Web | 内置 OAuth/LDAP/Bearer、CSRF、CORS、SSRF、路径穿越等加固 |
+| **可观测性事后接** | 自己接 OTel | 内建 Prometheus + 结构化 slog + 请求 ID 贯穿全栈 |
+
 ## 架构
 
 ```mermaid
@@ -63,7 +73,7 @@ graph TB
 | 预算与令牌守卫 | 累计成本（USD）或令牌数超限时中止运行 |
 | 重复循环检测 | 连续相同工具调用超阈值时中止；可选自纠正提示 |
 | SSE 流式传输 | Anthropic 兼容 SSE 协议，附带 Agent 专用事件扩展 |
-| 会话管理 | 多会话运行时（默认 1000 会话），含生命周期追踪 |
+| 会话管理 | 内存中保留最近 N 条会话历史（默认 N=1000，可调）；live 并发以实际机器与上游限流为准 |
 | 上下文压缩 | 提示摘要与历史裁剪（compact 与 microcompact） |
 | Profile 隔离 | 命名 Profile 实现设置、记忆、历史的隔离 |
 | 缓存与断点 | 文件/内存缓存去重；断点支持 Pipeline 恢复 |
@@ -224,9 +234,7 @@ graph TB
 首次安装前端依赖：
 
 ```bash
-cd web && npm ci
-cd ../web-editor-next && npm ci
-cd ..
+pnpm install
 ```
 
 构建并启动完整嵌入式服务：
@@ -311,8 +319,9 @@ make server
 前端检查：
 
 ```bash
-cd web && npm run test && npm run build
-cd ../web-editor-next && npm run build
+pnpm --filter ./web run test
+pnpm --filter ./web run build
+pnpm --filter ./web-editor-next run build
 ```
 
 完整生产构建：

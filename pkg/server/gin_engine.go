@@ -42,6 +42,14 @@ func (s *Server) buildGinEngine() *gin.Engine {
 		pprofGroup.GET("/symbol", gin.WrapH(http.HandlerFunc(pprof.Symbol)))
 		pprofGroup.GET("/trace", gin.WrapH(http.HandlerFunc(pprof.Trace)))
 		pprofGroup.POST("/symbol", gin.WrapH(http.HandlerFunc(pprof.Symbol)))
+		// Named profiles (heap, goroutine, allocs, block, mutex,
+		// threadcreate) are served by pprof.Handler(name). gin's strict
+		// routing requires us to register each one explicitly because
+		// pprof.Index alone won't dispatch sub-paths under a Group.
+		for _, name := range []string{"heap", "goroutine", "allocs", "block", "mutex", "threadcreate"} {
+			n := name
+			pprofGroup.GET("/"+n, gin.WrapH(pprof.Handler(n)))
+		}
 	}
 
 	// ----- Public routes (no auth middleware) -----
@@ -88,7 +96,14 @@ func (s *Server) buildGinEngine() *gin.Engine {
 	authed.POST("/api/upload", BodySizeLimitMiddleware(50*1024*1024), gin.WrapH(http.HandlerFunc(s.handleUpload)))
 	authed.Any(storagecfg.DefaultPublicBaseURL+"/*filepath", gin.WrapH(http.HandlerFunc(s.handleMediaServe)))
 	authed.Any(canvasRESTPath+"*path", gin.WrapH(http.HandlerFunc(s.handleCanvasREST)))
-	authed.Any(appsRESTPath+"*path", gin.WrapH(http.HandlerFunc(s.handleAppsREST)))
+
+	// Bearer-keyed app runs (canvas /run, /runs/...) bypass cookie auth, so
+	// without an extra throttle a leaked API key would let an attacker pump
+	// requests at line rate. Per-IP 30 rps / burst 60 only fires for requests
+	// carrying a Bearer key — cookie/local users are unaffected.
+	bearerLimiter, bearerLimiterCleanup := BearerRateLimitMiddleware(30, 60)
+	s.bearerRateLimiterCleanup = bearerLimiterCleanup
+	authed.Any(appsRESTPath+"*path", bearerLimiter, gin.WrapH(http.HandlerFunc(s.handleAppsREST)))
 
 	// RPC: 10MB body limit.
 	authed.Any(rpcRESTPath+"*method", BodySizeLimitMiddleware(10*1024*1024), gin.WrapH(http.HandlerFunc(s.handleRPCREST)))

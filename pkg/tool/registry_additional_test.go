@@ -644,10 +644,16 @@ func withStubMCPClient(t *testing.T, fn func(context.Context, string, mcpListCha
 
 func withStubMCPTransport(t *testing.T, fn func(context.Context, string) (mcp.Transport, error)) func() {
 	t.Helper()
-	original := buildMCPTransport
-	buildMCPTransport = fn
+	original := connectMCPSession
+	connectMCPSession = func(ctx context.Context, spec string, opts ...mcp.ConnectOption) (*mcp.ClientSession, error) {
+		transport, err := fn(ctx, spec)
+		if err != nil {
+			return nil, err
+		}
+		return mcp.ConnectSessionWithTransport(ctx, spec, transport, opts...)
+	}
 	return func() {
-		buildMCPTransport = original
+		connectMCPSession = original
 	}
 }
 

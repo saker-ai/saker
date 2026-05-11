@@ -1,0 +1,128 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
+	"time"
+
+	"github.com/cinience/saker/pkg/api"
+	"github.com/cinience/saker/pkg/im"
+	"github.com/godeps/goim"
+)
+
+// runGatewayMode starts the IM gateway: creates a Runtime, wraps it in a
+// cc-connect Agent adapter, creates Platform(s), and runs the Engine.
+func runGatewayMode(stdout, stderr io.Writer, opts api.Options, platform, configPath, token, allowFrom, channelsPath string) error {
+	// Load or build config.
+	var cfg goim.Config
+	var err error
+	switch {
+	case configPath != "":
+		cfg, err = goim.LoadConfig(configPath)
+		if err != nil {
+			return fmt.Errorf("gateway config: %w", err)
+		}
+	case token != "":
+		cfg = goim.ConfigFromFlags(platform, token, allowFrom)
+	default:
+		// Fallback: try GATEWAY_TOKEN env, then channels.json.
+		if envToken := os.Getenv("GATEWAY_TOKEN"); envToken != "" {
+			cfg = goim.ConfigFromFlags(platform, envToken, allowFrom)
+		} else if channelsPath != "" {
+			chCfg, loadErr := goim.LoadChannelsJSON(channelsPath)
+			if loadErr != nil {
+				return fmt.Errorf("load channels.json: %w", loadErr)
+			}
+			if platform != "" {
+				// Single platform requested — look up its saved config.
+				savedOpts := chCfg.LookupChannel(platform)
+				if savedOpts == nil {
+					return fmt.Errorf("no saved config for platform %q in %s; provide --gateway-token", platform, channelsPath)
+				}
+				cfg = chCfg.ToConfig()
+				pOpts := make(map[string]any, len(savedOpts))
+				for k, v := range savedOpts {
+					if k != "enabled" {
+						pOpts[k] = v
+					}
+				}
+				cfg.Project.Platforms = []goim.PlatformConfig{{Type: platform, Options: pOpts}}
+			} else {
+				// No platform specified — load all enabled channels.
+				cfg = chCfg.ToConfig()
+				if len(cfg.Project.Platforms) == 0 {
+					return fmt.Errorf("no enabled channels in %s; provide --gateway-token or configure channels", channelsPath)
+				}
+			}
+		} else {
+			return fmt.Errorf("--gateway-token, GATEWAY_TOKEN, or channels.json is required when using --gateway without --gateway-config")
+		}
+	}
+
+	// Create runtime.
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	rt, err := runtimeFactory(ctx, opts)
+	if err != nil {
+		return fmt.Errorf("create runtime: %w", err)
+	}
+	defer rt.Close()
+
+	// Create agent adapter via goim with the bridge adapter.
+	rtAdapter := im.NewRuntimeAdapter(rt.(*api.Runtime))
+	agent := goim.NewAgent(rtAdapter, "saker")
+
+	// Create platforms from config.
+	platforms, err := goim.CreatePlatforms(cfg)
+	if err != nil {
+		return fmt.Errorf("create platforms: %w", err)
+	}
+
+	// Setup IM log file.
+	logCleanup, logErr := goim.SetupIMLogger()
+	if logErr != nil {
+		fmt.Fprintf(stderr, "warning: im log setup: %v\n", logErr)
+	}
+	if logCleanup != nil {
+		defer logCleanup()
+	}
+
+	// Create and start engine.
+	engine := goim.NewEngine(agent, platforms, cfg)
+
+	displayPlatform := platform
+	if displayPlatform == "" && len(cfg.Project.Platforms) > 0 {
+		names := make([]string, len(cfg.Project.Platforms))
+		for i, p := range cfg.Project.Platforms {
+			names[i] = p.Type
+		}
+		displayPlatform = strings.Join(names, ", ")
+	}
+	fmt.Fprintf(stdout, "saker gateway: starting IM bridge (%s)\n", displayPlatform)
+	if err := engine.Start(); err != nil {
+		return fmt.Errorf("start engine: %w", err)
+	}
+
+	// Block until interrupted.
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	<-sigCh
+
+	fmt.Fprintln(stdout, "\nsaker gateway: shutting down...")
+	shutCtx, shutCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutCancel()
+	done := make(chan error, 1)
+	go func() { done <- engine.Stop() }()
+	select {
+	case err := <-done:
+		return err
+	case <-shutCtx.Done():
+		return fmt.Errorf("gateway shutdown timed out")
+	}
+}

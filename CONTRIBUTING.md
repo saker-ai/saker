@@ -30,10 +30,8 @@ cd saker
 # Install Go dependencies
 go mod download
 
-# Install frontend dependencies
-cd web && npm ci
-cd ../web-editor-next && npm ci
-cd ..
+# Install frontend dependencies (pnpm workspace — installs all sub-packages)
+pnpm install
 
 # Run a fast backend test loop
 make test-short

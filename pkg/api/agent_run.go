@@ -9,16 +9,17 @@ import (
 
 	coreevents "github.com/cinience/saker/pkg/core/events"
 	"github.com/cinience/saker/pkg/logging"
+	"github.com/cinience/saker/pkg/metrics"
 	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
 )
 
 // Run executes the unified pipeline synchronously.
-func (rt *Runtime) Run(ctx context.Context, req Request) (*Response, error) {
+func (rt *Runtime) Run(ctx context.Context, req Request) (resp *Response, err error) {
 	if rt == nil {
 		return nil, ErrRuntimeClosed
 	}
-	if err := rt.beginRun(); err != nil {
-		return nil, err
+	if startErr := rt.beginRun(); startErr != nil {
+		return nil, startErr
 	}
 	defer rt.endRun()
 
@@ -32,27 +33,39 @@ func (rt *Runtime) Run(ctx context.Context, req Request) (*Response, error) {
 	logger.Info("runtime.Run started", "session_id", sessionID, "prompt_len", len(req.Prompt))
 	start := time.Now()
 
-	if err := rt.sessionGate.Acquire(ctx, sessionID); err != nil {
+	if acquireErr := rt.sessionGate.Acquire(ctx, sessionID); acquireErr != nil {
 		return nil, ErrConcurrentExecution
 	}
 	defer rt.sessionGate.Release(sessionID)
 
+	// Observability: count this as an active session and record terminal
+	// outcome on return. Done after Acquire succeeds so concurrent-conflict
+	// rejections aren't counted as agent runs.
+	metrics.SessionsActive.Inc()
+	defer func() {
+		metrics.SessionsActive.Dec()
+		status := metrics.ClassifyErr(err)
+		metrics.AgentRunsTotal.WithLabelValues(status).Inc()
+		metrics.ObserveSince(metrics.AgentRunDuration.WithLabelValues(status), start)
+	}()
+
 	if req.Pipeline != nil || strings.TrimSpace(req.ResumeFromCheckpoint) != "" {
-		return rt.runPipeline(ctx, req)
+		resp, err = rt.runPipeline(ctx, req)
+		return resp, err
 	}
 
-	prep, err := rt.prepare(ctx, req)
-	if err != nil {
-		logger.Error("runtime.Run prepare failed", "session_id", sessionID, "error", err)
-		return nil, err
+	prep, prepErr := rt.prepare(ctx, req)
+	if prepErr != nil {
+		logger.Error("runtime.Run prepare failed", "session_id", sessionID, "error", prepErr)
+		return nil, prepErr
 	}
 	if !prep.normalized.Ephemeral {
 		defer rt.persistHistory(prep.normalized.SessionID, prep.history)
 	}
-	result, err := rt.runAgent(prep)
-	if err != nil {
-		logger.Error("runtime.Run agent failed", "session_id", sessionID, "error", err, "duration_ms", time.Since(start).Milliseconds())
-		return nil, err
+	result, runErr := rt.runAgent(prep)
+	if runErr != nil {
+		logger.Error("runtime.Run agent failed", "session_id", sessionID, "error", runErr, "duration_ms", time.Since(start).Milliseconds())
+		return nil, runErr
 	}
 	logger.Info("runtime.Run completed", "session_id", sessionID, "duration_ms", time.Since(start).Milliseconds())
 	return rt.buildResponse(prep, result), nil
@@ -91,9 +104,20 @@ func (rt *Runtime) RunStream(ctx context.Context, req Request) (<-chan StreamEve
 			}
 			defer rt.sessionGate.Release(sessionID)
 
+			start := time.Now()
+			metrics.SessionsActive.Inc()
+			var streamErr error
+			defer func() {
+				metrics.SessionsActive.Dec()
+				status := metrics.ClassifyErr(streamErr)
+				metrics.AgentRunsTotal.WithLabelValues(status).Inc()
+				metrics.ObserveSince(metrics.AgentRunDuration.WithLabelValues(status), start)
+			}()
+
 			out <- StreamEvent{Type: EventAgentStart, SessionID: sessionID}
 			resp, err := rt.runPipeline(ctx, req)
 			if err != nil {
+				streamErr = err
 				isErr := true
 				out <- StreamEvent{Type: EventError, Output: err.Error(), IsError: &isErr, SessionID: sessionID}
 				return
@@ -126,8 +150,19 @@ func (rt *Runtime) RunStream(ctx context.Context, req Request) (<-chan StreamEve
 		}
 		defer rt.sessionGate.Release(sessionID)
 
+		runStart := time.Now()
+		metrics.SessionsActive.Inc()
+		var terminalErr error
+		defer func() {
+			metrics.SessionsActive.Dec()
+			status := metrics.ClassifyErr(terminalErr)
+			metrics.AgentRunsTotal.WithLabelValues(status).Inc()
+			metrics.ObserveSince(metrics.AgentRunDuration.WithLabelValues(status), runStart)
+		}()
+
 		prep, err := rt.prepare(ctxWithEmit, req)
 		if err != nil {
+			terminalErr = err
 			isErr := true
 			out <- StreamEvent{Type: EventError, Output: err.Error(), IsError: &isErr}
 			return
@@ -191,6 +226,7 @@ func (rt *Runtime) RunStream(ctx context.Context, req Request) (<-chan StreamEve
 		<-done
 
 		if runErr != nil {
+			terminalErr = runErr
 			isErr := true
 			out <- StreamEvent{Type: EventError, Output: runErr.Error(), IsError: &isErr}
 			return
