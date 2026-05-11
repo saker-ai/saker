@@ -181,37 +181,7 @@ Channels can also be configured from the TUI (`im_config` tool) or the workspace
   <img src="docs/images/architecture.svg" alt="Saker architecture: surfaces → runtime → engines → creative + data → frontend + external" width="100%">
 </div>
 
-### Package map
-
-| Layer | Package | Role |
-|---|---|---|
-| **Surfaces** | `cmd/saker` | CLI dispatcher; subcommands for `--server`, `--gateway`, `--video-stream`, `--pipeline`, `--acp`, plus `profile`, `skill`, `eval` |
-| | `cmd/desktop` | Wails v2 desktop shell over the same core |
-| | `pkg/clikit`, `pkg/clikit/tui` | REPL, waterfall progress, side panels, bubbletea TUI |
-| **Runtime API** | `pkg/api` | Public SDK; orchestrates loop, sandbox, executor, hooks, memory, persona, sessiondb, skills, subagents, tasks, checkpoints, cache, OTel, MCP |
-| | `pkg/agent` | Pure agent loop; `Model` and `ToolExecutor` interfaces; structured `StopReason` |
-| | `pkg/middleware` | Safety, OTel, trace, rate-limit, memory-nudge, subdir-hints, error-classifier |
-| | `pkg/metrics` | Prometheus metrics; provider call wrapper |
-| **Engines** | `pkg/model` | Anthropic, OpenAI (Chat + Responses), failover, smart routing, rate-limit, model info |
-| | `pkg/tool` | Tool interface, registry (builtin + MCP + remote), executor, schema, validator, persistence |
-| | `pkg/runtime/{skills,subagents,tasks,cache,checkpoint,commands}` | Skill discovery, subagent forks, task store, generic cache, checkpoints, slash commands |
-| | `pkg/security` | SSRF / URL policy, leak detector, permission matcher, env decryption, sanitiser, secure open |
-| | `pkg/sandbox/{env,hostenv,landlockenv,gvisorenv,dockerenv,govmenv,pathmap}` | Sandbox interface and five backends |
-| **Creative** | `pkg/canvas` | Typed DAG, executor, params, refs, write-back |
-| | `pkg/pipeline` | Video / streaming pipeline executor; go2rtc ingest |
-| | `pkg/media/{indexer,searcher,chunk,clip,describe,embedding,transcribe,vecstore}` | Media indexing, search, chunking, transcription, embeddings via `aigo` |
-| | `pkg/artifact` | Artifact lineage tracking |
-| **Data & state** | `pkg/sessiondb` | gorm + SQLite/Postgres session store |
-| | `pkg/memory` | Long-term memory store and context assembler |
-| | `pkg/persona` | Persona loader, registry, prompt, router, session |
-| | `pkg/project` | Multi-tenant project registry (apps, runs, storage, users, dialect) |
-| | `pkg/storage` | Storage abstraction with embedded backend |
-| | `pkg/config` | Settings loader / writer / merger; rules; CLAUDE.md ingestion |
-| **Server** | `pkg/server` | Gin engine, REST + WebSocket + SSE, auth (local / OIDC / LDAP / Bearer), CSRF, scope, cron, metrics, file/upload, canvas REST, apps |
-| **Integrations** | `pkg/mcp`, `pkg/acp`, `pkg/im`, `pkg/skillhub`, `pkg/apps` | MCP bridge with OSV check, Agent Client Protocol, IM bridge tool, skillhub client, sharable Saker apps |
-| **Frontend** | `web/` | Next.js 16 + React 19 workspace (chat, canvas, projects, settings, skill plaza) |
-| | `web-editor-next/` | OpenCut-derived browser video editor (timeline, effects, WASM render) |
-| | `packages/editor-protocol/` | Shared TypeScript protocol types |
+For per-package roles see [docs/architecture.md](docs/architecture.md).
 
 ### Data flow (one request)
 

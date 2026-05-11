@@ -181,37 +181,7 @@ Saker 可以桥接 10 个聊天平台，让用户在熟悉的 app 里直接和 a
   <img src="docs/images/architecture.svg" alt="Saker 架构：surfaces → runtime → engines → creative + data → frontend + external" width="100%">
 </div>
 
-### 包索引
-
-| 层 | 包 | 角色 |
-|---|---|---|
-| **入口层** | `cmd/saker` | CLI 调度器；含 `--server`、`--gateway`、`--video-stream`、`--pipeline`、`--acp` 以及 `profile`、`skill`、`eval` 子命令 |
-| | `cmd/desktop` | 复用同一内核的 Wails v2 桌面壳 |
-| | `pkg/clikit`、`pkg/clikit/tui` | REPL、瀑布进度、侧栏面板、bubbletea TUI |
-| **运行时 API** | `pkg/api` | 公开 SDK；调度主循环、沙箱、执行器、hooks、记忆、人格、sessiondb、skills、subagents、tasks、checkpoints、cache、OTel、MCP |
-| | `pkg/agent` | 纯净 agent 主循环；定义 `Model` 与 `ToolExecutor` 接口；结构化 `StopReason` |
-| | `pkg/middleware` | safety、OTel、trace、限流、memory-nudge、subdir-hints、错误分类 |
-| | `pkg/metrics` | Prometheus 指标；provider 调用 wrapper |
-| **引擎** | `pkg/model` | Anthropic、OpenAI（Chat + Responses）、failover、智能路由、限流、模型信息 |
-| | `pkg/tool` | 工具接口、注册表（builtin + MCP + 远程）、执行器、schema、validator、持久化 |
-| | `pkg/runtime/{skills,subagents,tasks,cache,checkpoint,commands}` | 技能发现、subagent 分叉、任务存储、通用缓存、checkpoint、slash 命令 |
-| | `pkg/security` | SSRF / URL 策略、泄漏检测、权限匹配、env 解密、sanitiser、安全 open |
-| | `pkg/sandbox/{env,hostenv,landlockenv,gvisorenv,dockerenv,govmenv,pathmap}` | 沙箱接口与五种后端 |
-| **创作层** | `pkg/canvas` | 类型化 DAG、执行器、参数、引用、写回 |
-| | `pkg/pipeline` | 视频 / 流式管线执行器；go2rtc 接入 |
-| | `pkg/media/{indexer,searcher,chunk,clip,describe,embedding,transcribe,vecstore}` | 通过 `aigo` 完成媒体索引、搜索、切块、转写、嵌入 |
-| | `pkg/artifact` | 产物血缘跟踪 |
-| **数据与状态** | `pkg/sessiondb` | gorm + SQLite/Postgres 会话存储 |
-| | `pkg/memory` | 长期记忆存储与上下文组装 |
-| | `pkg/persona` | 人格加载器、注册表、prompt、router、session |
-| | `pkg/project` | 多租户项目注册表（apps、runs、storage、users、dialect）|
-| | `pkg/storage` | 存储抽象 + 内嵌后端 |
-| | `pkg/config` | 设置加载 / 写入 / 合并；规则；CLAUDE.md 摄取 |
-| **服务器** | `pkg/server` | Gin engine，REST + WebSocket + SSE，认证（local / OIDC / LDAP / Bearer），CSRF、scope、cron、metrics、文件 / 上传、canvas REST、apps |
-| **集成** | `pkg/mcp`、`pkg/acp`、`pkg/im`、`pkg/skillhub`、`pkg/apps` | 带 OSV 检查的 MCP 桥、Agent Client Protocol、IM 桥工具、skillhub 客户端、可分享的 Saker apps |
-| **前端** | `web/` | Next.js 16 + React 19 工作台（chat、canvas、projects、settings、技能广场）|
-| | `web-editor-next/` | 衍生自 OpenCut 的浏览器视频剪辑器（时间轴、特效、WASM 渲染）|
-| | `packages/editor-protocol/` | 共享 TypeScript 协议类型 |
+每个包的具体角色请见 [docs/architecture.md](docs/architecture.md)。
 
 ### 单次请求的数据流
 
