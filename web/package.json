@@ -20,7 +20,7 @@
     "dompurify": "^3.4.2",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.8.0",
-    "marked": "^15.0.0",
+    "marked": "^18.0.3",
     "next": "^16.2.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
