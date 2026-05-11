@@ -1,4 +1,4 @@
-.PHONY: test test-unit test-race test-integration test-short coverage lint notices oss-check build saker saker-full install clean test-pipeline test-pipeline-race test-pipeline-bench test-pipeline-stress test-all test-eval test-eval-bench test-eval-llm test-eval-all test-eval-tb2 test-eval-tb2-smoke eval-tb2 eval-tb2-smoke demo-pipeline server web-deps web-dev web-clean web-build web-editor-deps web-editor-dev web-editor-build web-editor-clean desktop run e2e-build e2e-run e2e-clean changelog swagger check-no-binaries
+.PHONY: test test-unit test-race test-integration test-short coverage lint lint-new bench fuzz docs-sync notices oss-check build saker saker-full install clean test-pipeline test-pipeline-race test-pipeline-bench test-pipeline-stress test-all test-eval test-eval-bench test-eval-llm test-eval-all test-eval-tb2 test-eval-tb2-smoke eval-tb2 eval-tb2-smoke demo-pipeline server web-deps web-dev web-clean web-build web-editor-deps web-editor-dev web-editor-build web-editor-clean desktop run e2e-build e2e-run e2e-clean changelog swagger check-no-binaries
 
 GO ?= go
 PKG ?= ./...
@@ -32,6 +32,33 @@ coverage:
 
 lint: check-no-binaries
 	golangci-lint run
+
+# lint-new only fails on issues introduced since origin/main. Use this to
+# adopt stricter linters incrementally without forcing a one-time mass fix
+# of every legacy issue. CI should call this on PRs.
+lint-new: check-no-binaries
+	golangci-lint run --new-from-rev=origin/main
+
+# bench runs the package benchmarks and writes results to bench/baseline.txt
+# for benchstat comparison. Pair with scripts/bench-compare.sh on PRs.
+bench:
+	@mkdir -p bench
+	$(GO) test -run=^$$ -bench=. -benchmem -count=5 \
+		./pkg/api/... ./pkg/tool/... ./pkg/middleware/... \
+		| tee bench/baseline.txt
+
+# fuzz runs each fuzz test for a short smoke window. Use FUZZTIME=30s as the
+# default; pass FUZZTIME=5m for an overnight soak.
+FUZZTIME ?= 30s
+fuzz:
+	$(GO) test -run=^$$ -fuzz=FuzzCleanFilePath -fuzztime=$(FUZZTIME) ./pkg/server/
+	$(GO) test -run=^$$ -fuzz=FuzzRPCRequest    -fuzztime=$(FUZZTIME) ./pkg/server/
+	$(GO) test -run=^$$ -fuzz=FuzzConvertMCPSchema -fuzztime=$(FUZZTIME) ./pkg/tool/
+	$(GO) test -run=^$$ -fuzz=FuzzLooksLikeBase64 -fuzztime=$(FUZZTIME) ./pkg/api/
+	$(GO) test -run=^$$ -fuzz=FuzzMergeSettings -fuzztime=$(FUZZTIME) ./pkg/config/
+
+docs-sync:
+	scripts/check-doc-sync.sh
 
 # check-no-binaries fails the build if any GIT-TRACKED file is an executable
 # (ELF / Mach-O / PE / shell-script binary > 1MB). This is a pre-commit /

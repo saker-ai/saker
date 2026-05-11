@@ -5,6 +5,7 @@ import (
 	"net/http/pprof"
 	"strings"
 
+	"github.com/cinience/saker/pkg/middleware"
 	storagecfg "github.com/cinience/saker/pkg/storage"
 	"github.com/gin-gonic/gin"
 )
@@ -23,6 +24,8 @@ func (s *Server) buildGinEngine() *gin.Engine {
 	engine.Use(RequestIDMiddleware())
 	engine.Use(SecurityHeadersMiddleware())
 	engine.Use(PrometheusMiddleware())
+	// OTel HTTP span — no-op when OTEL_EXPORTER_OTLP_ENDPOINT is unset.
+	engine.Use(middleware.OTELHTTPMiddleware())
 
 	// CORS — derive allowed origins from settings; defaults to localhost-only.
 	var allowedOrigins []string

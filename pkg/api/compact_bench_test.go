@@ -1,6 +1,7 @@
 package api
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/cinience/saker/pkg/message"
@@ -57,5 +58,41 @@ func BenchmarkShouldCompact_New(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		benchShouldCompact = c.shouldCompact(len(msgs), tokenCount+(i&1))
+	}
+}
+
+// Benchmarks for media-stripping helpers used during compaction. These run
+// on every compact pass, so ensure they stay roughly O(n) in input size.
+var benchBoolSink bool
+
+func BenchmarkLooksLikeBase64_Short(b *testing.B) {
+	s := "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQ"
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		benchBoolSink = looksLikeBase64(s)
+	}
+}
+
+func BenchmarkLooksLikeBase64_Long(b *testing.B) {
+	s := strings.Repeat("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAA", 200)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		benchBoolSink = looksLikeBase64(s)
+	}
+}
+
+func BenchmarkStripMediaContent(b *testing.B) {
+	msgs := make([]message.Message, 0, 64)
+	for i := 0; i < cap(msgs); i++ {
+		msgs = append(msgs, message.Message{
+			Role:    "user",
+			Content: "data:image/png;base64," + strings.Repeat("AAAA", 1024),
+		})
+	}
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = stripMediaContent(msgs)
 	}
 }
