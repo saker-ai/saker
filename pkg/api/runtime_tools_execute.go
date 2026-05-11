@@ -163,7 +163,18 @@ func (t *runtimeToolExecutor) Execute(ctx context.Context, call agent.ToolCall, 
 	if t.permissionResolver != nil {
 		exec = exec.WithPermissionResolver(t.permissionResolver)
 	}
+	var toolSpan SpanContext
+	if t.tracer != nil {
+		toolSpan = t.tracer.StartToolSpan(spanFromContext(ctx), call.Name)
+		ctx = withSpanContext(ctx, toolSpan)
+	}
 	result, err := exec.Execute(ctx, callSpec)
+	if toolSpan != nil {
+		t.tracer.EndSpan(toolSpan, map[string]any{
+			"tool.duration_ms": time.Since(toolStart).Milliseconds(),
+			"tool.session_id":  t.sessionID,
+		}, err)
+	}
 	toolDuration := time.Since(toolStart).Milliseconds()
 	if err != nil {
 		toolLogger.Warn("tool.Execute failed", "tool", call.Name, "call_id", call.ID, "error", err, "duration_ms", toolDuration)

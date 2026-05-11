@@ -54,6 +54,15 @@ func (rt *Runtime) Run(ctx context.Context, req Request) (resp *Response, err er
 		return resp, err
 	}
 
+	var agentSpan SpanContext
+	if rt.tracer != nil {
+		agentSpan = rt.tracer.StartAgentSpan(sessionID, req.RequestID, 0)
+		ctx = withSpanContext(ctx, agentSpan)
+		defer func() {
+			rt.tracer.EndSpan(agentSpan, nil, err)
+		}()
+	}
+
 	prep, prepErr := rt.prepare(ctx, req)
 	if prepErr != nil {
 		logger.Error("runtime.Run prepare failed", "session_id", sessionID, "error", prepErr)

@@ -113,6 +113,7 @@ func (rt *Runtime) runAgentWithMiddleware(prep preparedRun, extras ...middleware
 		compactor:          rt.compactor,
 		sessionID:          prep.normalized.SessionID,
 		detectedLanguage:   prep.detectedLanguage,
+		tracer:             rt.tracer,
 	}
 
 	toolExec := &runtimeToolExecutor{
@@ -125,6 +126,7 @@ func (rt *Runtime) runAgentWithMiddleware(prep preparedRun, extras ...middleware
 		sessionID:          prep.normalized.SessionID,
 		yolo:               rt.opts.DangerouslySkipPermissions,
 		permissionResolver: buildPermissionResolver(hookAdapter, rt.opts.PermissionRequestHandler, rt.opts.ApprovalQueue, rt.opts.ApprovalApprover, rt.opts.ApprovalWhitelistTTL, rt.opts.ApprovalWait),
+		tracer:             rt.tracer,
 	}
 
 	chainItems := make([]middleware.Middleware, 0, 3+len(rt.opts.Middleware)+len(extras))
