@@ -10,6 +10,7 @@ import (
 	"github.com/cinience/saker/pkg/api"
 	"github.com/cinience/saker/pkg/middleware"
 	"github.com/cinience/saker/pkg/model"
+	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
 )
 
 type fakeStreamRuntime struct{}
@@ -18,6 +19,74 @@ func (fakeStreamRuntime) RunStream(context.Context, api.Request) (<-chan api.Str
 	ch := make(chan api.StreamEvent)
 	close(ch)
 	return ch, nil
+}
+
+// captureCtxRuntime stores the most recent ctx its RunStream was invoked with.
+type captureCtxRuntime struct {
+	last context.Context
+}
+
+func (c *captureCtxRuntime) RunStream(ctx context.Context, _ api.Request) (<-chan api.StreamEvent, error) {
+	c.last = ctx
+	ch := make(chan api.StreamEvent)
+	close(ch)
+	return ch, nil
+}
+
+// TestRuntimeAdapterInjectsAskQuestionFunc proves that SetAskQuestionFunc
+// causes the registered handler to flow through into ctx via WithAskQuestionFunc
+// for both RunStream and RunStreamForked, and is skipped when no handler is
+// registered (so the askuserquestion tool guard takes over).
+func TestRuntimeAdapterInjectsAskQuestionFunc(t *testing.T) {
+	rt := &captureCtxRuntime{}
+	adapter := NewRuntimeAdapter(rt, RuntimeAdapterConfig{TurnRecorder: newTurnRecorder()})
+
+	// 1. No handler registered → ctx must NOT carry an AskQuestionFunc.
+	if _, err := adapter.RunStream(context.Background(), "sess", "p"); err != nil {
+		t.Fatalf("RunStream: %v", err)
+	}
+	if fn := toolbuiltin.AskQuestionFuncFromContext(rt.last); fn != nil {
+		t.Fatalf("expected no AskQuestionFunc when none registered, got %v", fn)
+	}
+
+	// 2. Register handler → ctx MUST carry the AskQuestionFunc.
+	called := false
+	adapter.SetAskQuestionFunc(func(_ context.Context, _ []toolbuiltin.Question) (map[string]string, error) {
+		called = true
+		return nil, nil
+	})
+	if _, err := adapter.RunStream(context.Background(), "sess", "p"); err != nil {
+		t.Fatalf("RunStream: %v", err)
+	}
+	fn := toolbuiltin.AskQuestionFuncFromContext(rt.last)
+	if fn == nil {
+		t.Fatalf("expected AskQuestionFunc in ctx after SetAskQuestionFunc")
+	}
+	if _, _ = fn(context.Background(), nil); !called {
+		t.Fatalf("expected the registered handler to be the one returned via ctx")
+	}
+
+	// 3. RunStreamForked also propagates.
+	called = false
+	if _, err := adapter.RunStreamForked(context.Background(), "parent", "child", "p"); err != nil {
+		t.Fatalf("RunStreamForked: %v", err)
+	}
+	fn = toolbuiltin.AskQuestionFuncFromContext(rt.last)
+	if fn == nil {
+		t.Fatalf("RunStreamForked must also inject AskQuestionFunc")
+	}
+	if _, _ = fn(context.Background(), nil); !called {
+		t.Fatalf("RunStreamForked should pass the same handler through")
+	}
+
+	// 4. Clearing handler removes it from ctx.
+	adapter.SetAskQuestionFunc(nil)
+	if _, err := adapter.RunStream(context.Background(), "sess", "p"); err != nil {
+		t.Fatalf("RunStream: %v", err)
+	}
+	if fn := toolbuiltin.AskQuestionFuncFromContext(rt.last); fn != nil {
+		t.Fatalf("expected handler to be cleared, still got %v", fn)
+	}
 }
 
 func TestRuntimeAdapterExposesModelNameAndRepoRoot(t *testing.T) {

@@ -75,18 +75,25 @@ func (t *AskUserQuestionTool) Execute(ctx context.Context, params map[string]int
 		return nil, err
 	}
 
-	// If no answers provided and a blocking ask function is available (web UI),
-	// use it to present an interactive form and wait for the user's selection.
+	// If no answers provided, an interactive ask handler is required: either a
+	// real one wired by the host (web UI / TUI), or none — in which case we
+	// MUST tell the LLM the call failed instead of silently "succeeding" with
+	// the question text, which causes hallucinated user answers downstream.
 	if len(answers) == 0 {
 		askFn := AskQuestionFuncFromContext(ctx)
 		slog.Debug("AskUserQuestion", "has_answers", len(answers) > 0, "has_askFn", askFn != nil)
-		if askFn != nil {
-			answers, err = askFn(ctx, questions)
-			if err != nil {
-				return nil, fmt.Errorf("ask user question: %w", err)
-			}
-			slog.Debug("AskUserQuestion got answers", "answers", answers)
+		if askFn == nil {
+			return &tool.ToolResult{
+				Success: false,
+				Output:  "AskUserQuestion is not available in this environment (no interactive UI is wired). Do not assume any answer. Ask the user directly in your reply text instead.",
+				Data:    map[string]interface{}{"questions": questions},
+			}, nil
 		}
+		answers, err = askFn(ctx, questions)
+		if err != nil {
+			return nil, fmt.Errorf("ask user question: %w", err)
+		}
+		slog.Debug("AskUserQuestion got answers", "answers", answers)
 	}
 
 	data := map[string]interface{}{

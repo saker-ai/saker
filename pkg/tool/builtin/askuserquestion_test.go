@@ -8,6 +8,20 @@ import (
 	"testing"
 )
 
+// withMockAskFn returns a context carrying an AskQuestionFunc that returns
+// the provided canned answers. Used by tests to simulate a wired interactive UI.
+func withMockAskFn(ctx context.Context, answers map[string]string) context.Context {
+	return WithAskQuestionFunc(ctx, func(_ context.Context, qs []Question) (map[string]string, error) {
+		out := make(map[string]string, len(qs))
+		for _, q := range qs {
+			if v, ok := answers[q.Question]; ok {
+				out[q.Question] = v
+			}
+		}
+		return out, nil
+	})
+}
+
 func TestAskUserQuestionSingleQuestionSingleSelect(t *testing.T) {
 	tool := NewAskUserQuestionTool()
 	params := map[string]interface{}{
@@ -24,15 +38,18 @@ func TestAskUserQuestionSingleQuestionSingleSelect(t *testing.T) {
 		},
 	}
 
-	res, err := tool.Execute(context.Background(), params)
+	ctx := withMockAskFn(context.Background(), map[string]string{
+		"Which database should we use?": "Postgres",
+	})
+	res, err := tool.Execute(ctx, params)
 	if err != nil {
 		t.Fatalf("Execute returned error: %v", err)
 	}
 	if res == nil || !res.Success {
 		t.Fatalf("expected success result")
 	}
-	if !strings.Contains(res.Output, "[DB]") || !strings.Contains(res.Output, "Postgres") {
-		t.Fatalf("unexpected output: %q", res.Output)
+	if !strings.Contains(res.Output, "Postgres") {
+		t.Fatalf("expected answer in output, got %q", res.Output)
 	}
 	data, ok := res.Data.(map[string]interface{})
 	if !ok {
@@ -51,8 +68,12 @@ func TestAskUserQuestionSingleQuestionSingleSelect(t *testing.T) {
 	if len(qs[0].Options) != 2 || qs[0].Options[0].Label != "Postgres" {
 		t.Fatalf("unexpected options: %+v", qs[0].Options)
 	}
-	if _, ok := data["answers"]; ok {
-		t.Fatalf("did not expect answers in result data")
+	answers, ok := data["answers"].(map[string]string)
+	if !ok {
+		t.Fatalf("unexpected answers type %T", data["answers"])
+	}
+	if answers["Which database should we use?"] != "Postgres" {
+		t.Fatalf("unexpected answers: %+v", answers)
 	}
 }
 
@@ -90,7 +111,12 @@ func TestAskUserQuestionMultipleQuestions(t *testing.T) {
 		},
 	}
 
-	res, err := tool.Execute(context.Background(), params)
+	ctx := withMockAskFn(context.Background(), map[string]string{
+		"Choose output format?":    "JSON",
+		"Enable caching?":          "Yes",
+		"Pick deployment target?":  "Staging",
+	})
+	res, err := tool.Execute(ctx, params)
 	if err != nil {
 		t.Fatalf("Execute returned error: %v", err)
 	}
@@ -99,8 +125,8 @@ func TestAskUserQuestionMultipleQuestions(t *testing.T) {
 	if len(qs) != 3 {
 		t.Fatalf("expected 3 questions, got %d", len(qs))
 	}
-	if !strings.Contains(res.Output, "3 question(s)") || !strings.Contains(res.Output, "3.") {
-		t.Fatalf("unexpected output: %q", res.Output)
+	if !strings.Contains(res.Output, "JSON") || !strings.Contains(res.Output, "Yes") || !strings.Contains(res.Output, "Staging") {
+		t.Fatalf("expected all answers in output, got %q", res.Output)
 	}
 }
 
@@ -121,17 +147,95 @@ func TestAskUserQuestionMultiSelect(t *testing.T) {
 		},
 	}
 
-	res, err := tool.Execute(context.Background(), params)
+	ctx := withMockAskFn(context.Background(), map[string]string{
+		"Which platforms should we support?": "Linux,macOS",
+	})
+	res, err := tool.Execute(ctx, params)
 	if err != nil {
 		t.Fatalf("Execute returned error: %v", err)
 	}
-	if !strings.Contains(res.Output, "multi-select") {
-		t.Fatalf("expected output to include multi-select, got %q", res.Output)
+	if !strings.Contains(res.Output, "Linux,macOS") {
+		t.Fatalf("expected multi-select answer in output, got %q", res.Output)
 	}
 	data := res.Data.(map[string]interface{})
 	qs := data["questions"].([]Question)
 	if !qs[0].MultiSelect {
 		t.Fatalf("expected MultiSelect true")
+	}
+}
+
+// TestAskUserQuestionNoAskFnReturnsFailure verifies the guard against the old
+// "succeeds with the question text" hallucination bug: when no askFn is wired
+// in the context (e.g. legacy REPL or headless mode), Execute must return
+// Success: false with a clear "not available" message so the LLM cannot
+// confuse the question echo for a user answer.
+func TestAskUserQuestionNoAskFnReturnsFailure(t *testing.T) {
+	tool := NewAskUserQuestionTool()
+	params := map[string]interface{}{
+		"questions": []interface{}{
+			map[string]interface{}{
+				"question": "Pick one?",
+				"header":   "P",
+				"options": []interface{}{
+					map[string]interface{}{"label": "A", "description": "a"},
+					map[string]interface{}{"label": "B", "description": "b"},
+				},
+				"multiSelect": false,
+			},
+		},
+	}
+	res, err := tool.Execute(context.Background(), params)
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if res == nil {
+		t.Fatalf("expected non-nil result")
+	}
+	if res.Success {
+		t.Fatalf("expected Success=false when askFn missing, got Success=true (hallucination guard regressed)")
+	}
+	if !strings.Contains(res.Output, "not available") {
+		t.Fatalf("expected 'not available' in output, got %q", res.Output)
+	}
+	if !strings.Contains(res.Output, "Do not assume") {
+		t.Fatalf("expected explicit 'Do not assume' guidance in output, got %q", res.Output)
+	}
+	data, ok := res.Data.(map[string]interface{})
+	if !ok {
+		t.Fatalf("expected Data map even on failure (preserves observability), got %T", res.Data)
+	}
+	if qs, _ := data["questions"].([]Question); len(qs) != 1 {
+		t.Fatalf("expected questions to be preserved in failure Data")
+	}
+	if _, ok := data["answers"]; ok {
+		t.Fatalf("must not include answers on failure")
+	}
+}
+
+// TestAskUserQuestionAskFnError verifies that a propagated askFn error becomes
+// a tool-level error (not a silent success).
+func TestAskUserQuestionAskFnError(t *testing.T) {
+	tool := NewAskUserQuestionTool()
+	params := map[string]interface{}{
+		"questions": []interface{}{
+			map[string]interface{}{
+				"question":    "Pick?",
+				"header":      "P",
+				"options":     []interface{}{map[string]interface{}{"label": "A", "description": "a"}, map[string]interface{}{"label": "B", "description": "b"}},
+				"multiSelect": false,
+			},
+		},
+	}
+	wantErr := fmt.Errorf("user cancelled")
+	ctx := WithAskQuestionFunc(context.Background(), func(_ context.Context, _ []Question) (map[string]string, error) {
+		return nil, wantErr
+	})
+	_, err := tool.Execute(ctx, params)
+	if err == nil {
+		t.Fatalf("expected error from Execute, got nil")
+	}
+	if !strings.Contains(err.Error(), "user cancelled") {
+		t.Fatalf("expected wrapped askFn error, got %v", err)
 	}
 }
 

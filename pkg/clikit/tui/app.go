@@ -52,6 +52,15 @@ type App struct {
 	// side panel overlay (for /btw and /im)
 	sidePanel       *SidePanel
 	sidePanelCancel context.CancelFunc
+
+	// question panel overlay (for AskUserQuestion tool)
+	questionPanel    *QuestionPanel
+	questionOutcome  <-chan QuestionPanelOutcome
+	questionDeliver  chan<- QuestionPanelOutcome // bridge channel back to askFn caller
+	prevInputEnabled bool                        // saved input state to restore after panel closes
+
+	// program is set by Run() so that cross-thread tool callers can use program.Send().
+	program *tea.Program
 }
 
 // New creates a new TUI App.
@@ -93,6 +102,13 @@ func New(ctx context.Context, cfg AppConfig) *App {
 func Run(ctx context.Context, cfg AppConfig) error {
 	app := New(ctx, cfg)
 	p := tea.NewProgram(app)
+	app.program = p
+	// Wire the interactive AskUserQuestion handler so that tool calls invoked
+	// from agent goroutines can prompt the user via the bubbletea event loop.
+	if r, ok := cfg.Engine.(clikit.AskQuestionRegistrar); ok {
+		r.SetAskQuestionFunc(app.askQuestionFromTUI)
+		defer r.SetAskQuestionFunc(nil)
+	}
 	_, err := p.Run()
 	return err
 }

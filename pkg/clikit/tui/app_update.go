@@ -128,6 +128,55 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			a.chat.AddError(msg.Text)
 		}
 		return a, a.flushChat()
+
+	case OpenQuestionPanelMsg:
+		// Refuse a nested open: forward a Cancelled outcome immediately so the
+		// caller's askFn unblocks and the LLM gets a clear error.
+		if a.questionPanel != nil {
+			select {
+			case msg.Reply <- QuestionPanelOutcome{Cancelled: true}:
+			default:
+			}
+			return a, nil
+		}
+		panel, outcome := NewQuestionPanel(a.styles, msg.Questions)
+		panel.SetSize(a.width, a.height)
+		a.questionPanel = panel
+		a.questionOutcome = outcome
+		a.questionDeliver = msg.Reply
+		a.prevInputEnabled = a.input.enabled
+		a.input.SetEnabled(false)
+		a.status.SetText("Awaiting your input...")
+		return a, a.waitForQuestionOutcome()
+
+	case CloseQuestionPanelMsg:
+		if a.questionPanel == nil {
+			return a, nil
+		}
+		// Cancel triggers the panel to send a Cancelled outcome on the channel,
+		// which arrives via QuestionPanelDoneMsg below.
+		a.questionPanel.Cancel()
+		return a, nil
+
+	case QuestionPanelDoneMsg:
+		// Forward the outcome to the tool-side caller (if still waiting).
+		if a.questionDeliver != nil {
+			select {
+			case a.questionDeliver <- msg.Outcome:
+			default:
+			}
+		}
+		a.questionPanel = nil
+		a.questionOutcome = nil
+		a.questionDeliver = nil
+		a.input.SetEnabled(a.prevInputEnabled)
+		// Status: leave "Thinking..." if the model is still running, else Ready.
+		if a.runCancel == nil && !a.spinning {
+			a.status.SetText("Ready")
+		} else if a.runCancel != nil {
+			a.status.SetText("Thinking...")
+		}
+		return a, nil
 	}
 
 	// Forward to input (always — allows type-ahead while model runs).
@@ -235,6 +284,9 @@ func (a *App) layout() {
 	if a.sidePanel != nil {
 		a.sidePanel.SetSize(a.width, a.height)
 	}
+	if a.questionPanel != nil {
+		a.questionPanel.SetSize(a.width, a.height)
+	}
 }
 
 // flushChat flushes completed chat messages to terminal scrollback via tea.Println.
@@ -248,6 +300,10 @@ func (a *App) flushChat() tea.Cmd {
 
 // handleKey processes key events.
 func (a *App) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	// Question panel takes precedence over everything else.
+	if a.questionPanel != nil {
+		return a.handleQuestionPanelKey(msg)
+	}
 	// Side panel intercepts all keys when active.
 	if a.sidePanel != nil {
 		return a.handleSidePanelKey(msg)
@@ -417,4 +473,39 @@ func displaySandbox(s string) string {
 		return "host"
 	}
 	return s
+}
+
+// handleQuestionPanelKey routes a key into the active question panel and emits
+// a QuestionPanelDoneMsg once the panel reports finished.
+func (a *App) handleQuestionPanelKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	// Ctrl+D still quits the whole app, even mid-question.
+	if msg.String() == "ctrl+d" {
+		// Forward a Cancelled outcome so the askFn caller doesn't deadlock.
+		if a.questionDeliver != nil {
+			select {
+			case a.questionDeliver <- QuestionPanelOutcome{Cancelled: true}:
+			default:
+			}
+		}
+		return a, tea.Quit
+	}
+	cmd := a.questionPanel.HandleKey(msg)
+	return a, cmd
+}
+
+// waitForQuestionOutcome returns a tea.Cmd that blocks on the panel's outcome
+// channel and produces a QuestionPanelDoneMsg when the user finishes. Running
+// inside tea.Cmd guarantees we don't block the Update loop.
+func (a *App) waitForQuestionOutcome() tea.Cmd {
+	ch := a.questionOutcome
+	if ch == nil {
+		return nil
+	}
+	return func() tea.Msg {
+		outcome, ok := <-ch
+		if !ok {
+			return QuestionPanelDoneMsg{Outcome: QuestionPanelOutcome{Cancelled: true}}
+		}
+		return QuestionPanelDoneMsg{Outcome: outcome}
+	}
 }

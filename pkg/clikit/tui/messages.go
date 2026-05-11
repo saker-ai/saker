@@ -1,6 +1,9 @@
 package tui
 
-import "github.com/cinience/saker/pkg/api"
+import (
+	"github.com/cinience/saker/pkg/api"
+	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+)
 
 // Internal message types for the bubbletea Update loop.
 
@@ -42,4 +45,23 @@ type CommandResultMsg struct {
 // StatusMsg updates the status bar text.
 type StatusMsg struct {
 	Text string
+}
+
+// OpenQuestionPanelMsg requests opening the AskUserQuestion interactive panel.
+// Sent via program.Send() from the tool execution goroutine. The Reply channel
+// is closed by the panel when the user finishes (either submitting answers or
+// cancelling); the bridge function blocks on it.
+type OpenQuestionPanelMsg struct {
+	Questions []toolbuiltin.Question
+	Reply     chan<- QuestionPanelOutcome
+}
+
+// CloseQuestionPanelMsg cancels the currently open question panel (used when
+// the caller's ctx is cancelled while waiting for the user).
+type CloseQuestionPanelMsg struct{}
+
+// QuestionPanelDoneMsg is sent internally when the panel finishes; the App
+// uses it to clean up state and forward the outcome to the original askFn caller.
+type QuestionPanelDoneMsg struct {
+	Outcome QuestionPanelOutcome
 }
