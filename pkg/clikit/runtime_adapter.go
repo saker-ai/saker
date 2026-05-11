@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync"
 
 	"github.com/cinience/saker/pkg/api"
 	"github.com/cinience/saker/pkg/middleware"
 	runtimeskills "github.com/cinience/saker/pkg/runtime/skills"
+	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
 )
 
 type streamRuntime interface {
@@ -37,6 +39,9 @@ type RuntimeAdapter struct {
 	skillsDirs      []string
 	skillsRecursive bool
 	turnRecorder    *api.ModelTurnRecorder
+
+	askMu           sync.RWMutex
+	askQuestionFunc toolbuiltin.AskQuestionFunc
 }
 
 type TurnRecorder = api.ModelTurnRecorder
@@ -121,12 +126,42 @@ func (a *RuntimeAdapter) RepoRoot() string {
 	return a.projectRoot
 }
 
+// SetAskQuestionFunc registers an interactive AskUserQuestion handler. Called
+// by the TUI at startup so that agent runs invoked through this adapter can
+// prompt the user via the bubbletea event loop. Safe to call concurrently.
+// Pass nil to clear.
+func (a *RuntimeAdapter) SetAskQuestionFunc(fn toolbuiltin.AskQuestionFunc) {
+	if a == nil {
+		return
+	}
+	a.askMu.Lock()
+	a.askQuestionFunc = fn
+	a.askMu.Unlock()
+}
+
+// withAskQuestion injects the registered AskQuestionFunc into ctx if one is
+// set. When no handler is registered (legacy REPL, headless), ctx is returned
+// unchanged and AskUserQuestion's tool-side guard will report "not available"
+// to the LLM rather than silently succeeding.
+func (a *RuntimeAdapter) withAskQuestion(ctx context.Context) context.Context {
+	if a == nil {
+		return ctx
+	}
+	a.askMu.RLock()
+	fn := a.askQuestionFunc
+	a.askMu.RUnlock()
+	if fn == nil {
+		return ctx
+	}
+	return toolbuiltin.WithAskQuestionFunc(ctx, fn)
+}
+
 func (a *RuntimeAdapter) RunStream(ctx context.Context, sessionID, prompt string) (<-chan api.StreamEvent, error) {
-	return a.runtime.RunStream(ctx, api.Request{Prompt: prompt, SessionID: sessionID})
+	return a.runtime.RunStream(a.withAskQuestion(ctx), api.Request{Prompt: prompt, SessionID: sessionID})
 }
 
 func (a *RuntimeAdapter) RunStreamForked(ctx context.Context, parentSessionID, sessionID, prompt string) (<-chan api.StreamEvent, error) {
-	return a.runtime.RunStream(ctx, api.Request{
+	return a.runtime.RunStream(a.withAskQuestion(ctx), api.Request{
 		Prompt:          prompt,
 		SessionID:       sessionID,
 		ParentSessionID: parentSessionID,
@@ -139,7 +174,7 @@ func (a *RuntimeAdapter) Run(ctx context.Context, sessionID, prompt string) (*ap
 	if !ok {
 		return nil, errors.New("clikit: runtime does not support non-streaming runs")
 	}
-	return withResponse.Run(ctx, api.Request{Prompt: prompt, SessionID: sessionID})
+	return withResponse.Run(a.withAskQuestion(ctx), api.Request{Prompt: prompt, SessionID: sessionID})
 }
 
 func (a *RuntimeAdapter) ModelTurnCount(sessionID string) int {

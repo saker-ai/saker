@@ -8,6 +8,14 @@ import (
 
 // View implements tea.Model.
 func (a *App) View() tea.View {
+	// Question panel overlay (highest priority — interactive AskUserQuestion).
+	if a.questionPanel != nil {
+		panelView := a.questionPanel.View()
+		statusView := a.status.View()
+		view := lipgloss.JoinVertical(lipgloss.Left, panelView, statusView)
+		return tea.NewView(view)
+	}
+
 	// Side panel overlay.
 	if a.sidePanel != nil {
 		if a.spinning {
