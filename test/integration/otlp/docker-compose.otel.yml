@@ -1,0 +1,38 @@
+version: "3.9"
+
+# OpenTelemetry collector spun up only for the OTLP integration test in this
+# directory. Run via:
+#
+#   docker compose -f test/integration/otlp/docker-compose.otel.yml up -d
+#   OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:4318 \
+#     go test -tags integration ./test/integration/otlp/...
+#   docker compose -f test/integration/otlp/docker-compose.otel.yml down
+#
+# The collector logs received spans to stdout *and* writes them to
+# ./otel-output/spans.json so the Go test can grep for the trace ID it
+# emitted.
+
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.115.0
+    container_name: saker-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+      - ./otel-output:/var/lib/otel
+    ports:
+      - "127.0.0.1:4317:4317"   # OTLP gRPC
+      - "127.0.0.1:4318:4318"   # OTLP HTTP
+      - "127.0.0.1:13133:13133" # health_check extension
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - "--quiet"
+        - "--tries=1"
+        - "--spider"
+        - "http://127.0.0.1:13133/"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped

@@ -9,7 +9,6 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
-	"log/slog"
 	"strings"
 	"sync"
 	"time"
@@ -109,23 +108,9 @@ func Open(path string) (*Store, error) {
 	}
 	db.SetMaxOpenConns(1) // SQLite performs best with a single writer
 
-	if _, err := db.Exec(schema); err != nil {
+	if err := runMigrations(db); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("sessiondb: migrate: %w", err)
-	}
-
-	// Add hash and pos columns for databases created before these fields existed.
-	// Log errors instead of silently ignoring — "duplicate column" is expected
-	// when the schema already includes these columns; other errors are warnings.
-	for _, m := range []string{
-		"ALTER TABLE messages ADD COLUMN hash TEXT NOT NULL DEFAULT ''",
-		"ALTER TABLE messages ADD COLUMN pos INTEGER NOT NULL DEFAULT 0",
-	} {
-		if _, err := db.Exec(m); err != nil {
-			if !strings.Contains(err.Error(), "duplicate column") {
-				slog.Warn("sessiondb: migration warning", "stmt", m, "error", err)
-			}
-		}
 	}
 
 	return &Store{db: db}, nil
