@@ -1,0 +1,113 @@
+%%{init: {
+  "theme": "base",
+  "flowchart": { "curve": "basis", "nodeSpacing": 28, "rankSpacing": 48, "padding": 14 },
+  "themeVariables": {
+    "fontFamily": "-apple-system, BlinkMacSystemFont, Inter, Segoe UI, system-ui, sans-serif",
+    "fontSize": "13px",
+    "primaryColor": "#fbf6ec",
+    "primaryBorderColor": "#c2410c",
+    "primaryTextColor": "#1a1815",
+    "lineColor": "#a8907a",
+    "secondaryColor": "#f0e5d2",
+    "tertiaryColor": "#e7dfd1",
+    "clusterBkg": "#fefcf7",
+    "clusterBorder": "#c2410c",
+    "edgeLabelBackground": "#fefcf7",
+    "titleColor": "#c2410c"
+  }
+}}%%
+flowchart TB
+
+    %% ──────────── Surfaces ────────────
+    subgraph Surfaces["<b>Entry surfaces</b>"]
+        direction LR
+        CLI["CLI / TUI / REPL<br/><i>cmd/saker · pkg/clikit</i>"]
+        HTTP["HTTP server<br/><i>--server</i>"]
+        GW["IM gateway<br/><i>--gateway</i>"]
+        Desktop["Desktop<br/><i>cmd/desktop · Wails</i>"]
+        ACP["ACP stdio<br/><i>--acp</i>"]
+    end
+
+    %% ──────────── Runtime API ────────────
+    subgraph Runtime["<b>Runtime API · pkg/api</b>"]
+        direction LR
+        Loop["Agent orchestrator<br/><i>budget · loop-detect · compaction</i>"]
+        Mid["Middleware<br/><i>OTel · safety · trace · rate-limit</i>"]
+    end
+
+    %% ──────────── Engine Layer ────────────
+    subgraph Engine["<b>Engine layer</b>"]
+        direction LR
+        Agent["pkg/agent<br/><i>iteration · stop reasons</i>"]
+        Model["pkg/model<br/><i>Anthropic · OpenAI · failover · routing</i>"]
+        Tool["pkg/tool<br/><i>33 builtin + MCP + remote</i>"]
+        RT["pkg/runtime<br/><i>skills · subagents · tasks · cache</i>"]
+        Sec["pkg/security<br/><i>SSRF · permissions · leak</i>"]
+        Box["pkg/sandbox<br/><i>host · landlock · gVisor · Docker · govm</i>"]
+    end
+
+    %% ──────────── Creative Layer ────────────
+    subgraph Creative["<b>Creative layer</b>"]
+        direction LR
+        Canvas["pkg/canvas<br/><i>DAG · 40+ node types</i>"]
+        Pipe["pkg/pipeline<br/><i>video / stream</i>"]
+        Media["pkg/media<br/><i>index · search · transcribe · embed</i>"]
+        Art["pkg/artifact<br/><i>lineage tracking</i>"]
+    end
+
+    %% ──────────── Data Layer ────────────
+    subgraph Data["<b>Data and state</b>"]
+        direction LR
+        Sess["pkg/sessiondb"]
+        Mem["pkg/memory"]
+        Per["pkg/persona"]
+        Proj["pkg/project"]
+        Stor["pkg/storage"]
+        Cfg["pkg/config"]
+    end
+
+    %% ──────────── Frontend (embedded) ────────────
+    subgraph Frontend["<b>Frontend (embedded in binary)</b>"]
+        direction LR
+        Web["web/<br/><i>Next.js 16 workspace</i>"]
+        Editor["web-editor-next/<br/><i>OpenCut video editor</i>"]
+        Proto["packages/editor-protocol<br/><i>shared TS types</i>"]
+    end
+
+    %% ──────────── External Services ────────────
+    subgraph External["<b>External services</b>"]
+        direction LR
+        LLM["LLM APIs<br/><i>Anthropic · OpenAI · MCP</i>"]
+        Aigo["aigo<br/><i>image · video · TTS · STT</i>"]
+        IM["IM platforms<br/><i>Telegram · Discord · Feishu · Slack · 6 more</i>"]
+        GoVM["govm<br/><i>microVM runtime</i>"]
+    end
+
+    %% ──────────── Connections ────────────
+    Surfaces --> Runtime
+    Runtime --> Engine
+    Engine --> Creative
+    Engine --> Data
+    HTTP --> Frontend
+    Desktop --> Frontend
+    Engine --> External
+    Creative --> External
+    GW --> IM
+    Box --> GoVM
+
+    %% ──────────── Styling ────────────
+    classDef surface  fill:#fbf6ec,stroke:#c2410c,stroke-width:2px,color:#1a1815,rx:6,ry:6
+    classDef runtime  fill:#fff7ed,stroke:#c2410c,stroke-width:2.5px,color:#1a1815,rx:6,ry:6
+    classDef engine   fill:#fef3e7,stroke:#a8907a,stroke-width:1.5px,color:#1a1815,rx:6,ry:6
+    classDef creative fill:#e6f4f4,stroke:#0d6e6e,stroke-width:1.5px,color:#0a3d3d,rx:6,ry:6
+    classDef data     fill:#f5efe2,stroke:#a8907a,stroke-width:1px,color:#1a1815,rx:6,ry:6
+    classDef frontend fill:#eef0fb,stroke:#3b3a78,stroke-width:1.5px,color:#1a1840,rx:6,ry:6
+    classDef external fill:#fbf6ec,stroke:#c2410c,stroke-width:1px,stroke-dasharray: 5 3,color:#1a1815,rx:6,ry:6
+
+    class CLI,HTTP,GW,Desktop,ACP surface
+    class Loop,Mid runtime
+    class Agent,Model,Tool,RT,Sec,Box engine
+    class Canvas,Pipe,Media,Art creative
+    class Sess,Mem,Per,Proj,Stor,Cfg data
+    class Web,Editor,Proto frontend
+    class LLM,Aigo,IM,GoVM external
