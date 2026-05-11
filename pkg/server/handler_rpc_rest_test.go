@@ -26,6 +26,10 @@ func newRPCRESTTestServer(t *testing.T) (*httptest.Server, *Server) {
 		dataDir: t.TempDir(),
 		logger:  slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
+	// Real construction goes through NewHandler, which populates dispatch.
+	// We bypass NewHandler here to keep the test fixture lean, so the table
+	// has to be wired explicitly — otherwise every method is "not found".
+	h.dispatch = h.initDispatch()
 	s := &Server{handler: h, opts: Options{DataDir: h.dataDir}}
 	gin.SetMode(gin.TestMode)
 	engine := gin.New()

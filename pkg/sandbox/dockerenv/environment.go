@@ -16,7 +16,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
-		"sort"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"

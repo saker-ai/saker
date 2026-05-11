@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/skillhub"
 	coreevents "github.com/cinience/saker/pkg/core/events"
+	"github.com/cinience/saker/pkg/skillhub"
 )
 
 // ---------------------------------------------------------------------------

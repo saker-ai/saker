@@ -50,7 +50,6 @@ func BenchmarkSkillsLazyLoading(b *testing.B) {
 
 	opts := skills.LoaderOptions{
 		ProjectRoot: root,
-		EnableUser:  false,
 	}
 
 	var startupReads int64
@@ -113,7 +112,6 @@ func BenchmarkCommandsLazyLoading(b *testing.B) {
 
 	opts := commands.LoaderOptions{
 		ProjectRoot: root,
-		EnableUser:  false,
 	}
 
 	var startupBody int64

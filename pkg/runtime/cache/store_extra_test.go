@@ -63,7 +63,7 @@ func TestMemoryStoreMutationIsolation(t *testing.T) {
 	})
 
 	original := &tool.ToolResult{
-		Output:     "original",
+		Output: "original",
 		Artifacts: []artifact.ArtifactRef{
 			artifact.NewGeneratedRef("art1", artifact.ArtifactKindText),
 		},

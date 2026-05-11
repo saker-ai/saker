@@ -131,7 +131,9 @@ func TestDoJSONSuccess(t *testing.T) {
 	defer srv.Close()
 
 	c := New(srv.URL, WithToken("test-token"))
-	var result struct{ Handle string `json:"handle"` }
+	var result struct {
+		Handle string `json:"handle"`
+	}
 	err := c.doJSON(context.Background(), http.MethodGet, "/api/v1/test", nil, &result)
 	if err != nil {
 		t.Fatalf("doJSON: %v", err)

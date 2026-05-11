@@ -996,10 +996,10 @@ func TestValidateEventRejectsMCPToolsChanged(t *testing.T) {
 func TestEffectiveTimeoutTableDriven(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
-		name          string
-		hook          time.Duration
-		defaultDur    time.Duration
-		want          time.Duration
+		name       string
+		hook       time.Duration
+		defaultDur time.Duration
+		want       time.Duration
 	}{
 		{"hook_timeout_preferred", 5 * time.Second, 10 * time.Second, 5 * time.Second},
 		{"default_used_when_hook_zero", 0, 30 * time.Second, 30 * time.Second},

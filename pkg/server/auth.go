@@ -55,10 +55,10 @@ type AuthManager struct {
 	stopCleanup chan struct{}
 
 	// External auth providers (LDAP, OIDC).
-	providers     []AuthProvider
-	oidcProvider  *OIDCProvider // direct reference for redirect flow handlers
-	userInfoCache     sync.Map      // username → *userInfoCacheEntry (cached external user info)
-	stopCacheCleanup chan struct{}  // signals the background cache cleanup goroutine to stop
+	providers        []AuthProvider
+	oidcProvider     *OIDCProvider // direct reference for redirect flow handlers
+	userInfoCache    sync.Map      // username → *userInfoCacheEntry (cached external user info)
+	stopCacheCleanup chan struct{} // signals the background cache cleanup goroutine to stop
 
 	// sessionSigningKey is a random 32-byte HMAC key generated on startup.
 	// Using a random key prevents predictability from deriving the key
@@ -199,11 +199,11 @@ func NewAuthManager(cfg *config.WebAuthConfig, logger *slog.Logger) *AuthManager
 		logger = slog.Default()
 	}
 	am := &AuthManager{
-		cfg:              cfg,
-		logger:           logger,
-		revoked:          make(map[string]time.Time),
-		stopCleanup:      make(chan struct{}),
-		stopCacheCleanup: make(chan struct{}),
+		cfg:               cfg,
+		logger:            logger,
+		revoked:           make(map[string]time.Time),
+		stopCleanup:       make(chan struct{}),
+		stopCacheCleanup:  make(chan struct{}),
 		sessionSigningKey: generateSigningKey(),
 	}
 

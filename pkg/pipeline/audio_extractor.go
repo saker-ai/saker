@@ -37,14 +37,14 @@ type AudioChunk struct {
 // pcmChunker handles the shared buffering, chunk flushing, WAV writing, and
 // channel sending logic used by both PCM and Opus collection paths.
 type pcmChunker struct {
-	extractor   *AudioExtractor
-	wavHeader   []byte
-	dstCodec   *core.Codec
+	extractor     *AudioExtractor
+	wavHeader     []byte
+	dstCodec      *core.Codec
 	bytesPerChunk int
-	buf         []byte
-	bufMu       sync.Mutex
-	chunkIdx    int
-	startTime   time.Time
+	buf           []byte
+	bufMu         sync.Mutex
+	chunkIdx      int
+	startTime     time.Time
 }
 
 func newPCMChunker(a *AudioExtractor, wavHeader []byte, dstCodec *core.Codec) *pcmChunker {

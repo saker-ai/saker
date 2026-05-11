@@ -194,8 +194,6 @@ func registerSubagents(registrations []SubagentRegistration) (*subagents.Manager
 type loaderOptions struct {
 	ProjectRoot    string
 	ConfigRoot     string
-	UserHome       string
-	EnableUser     bool
 	SkillsDirs     []string
 	SkillsRec      *bool
 	DisabledSkills []string
@@ -211,8 +209,6 @@ func buildLoaderOptions(opts Options) loaderOptions {
 	return loaderOptions{
 		ProjectRoot:    opts.ProjectRoot,
 		ConfigRoot:     opts.ConfigRoot,
-		UserHome:       "",
-		EnableUser:     false,
 		SkillsDirs:     append([]string(nil), opts.SkillsDirs...),
 		SkillsRec:      skillsRec,
 		DisabledSkills: append([]string(nil), opts.DisabledSkills...),
@@ -225,8 +221,6 @@ func buildCommandsExecutor(opts Options) (*commands.Executor, []error) {
 	fsRegs, errs := commands.LoadFromFS(commands.LoaderOptions{
 		ProjectRoot: loader.ProjectRoot,
 		ConfigRoot:  loader.ConfigRoot,
-		UserHome:    loader.UserHome,
-		EnableUser:  loader.EnableUser,
 		FS:          loader.fs,
 	})
 
@@ -290,8 +284,6 @@ func loadSkillRegistrations(opts Options) ([]skills.SkillRegistration, []error) 
 	outcome := skills.LoadOutcomeFromFS(skills.LoaderOptions{
 		ProjectRoot:    loader.ProjectRoot,
 		ConfigRoot:     loader.ConfigRoot,
-		UserHome:       loader.UserHome,
-		EnableUser:     loader.EnableUser,
 		Directories:    loader.SkillsDirs,
 		Recursive:      loader.SkillsRec,
 		FS:             loader.fs,
@@ -345,8 +337,6 @@ func buildSubagentsManager(opts Options) (*subagents.Manager, []error) {
 	projectRegs, errs := subagents.LoadFromFS(subagents.LoaderOptions{
 		ProjectRoot: loader.ProjectRoot,
 		ConfigRoot:  loader.ConfigRoot,
-		UserHome:    loader.UserHome,
-		EnableUser:  false,
 		FS:          loader.fs,
 	})
 
@@ -554,7 +544,7 @@ type sessionGate struct {
 }
 
 type gateEntry struct {
-	ch        chan struct{}
+	ch         chan struct{}
 	acquiredAt time.Time
 }
 

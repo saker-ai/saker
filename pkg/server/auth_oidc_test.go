@@ -16,7 +16,7 @@ import (
 	"github.com/cinience/saker/pkg/config"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/go-jose/go-jose/v4"
-	)
+)
 
 // ---------------------------------------------------------------------------
 // Test OIDC server helpers — simulates a full OIDC provider for integration tests

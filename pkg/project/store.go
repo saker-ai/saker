@@ -42,7 +42,7 @@ type Store struct {
 	provisioningMu sync.Map // map[string]*provisioningMuEntry
 
 	// stopCh stops the provisioningMu cleanup goroutine.
-	stopCh   chan struct{}
+	stopCh    chan struct{}
 	closeOnce sync.Once
 }
 

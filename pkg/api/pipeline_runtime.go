@@ -97,7 +97,6 @@ func (rt *Runtime) pipelineResponse(req Request, result pipeline.Result, checkpo
 			Interrupted:  interrupted,
 		},
 		Timeline:        timelineEntries,
-		ProjectConfig:   rt.Settings(),
 		Settings:        rt.Settings(),
 		SandboxSnapshot: rt.sandboxReport(),
 		Tags:            maps.Clone(req.Tags),

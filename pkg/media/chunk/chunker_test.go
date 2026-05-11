@@ -83,7 +83,7 @@ func TestScanDirectory(t *testing.T) {
 	}
 
 	// Test with custom extensions.
-	customExt := map[string]bool{".mp4": true,".txt": true}
+	customExt := map[string]bool{".mp4": true, ".txt": true}
 	files, err = ScanDirectory(dir, customExt)
 	if err != nil {
 		t.Fatalf("ScanDirectory custom: %v", err)
@@ -123,51 +123,51 @@ func TestScanDirectory_NilExtensions(t *testing.T) {
 func TestParseDurationFromStderr(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name   string
-		stderr string
-		want   float64
+		name    string
+		stderr  string
+		want    float64
 		wantErr bool
 	}{
 		{
-			name:   "standard ffmpeg duration line",
-			stderr: "Input #0, mov,mp4, from 'test.mp4':\n  Duration: 01:23:45.67, start: 0.000000",
-			want:   1*3600 + 23*60 + 45.67,
+			name:    "standard ffmpeg duration line",
+			stderr:  "Input #0, mov,mp4, from 'test.mp4':\n  Duration: 01:23:45.67, start: 0.000000",
+			want:    1*3600 + 23*60 + 45.67,
 			wantErr: false,
 		},
 		{
-			name:   "short video duration",
-			stderr: "Duration: 00:00:30.00",
-			want:   30.0,
+			name:    "short video duration",
+			stderr:  "Duration: 00:00:30.00",
+			want:    30.0,
 			wantErr: false,
 		},
 		{
-			name:   "hours only",
-			stderr: "Duration: 02:00:00.00",
-			want:   7200.0,
+			name:    "hours only",
+			stderr:  "Duration: 02:00:00.00",
+			want:    7200.0,
 			wantErr: false,
 		},
 		{
-			name:   "no Duration line",
-			stderr: "some other output without duration",
-			want:   0,
+			name:    "no Duration line",
+			stderr:  "some other output without duration",
+			want:    0,
 			wantErr: true,
 		},
 		{
-			name:   "empty stderr",
-			stderr: "",
-			want:   0,
+			name:    "empty stderr",
+			stderr:  "",
+			want:    0,
 			wantErr: true,
 		},
 		{
-			name:   "malformed duration missing parts",
-			stderr: "Duration: 01:02",
-			want:   0,
+			name:    "malformed duration missing parts",
+			stderr:  "Duration: 01:02",
+			want:    0,
 			wantErr: true,
 		},
 		{
-			name:   "non-numeric duration parts",
-			stderr: "Duration: aa:bb:cc",
-			want:   0,
+			name:    "non-numeric duration parts",
+			stderr:  "Duration: aa:bb:cc",
+			want:    0,
 			wantErr: true,
 		},
 	}
