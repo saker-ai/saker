@@ -1,322 +1,365 @@
 # Saker
 
-[![CI](https://github.com/cinience/saker/actions/workflows/ci.yml/badge.svg)](https://github.com/cinience/saker/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/cinience/saker/actions/workflows/codeql.yml/badge.svg)](https://github.com/cinience/saker/actions/workflows/codeql.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/cinience/saker)](https://goreportcard.com/report/github.com/cinience/saker)
-[![License: SKL-1.0](https://img.shields.io/badge/License-SKL--1.0-blue)](LICENSE)
-[![Coverage](https://codecov.io/gh/cinience/saker/branch/main/graph/badge.svg)](https://codecov.io/gh/cinience/saker)
+<p align="center">
+  <img src="https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go&logoColor=white" alt="Go 1.26+">
+  <img src="https://img.shields.io/badge/Node.js-22+-339933?logo=nodedotjs&logoColor=white" alt="Node.js 22+">
+  <img src="https://img.shields.io/badge/License-SKL--1.0-blue" alt="License: SKL-1.0">
+  <br>
+  <a href="https://github.com/cinience/saker/actions/workflows/ci.yml"><img src="https://github.com/cinience/saker/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/cinience/saker/actions/workflows/codeql.yml"><img src="https://github.com/cinience/saker/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
+  <a href="https://goreportcard.com/report/github.com/cinience/saker"><img src="https://goreportcard.com/badge/github.com/cinience/saker" alt="Go Report Card"></a>
+  <a href="https://codecov.io/gh/cinience/saker"><img src="https://codecov.io/gh/cinience/saker/branch/main/graph/badge.svg" alt="Coverage"></a>
+</p>
 
-Saker 是一个 source-available 的创意 Agent 运行时。它把 Go 后端 Agent、Web 工作台和浏览器视频编辑器组合在一起，让一个项目可以从提示词、策划、素材生成一路走到审阅、编辑和自动化执行。
+<p align="center">
+  An agent runtime with a web workspace and browser video editor —<br>
+  prompt, generate, review, and automate creative work in one binary.
+</p>
 
-[English](README.md)
+<p align="center">
+  <a href="#quick-start">Quick Start</a> •
+  <a href="#features">Features</a> •
+  <a href="#documentation">Docs</a> •
+  <a href="#development">Development</a> •
+  <a href="#license">License</a> •
+  <a href="README.md">English</a>
+</p>
 
-## 为什么选择 Saker
+---
 
-| 痛点 | 业界做法 | Saker 的取舍 |
-| --- | --- | --- |
-| **创意流程被工具切碎** | 提示工程器 / 媒体生成器 / 编辑器各跑一份后端 | 单一二进制内嵌 Web + 编辑器，状态同源、无跨服务 schema |
-| **沙箱要么不够安全要么不够通用** | 仅 Docker 或仅 host | 5 种后端（host / landlock / gVisor / Docker / govm），按宿主能力降级 |
-| **Tool/LLM 锁死单家供应商** | 紧耦合一家 API | 多 provider + 故障转移 + 智能路由，工具表 37+ 可热插拔 |
-| **远程多租户场景难落地** | 本地 CLI 无法直接服务 Web | 内置 OAuth/LDAP/Bearer、CSRF、CORS、SSRF、路径穿越等加固 |
-| **可观测性事后接** | 自己接 OTel | 内建 Prometheus + 结构化 slog + 请求 ID 贯穿全栈 |
+## What is Saker
 
-## 架构
+Saker is a source-available agent runtime. It combines a Go backend, a Next.js web workspace, and a browser-based video editor into a single binary that covers the full creative workflow — from writing prompts and generating media to reviewing output and automating repetitive steps.
 
-```mermaid
-graph TB
-    subgraph CLI["CLI / Desktop"]
-        CLI_CMD[cmd/saker]
-    end
-
-    subgraph Runtime["Go Runtime (pkg/)"]
-        API[api — 高层运行时 API]
-        MODEL[model — 提供商、路由、故障转移]
-        TOOL[tool — 内置工具、注册]
-        RT[runtime — Skills、Subagents、Tasks、Cache]
-        SERVER[server — 嵌入式 Web 服务、API]
-        CANVAS[canvas, artifact, media — 创意层]
-        SANDBOX[sandbox — host, landlock, gvisor, docker, govm]
-    end
-
-    subgraph Frontend["Web 前端"]
-        WEB[web — Next.js 工作台 UI]
-        EDITOR[web-editor-next — 浏览器视频编辑器]
-    end
-
-    subgraph External["外部服务"]
-        LLM[LLM Providers<br/>Anthropic / OpenAI / DashScope]
-        AIGO[aigo — 多模态适配器<br/>图片、视频、音频、语音]
-    end
-
-    CLI_CMD --> API
-    API --> MODEL --> LLM
-    API --> TOOL
-    API --> RT --> SANDBOX
-    API --> CANVAS --> AIGO
-    SERVER --> WEB
-    SERVER --> EDITOR
-    SERVER --> API
-
-    style CLI fill:#2d6a4f,color:#fff
-    style Runtime fill:#40916c,color:#fff
-    style Frontend fill:#52b788,color:#fff
-    style External fill:#74c69d,color:#fff
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────────┐
+│  Prompting &  │ ──▶ │    Media     │ ──▶ │   Review &       │
+│   Planning    │     │  Generation  │     │   Automation     │
+└──────────────┘     └──────────────┘     └──────────────────┘
+        │                     │                     │
+        ▼                     ▼                     ▼
+   ┌──────────────────────────────────────────────────────────┐
+   │                    Saker Runtime                         │
+   │  ┌───────────┐  ┌───────────┐  ┌─────────────────────┐  │
+   │  │ Go Backend│  │  Web UI   │  │ Browser Video Editor│  │
+   │  └───────────┘  └───────────┘  └─────────────────────┘  │
+   └──────────────────────────────────────────────────────────┘
 ```
 
-## 功能概览
+## Why Saker
 
-### Agent 运行时
+| Problem | Typical approach | Saker |
+|---------|-----------------|-------|
+| Creative workflow split across tools | Separate backends for prompting, media gen, and editing | Single binary with embedded web UI and editor — no cross-service glue |
+| Sandbox too insecure or too restrictive | Docker-only or host-only | Five backends (host / landlock / gVisor / Docker / govm), degrades to what the host supports |
+| Vendor lock-in for tools and models | Tight coupling to one API | Multi-provider with failover and routing; 37+ tools, swappable at runtime |
+| Hard to deploy for remote multi-tenant use | Local CLI only | Built-in auth (OAuth / LDAP / Bearer), CSRF, CORS, SSRF protection, path traversal hardening |
+| Observability bolted on later | Add OTel after the fact | Prometheus metrics, structured slog, request IDs wired through the stack |
 
-| 功能 | 说明 |
-| --- | --- |
-| 核心循环 | 可配置迭代次数、超时、停止原因分类的 LLM-工具交互循环 |
-| 预算与令牌守卫 | 累计成本（USD）或令牌数超限时中止运行 |
-| 重复循环检测 | 连续相同工具调用超阈值时中止；可选自纠正提示 |
-| SSE 流式传输 | Anthropic 兼容 SSE 协议，附带 Agent 专用事件扩展 |
-| 会话管理 | 内存中保留最近 N 条会话历史（默认 N=1000，可调）；live 并发以实际机器与上游限流为准 |
-| 上下文压缩 | 提示摘要与历史裁剪（compact 与 microcompact） |
-| Profile 隔离 | 命名 Profile 实现设置、记忆、历史的隔离 |
-| 缓存与断点 | 文件/内存缓存去重；断点支持 Pipeline 恢复 |
+## Quick Start
 
-### 模型与路由
+### Prerequisites
 
-| 功能 | 说明 |
-| --- | --- |
-| Anthropic 提供商 | SDK 集成，可配置 API Key、模型、温度、最大令牌、重试 |
-| OpenAI 提供商 | Chat Completions、流式、Responses API、工具调用、ExtraBody |
-| 提供商缓存 | TTL 客户端缓存，双重检查锁 |
-| 故障转移 | 多模型故障转移，含重试、指数退避、缓冲流处理器 |
-| 智能路由 | 提示复杂度分类，实现成本感知的模型选择 |
-| 速率限制追踪 | 按提供商捕获速率限制头；HTTP Transport 包装器 |
-| 提示缓存 | 启用系统消息和近期消息的提示缓存 |
-| 错误分类 | 可重试、限速、认证、上下文长度等错误分类用于故障转移 |
+- Go 1.26 or later
+- Node.js 22 or later
+- pnpm (the repo uses a pnpm workspace for `web/` and `web-editor-next/`)
+- Docker (optional — used by sandbox backends and e2e tests)
 
-### 工具系统 — 37 个内置工具
-
-| 类别 | 工具 |
-| --- | --- |
-| 文件操作 | Read, Write, Edit, Glob, Grep, ImageRead |
-| Shell | Bash, BashOutput, BashStatus |
-| Web | WebFetch, WebSearch, Webhook（SSRF 安全） |
-| 交互 | AskUserQuestion, Skill, SlashCommand |
-| 记忆 | MemorySave, MemoryRead |
-| 画布 | CanvasGetNode, CanvasListNodes, CanvasTableWrite |
-| 任务 | TaskCreate, TaskGet, TaskList, TaskUpdate, KillTask, TodoWrite |
-| 视频与媒体 | AnalyzeVideo, VideoSampler, VideoSummarizer, FrameAnalyzer, MediaIndex, MediaSearch |
-| 流 | StreamCapture, StreamMonitor |
-| 浏览器与动态 | Browser, Aigo（YAML 驱动） |
-
-另有：工具注册表、Schema 校验、权限解析器、输出持久化、流式执行
-
-### 沙箱与安全
-
-| 功能 | 说明 |
-| --- | --- |
-| 5 种沙箱后端 | Host、Landlock（LSM）、gVisor（runsc）、Docker（网络默认关闭）、GoVM（轻量 VM） |
-| SSRF 防护 | 拦截 localhost、私有 IP、元数据 IP；DNS 错误时安全关闭 |
-| 泄露检测 | 正则密钥扫描，含严重级别、遮蔽、净化 |
-| 权限矩阵 | 基于 permissions.json 的逐工具规则（允许/拒绝/询问） |
-| 路径校验 | 符号链接检测、最大深度 128、路径遍历防护 |
-| MIME 检测 | 内容优先（512 字节探测），扩展名兜底 |
-| CORS 与限速 | 可配置来源；IP 令牌桶限速（RPS + burst） |
-| 安全头 | X-Content-Type-Options、X-Frame-Options 等 |
-
-### 服务与 API
-
-| 功能 | 说明 |
-| --- | --- |
-| Gin HTTP 引擎 | 路由注册、中间件栈、Swagger 注解 |
-| WebSocket JSON-RPC | 双向通信，含 ping/pong 保活、序列化写入 |
-| 认证系统 | 本地（bcrypt + HMAC）、LDAP、OIDC 含角色映射 |
-| 文件上传 | 50MB 上限、内容 MIME 检测、UUID 缀、24h 过期 |
-| REST API | Canvas、Apps、Skills、Memory、Personas、Projects、Threads、Turns、Users、Invites、Channels、Teams |
-| Cron 调度 | 3 种调度类型（间隔/cron/一次），最大 5 并发 |
-| 活跃 Turn 追踪 | 并发 Turn 追踪与最大并发数控制 |
-| 标题生成 | 模型推断自动生成 Thread 标题 |
-
-### 画布与媒体
-
-| 功能 | 说明 |
-| --- | --- |
-| 画布文档 | Nodes、Edges（流/引用/上下文）、Viewport JSON |
-| 画布执行器 | 拓扑 DAG 遍历，将生成节点分发至运行时 |
-| 画布回写 | 自动将生成的媒体写回画布节点 |
-| 40+ 节点类型 | Agent, AI, Audio, Composition, Export, ImageGen, LLM, Mask, Prompt, VideoGen, VoiceGen 等 |
-| Artifact 血缘 | 来源追踪，DOT 格式可视化导出 |
-| 媒体索引 | 可搜索索引，含关键帧与 Chromem 向量嵌入 |
-| 媒体转写 | Whisper 音频/视频转写 |
-| 视频分析 | 帧采样、摘要、内容描述 |
-| 媒体裁剪 | FFmpeg 裁剪，可配置起止时间 |
-
-### Hooks 与事件
-
-| 功能 | 说明 |
-| --- | --- |
-| PreToolUse | 工具执行前拦截；可拒绝或修改 |
-| PostToolUse | 工具结果后拦截；可修改输出或触发副作用 |
-| UserPromptSubmit | 用户提示提交前拦截与预处理 |
-| 15 种事件类型 | Pre/PostToolUse, Compact, Session, Subagent, Notification, TokenUsage 等 |
-| 事件总线 | 发布/订阅，含逐订阅者队列、去重、扇出缓冲 |
-| Shell Hook 脚本 | 以 Shell 脚本执行 Hook 回调，含超时 |
-| 异步超时 | 可配置异步 Hook 执行超时 |
-
-### Skills 与 MCP
-
-| 功能 | 说明 |
-| --- | --- |
-| Skills 注册表 | 中心注册表，含类型安全分发与模糊匹配 |
-| SKILL.md 加载器 | 从项目目录解析 frontmatter |
-| Skill Plaza | 发现和安装社区技能的市场 |
-| Skill 学习器 | 从项目上下文自动生成技能定义 |
-| Skill 分析 | 追踪激活频率、成功率、结果 |
-| SkillHub 客户端 | 注册表 API（搜索、安装、发布、版本）含 OAuth |
-| MCP 规格客户端 | 解析服务规格字符串；会话握手与能力协商 |
-| MCP 传输层 | stdio、SSE、streamable HTTP 传输构建器 |
-| MCP 工具发现 | 列出并注册远程工具；命名空间冲突处理 |
-| MCP 工具刷新 | 通过事件总线处理 tools/list_changed 通知 |
-
-### CLI 与模式
-
-| 功能 | 说明 |
-| --- | --- |
-| TUI 模式 | Bubbletea 终端 UI，含瀑布流显示（默认） |
-| Print/Stream | 非交互输出（--print/--stream） |
-| REPL 模式 | readline 交互 Shell 含命令处理 |
-| 服务模式 | 嵌入式 Web 服务，可配置地址与数据目录 |
-| ACP 模式 | 基于 stdio 的 IDE/工具集成 |
-| Gateway 模式 | IM 桥接（Telegram、飞书、Discord、Slack、钉钉） |
-| Pipeline 模式 | 加载 Pipeline JSON；--timeline/--lineage 输出 |
-| Video Stream | 文件/目录视频处理，可配置采样 |
-| Eval 模式 | 从 CLI 运行评测套件 |
-| Profile 子命令 | 隔离 Profile 创建与切换 |
-| 沙箱/MCP/认证标志 | 后端、挂载、镜像；可重复 MCP；一次性认证设置 |
-
-### 前端
-
-| 功能 | 说明 |
-| --- | --- |
-| Chat 应用 | 流式消息、Markdown、Artifact 提取、多模态内容 |
-| 输入器 | 提示输入，含文件附件与模式选择 |
-| 画布视图 | DAG 视图，含节点渲染、边可视化、Viewport |
-| 审批与提问卡片 | 人工介入的工具审批与澄清问答 |
-| 设置面板 | Aigo、Auth、Failover、Memory、Persona、Sandbox、Skills 等分区 |
-| 项目管理 | 创建、删除、设置、邀请、成员角色、所有权转移 |
-| Skill Plaza | 市场浏览与技能导入 |
-| Cron UI | CronJob 表单、列表、运行日志、活跃 Turn |
-| App Runner | 表单输入执行画布应用 |
-| i18n | 多语言界面支持 |
-
-### 浏览器视频编辑器
-
-| 功能 | 说明 |
-| --- | --- |
-| 时间线 | 多轨道布局，含音频、视频、文字、特效轨道 |
-| 动画 | 关键帧动画，含贝塞尔曲线与插值 |
-| 特效系统 | 注册表、组件、参数通道动画 |
-| 字幕 | ASS/SRT 解析、构建与插入 |
-| 转写 | LLM 音频转写含诊断 |
-| 预览与参考线 | 渲染叠加、缩放、网格与对齐吸附 |
-| WASM 处理 | 基于 WebAssembly 的浏览器端媒体渲染 |
-| 导出 | MIME 类型映射与格式配置 |
-| 撤销/重做 | 命令模式，含剪贴板操作 |
-| 音频显示 | 波形可视化与分离 |
-| Bridge 集成 | 通过 Saker 运行时连接实现 AI 辅助编辑 |
-
-## 环境要求
-
-- Go 1.26 或更新版本
-- Node.js 22 或更新版本
-- npm
-- 可选：Docker，用于 e2e 和部分沙箱测试
-
-## 快速开始
-
-首次安装前端依赖：
+### Build and run
 
 ```bash
+# Clone the repository
+git clone https://github.com/cinience/saker.git
+cd saker
+
+# Install frontend dependencies
 pnpm install
-```
 
-构建并启动完整嵌入式服务：
-
-```bash
+# Build frontends, embed them, and start the server
 make run
 ```
 
-该命令会构建 `web`、构建 `web-editor-next`、把两个静态产物嵌入 Go 二进制，并在 `http://localhost:10112` 启动服务。
+The server listens on `http://localhost:10112`.
 
-只构建 CLI/后端：
+### CLI usage
 
 ```bash
+# Build the CLI binary
 make saker
-./bin/saker --version
-```
 
-执行一次性提示词：
-
-```bash
+# Set your API key
 export ANTHROPIC_API_KEY=sk-ant-...
+
+# Run a one-shot prompt
 ./bin/saker --print "Draft a 30-second product video concept"
 ```
 
-启动前端开发服务：
+### Development mode
 
 ```bash
+# Run frontend dev servers separately
 make web-dev          # http://localhost:10111
-make web-editor-dev   # 编辑器开发服务
+make web-editor-dev   # Editor dev server
 ```
 
-## 配置
+## Features
 
-Saker 的项目本地状态保存在 `.saker/`，该目录已被 git 忽略。
+### Agent runtime
 
-常用环境变量：
+| Feature | Description |
+|---------|-------------|
+| Core loop | Configurable iteration limit, timeout, and stop-reason classification |
+| Budget guard | Aborts when cumulative cost or token count exceeds a limit |
+| Loop detection | Detects repeated identical tool calls and stops; optional self-correction prompt |
+| SSE streaming | Anthropic-compatible SSE protocol with agent-specific event extensions |
+| Session history | In-memory ring buffer (default 1000 turns, configurable) |
+| Context compaction | Prompt summarization and history truncation (compact / microcompact) |
+| Profile isolation | Named profiles for settings, memory, and history separation |
+
+### Model routing
+
+| Feature | Description |
+|---------|-------------|
+| Providers | Anthropic, OpenAI, DashScope |
+| Failover | Multi-model fallback with exponential backoff and stream buffering |
+| Smart routing | Prompt-complexity-based, cost-aware model selection |
+| Rate-limit tracking | Per-provider rate-limit header capture; HTTP transport wrapper |
+| Prompt caching | System and recent-message prompt caching |
+
+### Tools (37 built-in)
+
+<details>
+<summary>Expand to see tool list</summary>
+
+| Category | Tools |
+|----------|-------|
+| File | Read, Write, Edit, Glob, Grep, ImageRead |
+| Shell | Bash, BashOutput, BashStatus |
+| Web | WebFetch, WebSearch, Webhook (SSRF-safe) |
+| Interaction | AskUserQuestion, Skill, SlashCommand |
+| Memory | MemorySave, MemoryRead |
+| Canvas | CanvasGetNode, CanvasListNodes, CanvasTableWrite |
+| Tasks | TaskCreate, TaskGet, TaskList, TaskUpdate, KillTask, TodoWrite |
+| Video & Media | AnalyzeVideo, VideoSampler, VideoSummarizer, FrameAnalyzer, MediaIndex, MediaSearch |
+| Stream | StreamCapture, StreamMonitor |
+| Browser | Browser, Aigo (YAML-driven) |
+
+</details>
+
+### Sandbox & security
+
+| Feature | Description |
+|---------|-------------|
+| Five backends | Host, Landlock (LSM), gVisor (runsc), Docker (network disabled by default), GoVM (lightweight VM) |
+| SSRF protection | Blocks localhost, private IP ranges, and metadata endpoints; safe-close on DNS errors |
+| Leak detection | Regex-based secret scanning with severity levels, masking, and cleanup |
+| Permission matrix | Per-tool rules from permissions.json (allow / deny / ask) |
+
+### Canvas & media
+
+- Canvas document: nodes, edges (flow / reference / context), viewport in JSON
+- Canvas executor: topological DAG traversal, dispatching generation nodes to the runtime
+- 40+ node types: Agent, AI, Audio, Composition, Export, ImageGen, LLM, Mask, Prompt, VideoGen, VoiceGen, and more
+- Media indexing: searchable index with keyframes and Chromem vector embeddings
+- Video analysis: frame sampling, summarization, content description
+
+### Video editor (browser)
+
+| Feature | Description |
+|---------|-------------|
+| Timeline | Multi-track layout with audio, video, text, and effect tracks |
+| Animation | Keyframe-based with Bezier curves and interpolation |
+| Effects | Registry, components, parameter channel animation |
+| Subtitles | ASS / SRT parsing, building, and insertion |
+| Transcription | LLM-based audio transcription with diagnostics |
+| Preview & guides | Render overlay, zoom, grid, and snap |
+| WASM processing | Browser-side media rendering via WebAssembly |
+| Undo / Redo | Command pattern with clipboard support |
+
+### IM gateway
+
+Saker can bridge to instant-messaging platforms so users interact with the agent through chat apps. Supported platforms:
+
+Telegram, Discord, Feishu, Slack, DingTalk, WeCom, QQ, QQ Bot, LINE, WeChat
 
 ```bash
-ANTHROPIC_API_KEY=
-OPENAI_API_KEY=
-DASHSCOPE_API_KEY=
-SAKER_MODEL=claude-sonnet-4-5-20250929
+# Start the IM bridge for a single platform
+./bin/saker --gateway telegram --gateway-token "your-bot-token"
+
+# Or use a config file for multi-platform setups
+./bin/saker --gateway-config gateway.toml
 ```
 
-本地开发可以复制 `.env.example`。
+Channel credentials can also be managed through the TUI (`im_config` tool) or the Web UI settings panel.
 
-服务端 Web 登录信息可以这样设置：
+## Architecture
 
-```bash
-./bin/saker --auth-user admin --auth-pass '<password>'
-./bin/saker --server
+```
+                          ┌──────────────────────────────────────┐
+                          │            Entry Points              │
+                          │                                      │
+                          │  ┌──────────┐  ┌──────────┐         │
+                          │  │   CLI    │  │  Server  │         │
+                          │  │ (TUI /   │  │ (HTTP /  │         │
+                          │  │  REPL /  │  │  WS /    │         │
+                          │  │  print)  │  │  SSE)    │         │
+                          │  └────┬─────┘  └────┬─────┘         │
+                          │       │              │               │
+                          │       │  ┌───────────┘               │
+                          │       │  │                           │
+                          │       ▼  ▼                           │
+                          │  ┌──────────────┐                    │
+                          │  │  IM Gateway  │                    │
+                          │  │ (Telegram,   │                    │
+                          │  │  Discord,    │                    │
+                          │  │  Feishu...)  │                    │
+                          │  └──────┬───────┘                    │
+                          └─────────┼────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          pkg/api (Runtime API)                          │
+│                                                                         │
+│   Request → Agent Loop → Response / Stream                              │
+│                                                                         │
+│   ┌───────────────┐  ┌───────────────┐  ┌──────────────────────────┐   │
+│   │  Budget Guard │  │ Loop Detector │  │  Context Compaction      │   │
+│   │  (cost/token) │  │ (repeat call) │  │  (compact / microcompact)│   │
+│   └───────────────┘  └───────────────┘  └──────────────────────────┘   │
+│                                                                         │
+└──────────────────────────────────┬──────────────────────────────────────┘
+                                   │
+         ┌─────────────┬───────────┼───────────┬─────────────┐
+         ▼             ▼           ▼           ▼             ▼
+┌─────────────┐ ┌───────────┐ ┌──────────┐ ┌──────────┐ ┌───────────┐
+│   pkg/model │ │ pkg/tool  │ │  pkg/    │ │  pkg/    │ │  pkg/     │
+│             │ │           │ │ runtime  │ │ security │ │ sandbox   │
+│ • Anthropic │ │ 37+ built │ │          │ │          │ │           │
+│ • OpenAI    │ │ -in tools │ │ • skills │ │ • SSRF   │ │ • host    │
+│ • DashScope │ │ • file    │ │ • sub-   │ │ • leak   │ │ • landlock│
+│ • failover  │ │ • shell   │ │   agents │ │   detect │ │ • gVisor  │
+│ • routing   │ │ • web     │ │ • tasks  │ │ • permis-│ │ • Docker  │
+│ • rate      │ │ • canvas  │ │ • cache  │ │   sions  │ │ • GoVM    │
+│   limit     │ │ • media   │ │ • MCP    │ │ • auth   │ │           │
+│             │ │ • browser │ │ • hooks  │ │          │ │           │
+└──────┬──────┘ └───────────┘ └──────────┘ └──────────┘ └───────────┘
+       │
+       ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│                       External Services                                  │
+│                                                                          │
+│  ┌─────────────────────┐   ┌─────────────────────┐                       │
+│  │   LLM Providers     │   │   aigo Multimodal   │                       │
+│  │                     │   │                     │                       │
+│  │  Anthropic API      │   │  Image generation   │                       │
+│  │  OpenAI API         │   │  Video generation   │                       │
+│  │  DashScope API      │   │  TTS / STT          │                       │
+│  │                     │   │  Media analysis     │                       │
+│  └─────────────────────┘   └─────────────────────┘                       │
+│                                                                          │
+│  ┌──────────────────────────────────────────────┐                        │
+│  │              IM Platforms                    │                        │
+│  │                                              │                        │
+│  │  Telegram • Discord • Feishu • Slack         │                        │
+│  │  DingTalk • WeCom • QQ • LINE • WeChat       │                        │
+│  └──────────────────────────────────────────────┘                        │
+└──────────────────────────────────────────────────────────────────────────┘
+
+                          ┌────────────────────┐
+                          │   Creative Layer   │
+                          │                    │
+                          │  pkg/canvas        │
+                          │  • DAG executor    │
+                          │  • 40+ node types  │
+                          │                    │
+                          │  pkg/artifact      │
+                          │  • lineage tracking│
+                          │                    │
+                          │  pkg/media         │
+                          │  • index / search  │
+                          │  • transcribe      │
+                          └────────┬───────────┘
+                                   │
+                                   ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│                       Web Frontend (embedded)                            │
+│                                                                          │
+│  ┌───────────────────────────┐   ┌──────────────────────────────────┐   │
+│  │   web (Next.js)           │   │   web-editor-next (OpenCut)      │   │
+│  │                           │   │                                  │   │
+│  │  • Chat workspace         │   │  • Multi-track timeline          │   │
+│  │  • Canvas DAG view        │   │  • Keyframe animation            │   │
+│  │  • Project management     │   │  • Effects / subtitles           │   │
+│  │  • Settings panels        │   │  • WASM rendering                │   │
+│  │  • Skill plaza            │   │  • Undo / redo                   │   │
+│  └───────────────────────────┘   └──────────────────────────────────┘   │
+│                                                                          │
+│                          Served by pkg/server                            │
+│                          (REST • WebSocket • SSE • Auth • Cron)          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+                          ┌────────────────────┐
+                          │  Data & Storage    │
+                          │                    │
+                          │  pkg/sessiondb     │
+                          │  pkg/memory        │
+                          │  pkg/pipeline      │
+                          │  pkg/config        │
+                          │  pkg/storage       │
+                          │  pkg/project       │
+                          └────────────────────┘
 ```
 
-## 仓库结构
+## Repository structure
 
-```text
+```
 saker/
-├── cmd/                 # CLI、嵌入式 Web 服务、桌面入口
-├── pkg/                 # Go 运行时、工具、服务、模型提供商、媒体、沙箱
-├── web/                 # 主 Next.js Web 工作台
-├── web-editor-next/     # 挂载到 /editor/ 的浏览器视频编辑器
-├── examples/            # SDK、CLI、HTTP、Hooks、多模型、Pipeline 示例
-├── test/                # 集成测试和 Pipeline 测试
-├── e2e/                 # Docker e2e 测试
-├── eval/                # 评测框架
-├── skills/              # 内置 Skills
-├── docs/                # 稳定的开源项目文档
+├── cmd/                 # CLI, embedded web server, desktop entry point
+├── pkg/                 # Go runtime, tools, server, model providers, media, sandbox
+├── web/                 # Main Next.js web workspace
+├── web-editor-next/     # Browser video editor, mounted at /editor/
+├── examples/            # SDK, CLI, HTTP, hooks, multi-model, and pipeline examples
+├── test/                # Integration and pipeline tests
+├── e2e/                 # Docker-based end-to-end test suites
+├── eval/                # Evaluation harness
+├── skills/              # Built-in skills
+└── docs/                # Project documentation
 ```
 
-## 开发
+## Documentation
 
-常用命令：
+| Document | Description |
+|----------|-------------|
+| [Overview](docs/overview.md) | System architecture and design |
+| [Development guide](docs/development.md) | Local development and contribution workflow |
+| [Configuration](docs/configuration.md) | Configuration options |
+| [Deployment](docs/deployment.md) | Production deployment |
+| [Security policy](SECURITY.md) | Reporting vulnerabilities |
+| [Security model](docs/security.md) | Security architecture |
+| [API reference](docs/api-reference.md) | REST API documentation |
+| [Third-party notices](docs/third-party-notices.md) | Dependency license inventory |
+| [Roadmap](ROADMAP.md) | Planned features and direction |
+| [Changelog](CHANGELOG.md) | Version history |
+
+## Development
+
+### Common commands
 
 ```bash
-make test-short
-make test-unit
-make test-pipeline
-make server-dev
-make server
+# Testing
+make test-short       # Fast subset
+make test-unit        # Unit tests
+make test-pipeline    # Pipeline tests
+
+# Dev servers
+make server-dev       # Development server
+make server           # Production server
+
+# Full build
+make build            # Production build
 ```
 
-前端检查：
+### Frontend checks
 
 ```bash
 pnpm --filter ./web run test
@@ -324,42 +367,54 @@ pnpm --filter ./web run build
 pnpm --filter ./web-editor-next run build
 ```
 
-完整生产构建：
+## Configuration
+
+Saker keeps project-local runtime state under `.saker/` (git-ignored).
+
+### Environment variables
 
 ```bash
-make build
+ANTHROPIC_API_KEY=      # Anthropic API key
+OPENAI_API_KEY=         # OpenAI API key
+DASHSCOPE_API_KEY=      # DashScope API key
+SAKER_MODEL=            # Default model, e.g. claude-sonnet-4-5-20250929
 ```
 
-## 文档
+### Server authentication
 
-- [项目概览](docs/overview.md)
-- [开发指南](docs/development.md)
-- [配置说明](docs/configuration.md)
-- [部署指南](docs/deployment.md)
-- [安全策略](../SECURITY.md)
-- [安全模型](docs/security.md)
-- [API 参考](docs/api-reference.md)
-- [第三方依赖声明](docs/third-party-notices.md)
-- [路线图](ROADMAP.md)
-- [变更日志](CHANGELOG.md)
+```bash
+# Set credentials for the web UI
+./bin/saker --auth-user admin --auth-pass '<password>'
+./bin/saker --server
+```
 
-## 许可证说明
+## Contributing
 
-Saker 使用 **Saker Source License Version 1.0 (SKL-1.0)** — 基于 Apache 2.0 并附加条款的 source-available 许可证。
+Issues and pull requests are welcome. Please run the relevant tests and builds before submitting, and include setup notes in the PR description. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 
-**要点：**
+## License
 
-- **小团队和个人免费** — 年营收 ≤ 100万人民币（约 $140,000 USD）且注册用户数 ≤ 100 的组织可无限制地在生产环境使用。
-- **商业授权** — 年营收超过 100万人民币（约 $140,000 USD）或注册用户数超过 100 的组织须先获取商业许可证才能在生产环境使用。联系：cinience@hotmail.com
-- **非生产用途始终免费** — 评估、测试、开发、个人学习、研究不受营收限制。
-- **衍生作品需标注出处** — 基于本项目构建的衍生作品须在用户界面和文档中展示 "Powered by Saker.cc"。
+Saker is licensed under the **Saker Source License Version 1.0 (SKL-1.0)** — a source-available license based on Apache 2.0 with additional terms.
 
-上游代码说明保留在 `NOTICE`，依赖和素材许可证清单保留在 [docs/third-party-notices.md](docs/third-party-notices.md)。
+### Summary
 
-`web-editor-next/` 下的浏览器编辑器包含 MIT 许可的 OpenCut 衍生代码，素材说明见 `web-editor-next/ASSET_LICENSES.md`。
+| Scenario | Terms |
+|----------|-------|
+| Small teams & individuals | Free for production use if annual revenue ≤ ¥1,000,000 **and** registered users ≤ 100 |
+| Commercial license required | Annual revenue > ¥1,000,000 **or** registered users > 100 |
+| Non-production use | Always free — evaluation, testing, development, learning, and research |
+| Derivative works | Must display "Powered by Saker.cc" in the UI and documentation |
 
-`godeps` 包（aigo、goim、govm）是通过 `go.mod` 解析的远程 Go 模块，而非本地目录。
+For commercial licensing: [cinience@hotmail.com](mailto:cinience@hotmail.com)
 
-## 贡献
+**Upstream notices**: maintained in the [NOTICE](NOTICE) file. Dependency licenses are listed in [docs/third-party-notices.md](docs/third-party-notices.md).
 
-欢迎提交 Issue 和 Pull Request。提交前请运行本次改动相关的测试或构建命令，并在 PR 中说明必要的环境配置。
+**Browser editor**: code under `web-editor-next/` is derived from OpenCut (MIT). Asset attributions are in `web-editor-next/ASSET_LICENSES.md`.
+
+**Remote dependencies**: the `godeps` packages (aigo, goim, govm) are remote Go modules resolved via `go.mod`, not local directories.
+
+---
+
+<p align="center">
+  Built by <a href="https://saker.cc">Saker.cc</a>
+</p>
