@@ -206,22 +206,29 @@ func (c *Chat) View() string {
 	// Render unflushed messages (visible during active streaming).
 	c.renderMessages(&b, c.flushed, len(c.messages))
 
-	// Streaming buffer — ● dot on first line, space indent on continuation, cursor at end.
+	// Streaming buffer — ● dot on first line, space indent on continuation,
+	// cursor appended to the trailing line (no extra empty cursor row).
 	if c.streaming && c.streamingBuffer.Len() > 0 {
 		cw := c.contentWidth()
-		text := c.streamingBuffer.String()
+		// Trim the trailing newline so the cursor lands on the final visible
+		// line rather than its own blank row.
+		text := strings.TrimRight(c.streamingBuffer.String(), "\n")
+		cursor := lipgloss.NewStyle().Foreground(c.styles.Theme.Primary).Render(IconCursor)
 		lines := strings.Split(text, "\n")
+		lastIdx := len(lines) - 1
 		for i, line := range lines {
 			rendered := c.styles.AssistantText.Width(cw).Render(line)
+			suffix := ""
+			if i == lastIdx {
+				suffix = " " + cursor
+			}
 			if i == 0 {
 				dot := c.styles.AssistantDot.Render(IconCircle)
-				b.WriteString(fmt.Sprintf("%s %s\n", dot, rendered))
+				fmt.Fprintf(&b, "%s %s%s\n", dot, rendered, suffix)
 			} else {
-				b.WriteString(fmt.Sprintf("    %s\n", rendered))
+				fmt.Fprintf(&b, "    %s%s\n", rendered, suffix)
 			}
 		}
-		cursor := lipgloss.NewStyle().Foreground(c.styles.Theme.Primary).Render(IconCursor)
-		b.WriteString(fmt.Sprintf("    %s\n", cursor))
 	}
 
 	return b.String()
@@ -251,13 +258,17 @@ func (c *Chat) renderMessages(b *strings.Builder, from, to int) {
 			c.renderIM(b, msg, cw)
 		}
 
-		// Spacing between message groups.
+		// Spacing between message groups: only insert a blank line at a
+		// user-turn boundary (or before/after a side-question header).
+		// Within an assistant turn (assistant ↔ tool transitions), keep
+		// the layout tight — there is no semantic break to visualise.
 		nextRole := MsgRole(-1)
 		if i+1 < len(c.messages) {
 			nextRole = c.messages[i+1].Role
 		}
-		// No extra spacing between consecutive tools.
-		if msg.Role == RoleTool && nextRole == RoleTool {
+		intraTurn := (msg.Role == RoleTool || msg.Role == RoleAssistant) &&
+			(nextRole == RoleTool || nextRole == RoleAssistant)
+		if intraTurn {
 			continue
 		}
 		b.WriteString("\n")
@@ -277,27 +288,44 @@ func (c *Chat) contentWidth() int {
 }
 
 // renderUser renders a user message with background color (Claude Code style).
+// The trailing newline is owned by renderMessages so adjacent message spacing
+// stays consistent.
 func (c *Chat) renderUser(b *strings.Builder, msg ChatMsg, width int) {
 	text := c.styles.UserMsgBlock.Width(c.width).Render(
 		fmt.Sprintf(" %s", msg.Content),
 	)
-	b.WriteString(text + "\n")
+	b.WriteString(text)
+	b.WriteString("\n")
 }
 
 // renderAssistant renders an assistant message with ● dot on first line.
 // Continuation lines use space indentation only (no ⎿ symbol).
 // The ⎿ prefix is reserved for tool calls, keeping text clean and readable.
+//
+// Leading blank lines (often inserted by glamour's `document.block_prefix`)
+// are dropped, and runs of consecutive blank lines are folded down to one to
+// keep the chat area dense.
 func (c *Chat) renderAssistant(b *strings.Builder, msg ChatMsg, width int) {
 	rendered := renderMarkdown(msg.Content, width)
 	lines := strings.Split(rendered, "\n")
 
-	for i, line := range lines {
-		if i == 0 {
+	firstWritten := false
+	prevBlank := false
+	for _, line := range lines {
+		isBlank := strings.TrimSpace(line) == ""
+		// Drop blank lines before any real content and any subsequent run
+		// of consecutive blanks.
+		if isBlank && (!firstWritten || prevBlank) {
+			continue
+		}
+		prevBlank = isBlank
+		if !firstWritten {
 			dot := c.styles.AssistantDot.Render(IconCircle)
 			fmt.Fprintf(b, "%s %s\n", dot, line)
-		} else {
-			fmt.Fprintf(b, "    %s\n", line)
+			firstWritten = true
+			continue
 		}
+		fmt.Fprintf(b, "    %s\n", line)
 	}
 }
 
