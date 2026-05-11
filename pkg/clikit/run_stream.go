@@ -23,6 +23,15 @@ func RunStream(parent context.Context, out, errOut io.Writer, eng StreamEngine, 
 	if errOut == nil {
 		errOut = io.Discard
 	}
+	// Wrap writers so block footers can suppress redundant blank lines when
+	// the previous content already ended with '\n' (a frequent occurrence
+	// because LLM text deltas often terminate in newline).
+	if _, ok := out.(*lineAwareWriter); !ok {
+		out = newLineAwareWriter(out)
+	}
+	if _, ok := errOut.(*lineAwareWriter); !ok {
+		errOut = newLineAwareWriter(errOut)
+	}
 
 	ctx := parent
 	if ctx == nil {
@@ -170,12 +179,12 @@ func printValidationReport(out io.Writer, paths []string, results []outputValida
 	if out == nil {
 		return
 	}
-	printBlockHeader(out, "POST VALIDATION")
+	// Skip the whole block when nothing was produced — the empty-state notice
+	// was the loudest source of per-turn blank lines.
 	if len(paths) == 0 {
-		fmt.Fprintln(out, "no candidate outputs detected")
-		printBlockFooter(out)
 		return
 	}
+	printBlockHeader(out, "POST VALIDATION")
 	fmt.Fprintf(out, "candidates: %d\n", len(paths))
 	for _, p := range paths {
 		fmt.Fprintf(out, "- %s\n", p)

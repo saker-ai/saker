@@ -171,6 +171,49 @@ func TestPrintBlockFormatting(t *testing.T) {
 	}
 }
 
+func TestPrintBlockFooterSkipsRedundantNewlineWithLineAwareWriter(t *testing.T) {
+	var buf bytes.Buffer
+	lw := newLineAwareWriter(&buf)
+	// Simulate LLM text already ending in '\n'.
+	if _, err := lw.Write([]byte("hello\n")); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	printBlockFooter(lw)
+	if got := buf.String(); got != "hello\n" {
+		t.Fatalf("expected footer to be suppressed when at line start, got %q", got)
+	}
+	// When the previous content does not end in '\n', the footer must still
+	// emit the trailing newline.
+	buf.Reset()
+	lw = newLineAwareWriter(&buf)
+	if _, err := lw.Write([]byte("hello")); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	printBlockFooter(lw)
+	if got := buf.String(); got != "hello\n" {
+		t.Fatalf("expected footer to add newline when not at line start, got %q", got)
+	}
+}
+
+func TestPrintValidationReportSkipsEntirelyWhenNoCandidates(t *testing.T) {
+	var buf bytes.Buffer
+	printValidationReport(&buf, nil, nil)
+	if got := buf.String(); got != "" {
+		t.Fatalf("expected empty output for no candidates, got %q", got)
+	}
+}
+
+func TestPrintValidationReportEmitsBlockWhenCandidatesPresent(t *testing.T) {
+	var buf bytes.Buffer
+	printValidationReport(&buf, []string{"/tmp/foo.png"}, []outputValidationResult{{Path: "/tmp/foo.png", Exists: true, Fresh: true}})
+	out := buf.String()
+	for _, sub := range []string{"=== POST VALIDATION ===", "candidates: 1", "/tmp/foo.png"} {
+		if !strings.Contains(out, sub) {
+			t.Fatalf("missing %q in %q", sub, out)
+		}
+	}
+}
+
 func TestPrintBlockHeaderLLMResponseCompact(t *testing.T) {
 	var buf bytes.Buffer
 	printBlockHeader(&buf, "LLM RESPONSE")

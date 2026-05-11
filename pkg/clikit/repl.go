@@ -47,7 +47,7 @@ func PrintBanner(out io.Writer, modelName string, metas []SkillMeta) {
 	fmt.Fprintf(out, "\nAgentkit CLI\n")
 	fmt.Fprintf(out, "Model: %s\n", modelName)
 	fmt.Fprintf(out, "Skills: %d loaded\n", len(metas))
-	fmt.Fprintf(out, "Commands: /btw /skills /new /session /model /help /quit\n\n")
+	fmt.Fprintf(out, "Commands: /btw /skills /new /session /model /help /quit\n")
 }
 
 func RunREPL(ctx context.Context, in io.ReadCloser, out, errOut io.Writer, eng ReplEngine, timeoutMs int, verbose bool, waterfallMode string, initialSessionID string) {

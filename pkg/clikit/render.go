@@ -44,7 +44,43 @@ func printBlockFooter(out io.Writer) {
 	if out == nil {
 		return
 	}
+	if lw, ok := out.(*lineAwareWriter); ok && lw.AtLineStart() {
+		return
+	}
 	fmt.Fprintln(out)
+}
+
+// lineAwareWriter wraps an io.Writer and remembers the last byte written so
+// callers can avoid emitting redundant newlines (e.g. a block footer right
+// after content that already ended in '\n'). Initial state counts as "at line
+// start" so a freshly-wrapped writer behaves the same as a fresh terminal
+// cursor.
+type lineAwareWriter struct {
+	w        io.Writer
+	lastByte byte
+	written  bool
+}
+
+func newLineAwareWriter(w io.Writer) *lineAwareWriter {
+	return &lineAwareWriter{w: w}
+}
+
+func (lw *lineAwareWriter) Write(p []byte) (int, error) {
+	n, err := lw.w.Write(p)
+	if n > 0 {
+		lw.lastByte = p[n-1]
+		lw.written = true
+	}
+	return n, err
+}
+
+// AtLineStart reports whether the next write would begin on a fresh line —
+// either nothing has been written yet, or the previous byte was '\n'.
+func (lw *lineAwareWriter) AtLineStart() bool {
+	if !lw.written {
+		return true
+	}
+	return lw.lastByte == '\n'
 }
 
 func summarizeOutput(v any) string {
