@@ -79,10 +79,15 @@ func TestSharedClikitStreamRendersToolProgress(t *testing.T) {
 		t.Fatalf("RunStream: %v", err)
 	}
 	got := out.String()
-	for _, sub := range []string{"[LLM]", "[RUNNING] file_read", "[OK] file_read", "POST VALIDATION", "WATERFALL"} {
+	// POST VALIDATION block is intentionally omitted when no candidate output
+	// paths are produced — see pkg/clikit/run_stream.go printValidationReport.
+	for _, sub := range []string{"[LLM]", "[RUNNING] file_read", "[OK] file_read", "WATERFALL"} {
 		if !strings.Contains(got, sub) {
 			t.Fatalf("missing %q in output: %s", sub, got)
 		}
+	}
+	if strings.Contains(got, "POST VALIDATION") {
+		t.Fatalf("POST VALIDATION block must not be emitted without candidates: %s", got)
 	}
 	if errOut.Len() != 0 {
 		t.Fatalf("unexpected stderr: %s", errOut.String())
