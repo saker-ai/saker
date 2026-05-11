@@ -166,7 +166,7 @@ func startEmbedded(parent context.Context, cfg EmbeddedConfig) (*Embedded, error
 		done:   make(chan error, 1),
 	}
 	go func() {
-		// Start blocks until ctx is cancelled or any listener dies.
+		// Start blocks until ctx is canceled or any listener dies.
 		emb.done <- srv.Start(ctx)
 		close(emb.done)
 	}()

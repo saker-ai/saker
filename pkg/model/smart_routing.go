@@ -14,6 +14,9 @@ const (
 )
 
 // strongKeywords are terms that indicate a prompt needs the full-strength model.
+// Both US and UK spellings ("optimize"/"optimise") are listed intentionally.
+//
+//nolint:misspell // dual-spelling list for keyword detection
 var strongKeywords = []string{
 	// Analysis & architecture
 	"architect", "architecture", "analyze", "analysis", "design pattern",

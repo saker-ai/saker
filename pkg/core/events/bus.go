@@ -185,7 +185,7 @@ func (b *Bus) removeSubscription(t EventType, id int64) {
 	}
 }
 
-// SubscriptionOption configures per-subscription behaviour.
+// SubscriptionOption configures per-subscription behavior.
 type SubscriptionOption func(*subscriptionConfig)
 
 // WithSubscriptionTimeout enforces a per-event timeout for the handler.

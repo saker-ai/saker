@@ -13,7 +13,7 @@ import (
 )
 
 // SandboxOptions mirrors sandbox.Manager construction knobs exposed at the API
-// layer so callers can customise filesystem/network/resource guards without
+// layer so callers can customize filesystem/network/resource guards without
 // touching lower-level packages.
 type SandboxOptions struct {
 	Type          string

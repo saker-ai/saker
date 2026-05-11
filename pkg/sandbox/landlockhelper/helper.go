@@ -85,7 +85,7 @@ func ExecuteRequest(ctx context.Context, req Request) Response {
 	defer cancel()
 
 	// Build Landlock rules.
-	var rules []landlock.Rule
+	rules := make([]landlock.Rule, 0, len(req.ROPaths)+len(req.RWPaths)+2)
 	for _, p := range req.ROPaths {
 		rules = append(rules, landlock.RODirs(p))
 	}

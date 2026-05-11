@@ -205,7 +205,7 @@ func (q *ApprovalQueue) IsWhitelisted(sessionID string) bool {
 	return true
 }
 
-// Wait blocks until the approval is resolved or the context is cancelled.
+// Wait blocks until the approval is resolved or the context is canceled.
 func (q *ApprovalQueue) Wait(ctx context.Context, id string) (*ApprovalRecord, error) {
 	if q == nil {
 		return nil, fmt.Errorf("security: approval queue is nil")

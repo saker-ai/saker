@@ -94,7 +94,7 @@ type Options struct {
 	TokenLimit    int
 	// MaxOutputTokens caps the model's per-iteration output (req.MaxTokens).
 	// When 0 (default) the SDK lets the provider decide, matching pre-cap
-	// behaviour. Set this when you want to bound a runaway model — see the
+	// behavior. Set this when you want to bound a runaway model — see the
 	// runaway-generation warning emitted by conversationModel.Generate.
 	MaxOutputTokens int
 	// MaxBudgetUSD aborts the agent loop with StopReason "max_budget" when
@@ -116,10 +116,10 @@ type Options struct {
 	TaskStore tasks.Store
 
 	// EnabledBuiltinTools controls which built-in tools are registered when Options.Tools is empty.
-	// - nil (default): register all built-ins to preserve current behaviour
+	// - nil (default): register all built-ins to preserve current behavior
 	// - empty slice: disable all built-in tools
 	// - non-empty: enable only the listed built-ins (case-insensitive).
-	// If Tools is non-empty, this whitelist is ignored in favour of the legacy Tools override.
+	// If Tools is non-empty, this whitelist is ignored in favor of the legacy Tools override.
 	// Available built-in names include: bash, file_read, image_read, file_write, grep, glob.
 	EnabledBuiltinTools []string
 
@@ -202,7 +202,7 @@ type Options struct {
 
 	// DangerouslySkipPermissions disables all tool whitelisting and permission
 	// checks. When true, every tool call is allowed without approval.
-	// Default: true (saker maximises agent autonomy by default).
+	// Default: true (saker maximizes agent autonomy by default).
 	DangerouslySkipPermissions bool
 
 	// ACPAgents configures external ACP agent targets. When non-empty, subagent

@@ -196,7 +196,7 @@ func (p *OpenAIProvider) cachedModel() Model {
 	return p.cached
 }
 
-// ProviderModel materialises a model immediately and returns an error on failure.
+// ProviderModel materializes a model immediately and returns an error on failure.
 func ProviderModel(p Provider) (Model, error) {
 	if p == nil {
 		return nil, fmt.Errorf("model provider is nil")
