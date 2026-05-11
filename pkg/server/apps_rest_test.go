@@ -15,12 +15,15 @@ import (
 
 	"github.com/cinience/saker/pkg/apps"
 	"github.com/cinience/saker/pkg/canvas"
+	"github.com/gin-gonic/gin"
 )
 
-// newAppsTestServer wires the apps REST handler onto an httptest.Server.
-// The Handler is built minimally (no auth, no project store) so tests
-// touch the legacy single-project code path. The shared canvas executor
-// runs against a fakeCanvasRuntime declared in canvas_execute_handler_test.go.
+// newAppsTestServer wires the apps REST handler onto an httptest.Server
+// via a minimal gin engine that registers the apps routes the same way
+// production does (registerAppsRoutes). No auth, no project store, and
+// no Bearer rate limiter (passes a no-op middleware) so tests touch the
+// single-project code path. The shared canvas executor runs against a
+// fakeCanvasRuntime declared in canvas_execute_handler_test.go.
 func newAppsTestServer(t *testing.T) (*httptest.Server, *Server) {
 	t.Helper()
 	dir := t.TempDir()
@@ -41,9 +44,13 @@ func newAppsTestServer(t *testing.T) (*httptest.Server, *Server) {
 	})
 
 	s := &Server{handler: h, opts: Options{DataDir: dir}}
-	mux := http.NewServeMux()
-	mux.HandleFunc(appsRESTPath, s.handleAppsREST)
-	srv := httptest.NewServer(mux)
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.HandleMethodNotAllowed = true
+	authed := engine.Group("")
+	noopBearer := func(c *gin.Context) { c.Next() }
+	s.registerAppsRoutes(authed, noopBearer)
+	srv := httptest.NewServer(engine)
 	t.Cleanup(srv.Close)
 	return srv, s
 }

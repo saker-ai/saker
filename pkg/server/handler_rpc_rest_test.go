@@ -9,13 +9,17 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/gin-gonic/gin"
 )
 
-// newRPCRESTTestServer wires only the /api/rpc/ adapter onto an httptest server.
-// No project store is wired in, which means the scope middleware is a no-op
-// and reads return whatever the underlying handler chooses (or methodNotFound
-// when the handler depends on uninitialised fields). The point of these tests
-// is the adapter glue, not handler behaviour.
+// newRPCRESTTestServer wires the /api/rpc/ adapter onto an httptest server
+// via a minimal gin engine that registers the RPC routes the same way
+// production does (registerRPCRoutes). No project store is wired in, which
+// means the scope middleware is a no-op and reads return whatever the
+// underlying handler chooses (or methodNotFound when the handler depends
+// on uninitialised fields). The point of these tests is the adapter glue,
+// not handler behaviour.
 func newRPCRESTTestServer(t *testing.T) (*httptest.Server, *Server) {
 	t.Helper()
 	h := &Handler{
@@ -23,9 +27,12 @@ func newRPCRESTTestServer(t *testing.T) (*httptest.Server, *Server) {
 		logger:  slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
 	s := &Server{handler: h, opts: Options{DataDir: h.dataDir}}
-	mux := http.NewServeMux()
-	mux.HandleFunc(rpcRESTPath, s.handleRPCREST)
-	srv := httptest.NewServer(mux)
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.HandleMethodNotAllowed = true
+	authed := engine.Group("")
+	s.registerRPCRoutes(authed)
+	srv := httptest.NewServer(engine)
 	t.Cleanup(srv.Close)
 	return srv, s
 }
@@ -149,9 +156,12 @@ func TestRPCREST_UnauthorizedScopeMapsTo401(t *testing.T) {
 		projects: store,
 	}
 	s := &Server{handler: h, opts: Options{DataDir: h.dataDir}}
-	mux := http.NewServeMux()
-	mux.HandleFunc(rpcRESTPath, s.handleRPCREST)
-	srv := httptest.NewServer(mux)
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.HandleMethodNotAllowed = true
+	authed := engine.Group("")
+	s.registerRPCRoutes(authed)
+	srv := httptest.NewServer(engine)
 	t.Cleanup(srv.Close)
 
 	resp, err := http.Post(
@@ -179,12 +189,17 @@ func TestRPCREST_MissingProjectIDMapsTo400(t *testing.T) {
 		projects: store,
 	}
 	s := &Server{handler: h, opts: Options{DataDir: h.dataDir}}
-	mux := http.NewServeMux()
-	// Wrap with a tiny middleware that injects the user, mirroring AuthManager.
-	mux.HandleFunc(rpcRESTPath, func(w http.ResponseWriter, r *http.Request) {
-		s.handleRPCREST(w, r.WithContext(withUser(r.Context(), "alice", "user")))
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.HandleMethodNotAllowed = true
+	// Inject the user via a tiny middleware, mirroring AuthManager.
+	engine.Use(func(c *gin.Context) {
+		c.Request = c.Request.WithContext(withUser(c.Request.Context(), "alice", "user"))
+		c.Next()
 	})
-	srv := httptest.NewServer(mux)
+	authed := engine.Group("")
+	s.registerRPCRoutes(authed)
+	srv := httptest.NewServer(engine)
 	t.Cleanup(srv.Close)
 
 	resp, err := http.Post(

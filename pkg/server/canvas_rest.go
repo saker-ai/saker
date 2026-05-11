@@ -2,98 +2,16 @@ package server
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/cinience/saker/pkg/canvas"
 )
 
-// canvasRESTPath is the URL prefix mounted onto the HTTP mux. Anything
-// under it routes through handleCanvasREST which sub-dispatches by method
-// + path. This keeps server.go's route table small.
+// canvasRESTPath is the URL prefix the canvas REST API is mounted at.
+// Routes are registered onto the gin engine in registerCanvasRoutes
+// (gin_routes_canvas.go); per-handler bodies live in this file and are
+// invoked through thin gin → net/http adapters.
 const canvasRESTPath = "/api/canvas/"
-
-// handleCanvasREST is the entry point for the canvas REST API.
-//
-// When no project store is wired in (embedded library mode) the URL shape is:
-//
-//	POST /api/canvas/{threadId}/execute       → start a run
-//	GET  /api/canvas/{threadId}/document      → read canvas JSON
-//	GET  /api/canvas/runs/{runId}             → poll status
-//	POST /api/canvas/runs/{runId}/cancel      → cancel mid-run
-//
-// In multi-tenant mode every URL is prefixed by the project id so the scope
-// can be resolved without a separate handshake:
-//
-//	POST /api/canvas/{projectId}/{threadId}/execute
-//	GET  /api/canvas/{projectId}/{threadId}/document
-//	GET  /api/canvas/{projectId}/runs/{runId}
-//	POST /api/canvas/{projectId}/runs/{runId}/cancel
-//
-// Auth is enforced upstream by AuthManager.Middleware; we resolve the project
-// scope here and inject it into the request context for downstream callers.
-//
-// @Summary Canvas REST API dispatcher
-// @Description Entry point for the canvas REST API. Sub-dispatches by method and path to execute, document, and run-status/cancel operations.
-// @Tags canvas
-// @Accept json
-// @Produce json
-// @Router /api/canvas/ [get]
-func (s *Server) handleCanvasREST(w http.ResponseWriter, r *http.Request) {
-	rest := strings.TrimPrefix(r.URL.Path, canvasRESTPath)
-	rest = strings.Trim(rest, "/")
-	if rest == "" {
-		http.Error(w, "missing canvas resource", http.StatusBadRequest)
-		return
-	}
-	parts := strings.Split(rest, "/")
-
-	// In multi-tenant mode the first segment is {projectId}; resolve scope
-	// and strip it before falling through to the legacy router.
-	if s.handler.projects != nil {
-		if len(parts) < 2 {
-			http.Error(w, "missing projectId or canvas resource", http.StatusBadRequest)
-			return
-		}
-		projectID := parts[0]
-		ctx, err := s.handler.resolveRESTScope(r.Context(), UserFromContext(r.Context()), projectID)
-		if err != nil {
-			status := http.StatusForbidden
-			switch {
-			case errors.Is(err, errRESTAuthRequired):
-				status = http.StatusUnauthorized
-			case errors.Is(err, errRESTProjectMissing):
-				status = http.StatusBadRequest
-			}
-			http.Error(w, err.Error(), status)
-			return
-		}
-		r = r.WithContext(ctx)
-		parts = parts[1:]
-	}
-
-	// /runs/{id}[/cancel]
-	if parts[0] == "runs" {
-		s.handleCanvasRunREST(w, r, parts[1:])
-		return
-	}
-
-	if len(parts) < 2 {
-		http.Error(w, "missing canvas action", http.StatusBadRequest)
-		return
-	}
-	threadID := parts[0]
-	action := parts[1]
-	switch action {
-	case "execute":
-		s.handleCanvasExecuteREST(w, r, threadID)
-	case "document":
-		s.handleCanvasDocumentREST(w, r, threadID)
-	default:
-		http.Error(w, "unknown canvas action: "+action, http.StatusNotFound)
-	}
-}
 
 // @Summary Execute canvas run
 // @Description Starts an asynchronous canvas execution run for a given thread. Optionally specify nodeIds and skipDone in the body. Returns the runId and initial status.
