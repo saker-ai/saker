@@ -419,7 +419,7 @@ func buildStreamableTransport(endpoint string) (Transport, error) {
 	return &StreamableClientTransport{Endpoint: normalized}, nil
 }
 
-func parseHTTPFamilySpec(spec string) (kind string, endpoint string, matched bool, err error) {
+func parseHTTPFamilySpec(spec string) (kind, endpoint string, matched bool, err error) {
 	u, parseErr := url.Parse(strings.TrimSpace(spec))
 	if parseErr != nil || u.Scheme == "" {
 		return "", "", false, nil
@@ -517,7 +517,7 @@ func BuildStdioTransport(ctx context.Context, cmdSpec string) (Transport, error)
 // ParseHTTPFamilySpec exposes the HTTP family spec parsing logic for tests.
 //
 // Deprecated: internal compatibility helper.
-func ParseHTTPFamilySpec(spec string) (kind string, endpoint string, matched bool, err error) {
+func ParseHTTPFamilySpec(spec string) (kind, endpoint string, matched bool, err error) {
 	return parseHTTPFamilySpec(spec)
 }
 

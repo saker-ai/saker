@@ -97,6 +97,25 @@ linters:
       check-type-assertions: false
       # Do not flag blank-identifier error discards
       check-blank: false
+      # Functions whose error returns are universally best-effort:
+      # - fmt.Fprint* writes to CLI streams; broken-pipe is the only realistic
+      #   failure mode and is not actionable from the call site.
+      # - Closer.Close in defer is the canonical Go pattern; the close error
+      #   either has been surfaced via the work the closer did, or we are
+      #   tearing down state on the error path already.
+      # - os.Remove/RemoveAll/syscall.Close are best-effort cleanup.
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - (io.Closer).Close
+        - (*os.File).Close
+        - (*database/sql.Rows).Close
+        - (*database/sql.Stmt).Close
+        - (*database/sql.DB).Close
+        - os.Remove
+        - os.RemoveAll
+        - syscall.Close
 
     gocritic:
       # Enable useful extra checks beyond the defaults
@@ -108,6 +127,9 @@ linters:
         - hugeParam      # Too aggressive for SDK value types
         - rangeValCopy   # Often intentional
         - unnamedResult  # Named returns are sometimes clearer
+        - evalOrder      # False positive on pointer-receiver `return p, p.method()`
+                         # patterns common in tea.Model.Update — mutation is
+                         # visible through the captured pointer.
 
     revive:
       rules:

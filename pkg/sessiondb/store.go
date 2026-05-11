@@ -128,6 +128,11 @@ func (s *Store) Close() error {
 // It performs a diff-based update: unchanged messages (same position and
 // hash) are skipped, changed messages are updated, new messages are
 // inserted, and stale messages beyond the new range are removed.
+//
+// guarded by hash and position checks; splitting raises ceremony without
+// reducing branches. Tracked as legacy debt.
+//
+//nolint:gocognit // Diff-based reindex with insert/update/delete branches
 func (s *Store) Index(sessionID string, msgs []message.Message) error {
 	if s == nil {
 		return nil
@@ -139,7 +144,7 @@ func (s *Store) Index(sessionID string, msgs []message.Message) error {
 	if err != nil {
 		return fmt.Errorf("sessiondb: begin tx: %w", err)
 	}
-	defer tx.Rollback() //nolint:errcheck
+	defer tx.Rollback() //nolint:errcheck // After Commit, Rollback returns ErrTxDone — expected and ignorable.
 
 	now := time.Now().UTC().Format(time.DateTime)
 
@@ -302,7 +307,7 @@ func (s *Store) DeleteSession(sessionID string) error {
 	if err != nil {
 		return fmt.Errorf("sessiondb: begin tx: %w", err)
 	}
-	defer tx.Rollback() //nolint:errcheck
+	defer tx.Rollback() //nolint:errcheck // After Commit, Rollback returns ErrTxDone — expected and ignorable.
 
 	// Delete messages first (triggers will clean up FTS).
 	if _, err := tx.Exec(`DELETE FROM messages WHERE session_id = ?`, sessionID); err != nil {

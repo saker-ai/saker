@@ -71,6 +71,11 @@ type FrameProcessor struct {
 
 // Run processes frames from the source and emits results. The returned channel
 // is closed when the source is exhausted or the context is cancelled.
+//
+// to inference, error funnel, and back-pressure handling — extracting helpers
+// would shuffle complexity without removing it. Legacy hot path.
+//
+//nolint:gocognit // Frame pipeline coordinator with sample-rate gating, fan-out
 func (fp *FrameProcessor) Run(ctx context.Context, source StreamSource) <-chan FrameResult {
 	sampleRate := fp.Config.SampleRate
 	if sampleRate <= 0 {

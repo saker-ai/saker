@@ -197,14 +197,14 @@ func (g *Go2RTCStreamSource) startLocked(parentCtx context.Context) error {
 		break
 	}
 	if videoMedia == nil || videoCodec == nil {
-		prod.Stop()
+		_ = prod.Stop()
 		cancel()
 		return fmt.Errorf("no video track found in %s", g.uri)
 	}
 
 	track, err := prod.GetTrack(videoMedia, videoCodec)
 	if err != nil {
-		prod.Stop()
+		_ = prod.Stop()
 		cancel()
 		return fmt.Errorf("get track: %w", err)
 	}
@@ -229,13 +229,13 @@ func (g *Go2RTCStreamSource) startLocked(parentCtx context.Context) error {
 	consumer := mjpeg.NewConsumer()
 	consumerMedias := consumer.GetMedias()
 	if len(consumerMedias) == 0 {
-		prod.Stop()
+		_ = prod.Stop()
 		cancel()
 		return fmt.Errorf("mjpeg consumer has no medias")
 	}
 
 	if err := consumer.AddTrack(consumerMedias[0], videoCodec, track); err != nil {
-		prod.Stop()
+		_ = prod.Stop()
 		cancel()
 		return fmt.Errorf("add track: %w", err)
 	}
@@ -247,7 +247,7 @@ func (g *Go2RTCStreamSource) startLocked(parentCtx context.Context) error {
 				g.mu.Lock()
 				g.connErr = fmt.Errorf("play: %w", err)
 				g.mu.Unlock()
-				rtspClient.Stop()
+				_ = rtspClient.Stop()
 				return
 			}
 			_ = rtspClient.Start()
@@ -278,7 +278,8 @@ func ConnectStreamProducer(ctx context.Context, uri string, httpClient *http.Cli
 		return connectONVIF(ctx, uri)
 	case isHLSURL(lower):
 		return connectHLS(ctx, uri, httpClient)
-	default: // rtsp://, rtmp://
+	default:
+		// Treat as rtsp/rtmp scheme.
 		return connectRTSP(ctx, uri)
 	}
 }
@@ -299,7 +300,7 @@ func connectRTSP(ctx context.Context, uri string) (*rtsp.Conn, error) {
 			return
 		}
 		if err := client.Describe(); err != nil {
-			client.Stop()
+			_ = client.Stop()
 			ch <- result{err: fmt.Errorf("describe %s: %w", uri, err)}
 			return
 		}
@@ -311,7 +312,7 @@ func connectRTSP(ctx context.Context, uri string) (*rtsp.Conn, error) {
 		// Drain the channel to clean up any connection that completed after timeout.
 		go func() {
 			if r := <-ch; r.conn != nil {
-				r.conn.Stop()
+				_ = r.conn.Stop()
 			}
 		}()
 		return nil, fmt.Errorf("connect %s: %w", uri, ctx.Err())
@@ -360,7 +361,7 @@ var reStreamINF = regexp.MustCompile(`#EXT-X-STREAM-INF[^\n]*\n(\S+)`)
 // it resolves the first variant URL and fetches that media playlist instead.
 // Returns an io.ReadCloser for the final media playlist and its resolved URL.
 func fetchHLSPlaylist(ctx context.Context, client *http.Client, u *url.URL) (io.ReadCloser, *url.URL, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), http.NoBody)
 	if err != nil {
 		return nil, nil, fmt.Errorf("create HLS request: %w", err)
 	}
@@ -388,7 +389,7 @@ func fetchHLSPlaylist(ctx context.Context, client *http.Client, u *url.URL) (io.
 		}
 		variantURL := u.ResolveReference(variantRef)
 
-		req2, err := http.NewRequestWithContext(ctx, http.MethodGet, variantURL.String(), nil)
+		req2, err := http.NewRequestWithContext(ctx, http.MethodGet, variantURL.String(), http.NoBody)
 		if err != nil {
 			return nil, nil, fmt.Errorf("create variant request: %w", err)
 		}
@@ -452,7 +453,7 @@ func connectONVIF(ctx context.Context, uri string) (*rtsp.Conn, error) {
 // temp files, sending entries to g.frameCh.
 func (g *Go2RTCStreamSource) extractFrames(ctx context.Context, consumer *mjpeg.Consumer, prod streamProducer, tmpDir string) {
 	defer func() {
-		prod.Stop()
+		_ = prod.Stop()
 		close(g.frameCh)
 	}()
 
@@ -496,7 +497,7 @@ func (fw *frameWriter) Write(p []byte) (int, error) {
 
 	// Write JPEG to temp file
 	path := filepath.Join(fw.tmpDir, fmt.Sprintf("frame_%05d.jpg", fw.emitCount))
-	if err := os.WriteFile(path, p, 0600); err != nil {
+	if err := os.WriteFile(path, p, 0o600); err != nil {
 		return 0, fmt.Errorf("write frame: %w", err)
 	}
 

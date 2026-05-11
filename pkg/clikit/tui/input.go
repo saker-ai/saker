@@ -223,17 +223,13 @@ func (i *Input) detectKeyword() *inputKeyword {
 			continue
 		}
 		rest := value[len(kw.prefix):]
-		if kw.needsSpace {
-			// Must be followed by space or be exact match
-			if rest != "" && rest[0] != ' ' {
-				continue
-			}
-		} else {
-			// Must be exact match or followed by space
-			if rest != "" && rest[0] != ' ' {
-				continue
-			}
+		// Both modes require: exact match (rest == "") or rest starts with space.
+		// Branches were intended to differ but converged; keep one check until a
+		// distinct rule is needed.
+		if rest != "" && rest[0] != ' ' {
+			continue
 		}
+		_ = kw.needsSpace
 		return kw
 	}
 	return nil
@@ -242,7 +238,7 @@ func (i *Input) detectKeyword() *inputKeyword {
 // highlightKeywordInView replaces the first occurrence of the keyword text
 // in the rendered textarea output with a colored version.
 // ANSI color codes are zero-width, so cursor positioning is preserved.
-func highlightKeywordInView(rendered string, keyword string, c color.Color) string {
+func highlightKeywordInView(rendered, keyword string, c color.Color) string {
 	idx := strings.Index(rendered, keyword)
 	if idx < 0 {
 		// Try case-insensitive: the textarea renders the raw value,

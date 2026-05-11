@@ -201,8 +201,8 @@ func columnExists(db *sql.DB, table, column string) (bool, error) {
 // internal semicolons; treat the whole BEGIN...END as one statement.
 func splitStatements(sqlText string) []string {
 	var (
-		stmts        []string
-		current      strings.Builder
+		stmts         []string
+		current       strings.Builder
 		insideTrigger bool
 	)
 	for _, raw := range strings.Split(sqlText, "\n") {

@@ -98,7 +98,7 @@ func (c *Chat) FinishStreaming() {
 		trimmed := strings.TrimSpace(content)
 		// Only create a message if there's meaningful text.
 		// Skip trivial inter-tool deltas like ".", "..", whitespace-only, etc.
-		if len(trimmed) > 2 || (len(trimmed) > 0 && !isTrivialDelta(trimmed)) {
+		if len(trimmed) > 2 || (trimmed != "" && !isTrivialDelta(trimmed)) {
 			c.messages = append(c.messages, ChatMsg{
 				Role:    RoleAssistant,
 				Content: content,
@@ -294,9 +294,9 @@ func (c *Chat) renderAssistant(b *strings.Builder, msg ChatMsg, width int) {
 	for i, line := range lines {
 		if i == 0 {
 			dot := c.styles.AssistantDot.Render(IconCircle)
-			b.WriteString(fmt.Sprintf("%s %s\n", dot, line))
+			fmt.Fprintf(b, "%s %s\n", dot, line)
 		} else {
-			b.WriteString(fmt.Sprintf("    %s\n", line))
+			fmt.Fprintf(b, "    %s\n", line)
 		}
 	}
 }
@@ -310,9 +310,10 @@ func (c *Chat) renderTool(b *strings.Builder, msg ChatMsg) {
 	prefix := c.styles.ResponsePrefix.Render(responsePrefix)
 
 	// Build: icon + name + (params)
-	var parts []string
-	parts = append(parts, c.toolIcon(msg.ToolStatus))
-	parts = append(parts, c.styles.ToolName.Render(msg.ToolName))
+	parts := []string{
+		c.toolIcon(msg.ToolStatus),
+		c.styles.ToolName.Render(msg.ToolName),
+	}
 	if msg.ToolParams != "" {
 		parts = append(parts, c.styles.ToolParam.Render("("+msg.ToolParams+")"))
 	}
@@ -328,25 +329,25 @@ func (c *Chat) renderTool(b *strings.Builder, msg ChatMsg) {
 		}
 	}
 
-	b.WriteString(fmt.Sprintf("%s%s\n", prefix, strings.Join(parts, " ")))
+	fmt.Fprintf(b, "%s%s\n", prefix, strings.Join(parts, " "))
 }
 
 // renderError renders an error/info message with indentation.
 func (c *Chat) renderError(b *strings.Builder, msg ChatMsg, width int) {
 	text := c.styles.ErrorText.Width(width).Render(msg.Content)
-	b.WriteString(fmt.Sprintf("    %s\n", text))
+	fmt.Fprintf(b, "    %s\n", text)
 }
 
 // renderSystem renders a system info message.
 func (c *Chat) renderSystem(b *strings.Builder, msg ChatMsg, width int) {
 	text := c.styles.SystemText.Width(width).Render(msg.Content)
-	b.WriteString(fmt.Sprintf("    %s\n", text))
+	fmt.Fprintf(b, "    %s\n", text)
 }
 
 // renderImage renders an inline image with indentation.
 func (c *Chat) renderImage(b *strings.Builder, msg ChatMsg, width int) {
 	img := RenderImage(msg.ImagePath, width/2)
-	b.WriteString(fmt.Sprintf("    %s\n", img))
+	fmt.Fprintf(b, "    %s\n", img)
 }
 
 // renderBtw renders a /btw side question header in Claude Code style:
@@ -354,14 +355,14 @@ func (c *Chat) renderImage(b *strings.Builder, msg ChatMsg, width int) {
 func (c *Chat) renderBtw(b *strings.Builder, msg ChatMsg, width int) {
 	btwLabel := lipgloss.NewStyle().Foreground(c.styles.Theme.Warning).Bold(true).Render("/btw ")
 	question := lipgloss.NewStyle().Foreground(c.styles.Theme.FgDim).Width(width).Render(msg.Content)
-	b.WriteString(fmt.Sprintf("  %s%s\n", btwLabel, question))
+	fmt.Fprintf(b, "  %s%s\n", btwLabel, question)
 }
 
 // renderIM renders an /im side question header in cyan bold "/im" + dim text.
 func (c *Chat) renderIM(b *strings.Builder, msg ChatMsg, width int) {
 	imLabel := lipgloss.NewStyle().Foreground(c.styles.Theme.Accent).Bold(true).Render("/im ")
 	question := lipgloss.NewStyle().Foreground(c.styles.Theme.FgDim).Width(width).Render(msg.Content)
-	b.WriteString(fmt.Sprintf("  %s%s\n", imLabel, question))
+	fmt.Fprintf(b, "  %s%s\n", imLabel, question)
 }
 
 func (c *Chat) toolIcon(status string) string {

@@ -63,12 +63,12 @@ func NewFileHTTPTraceWriter(dir string) (*FileHTTPTraceWriter, error) {
 	if d == "" {
 		d = defaultHTTPTraceDir
 	}
-	if err := os.MkdirAll(d, 0o755); err != nil {
+	if err := os.MkdirAll(d, 0o750); err != nil {
 		return nil, fmt.Errorf("http trace: mkdir %s: %w", d, err)
 	}
 	name := fmt.Sprintf("log-%s.jsonl", time.Now().UTC().Format("2006-01-02-15-04-05"))
 	path := filepath.Join(d, name)
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
 	if err != nil {
 		return nil, fmt.Errorf("http trace: open %s: %w", path, err)
 	}
@@ -206,7 +206,9 @@ func (m *HTTPTraceMiddleware) Wrap(next http.Handler) http.Handler {
 			if panicVal != nil {
 				slog.Error("http trace: handler panicked", "panic", panicVal)
 				if !recorder.wroteHeader {
-					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					// gocritic returnAfterHttpError is a false positive — we are
+					// inside a defer with no caller-side cleanup left to skip.
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError) //nolint:gocritic // last statement of defer
 				}
 			}
 		}()

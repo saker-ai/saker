@@ -64,7 +64,7 @@ func New(ctx context.Context, cfg AppConfig) *App {
 		sessionID = uuid.NewString()
 	}
 
-	appCtx, appCancel := context.WithCancel(ctx)
+	appCtx, appCancel := context.WithCancel(ctx) //nolint:govet // Cancel is retained on App.cancel and invoked from App.Stop.
 
 	a := &App{
 		cfg:       cfg,

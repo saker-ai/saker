@@ -99,7 +99,7 @@ func (s *InteractiveShell) Run(ctx context.Context, in io.ReadCloser, out, errOu
 		fmt.Fprintf(errOut, "init repl failed: %v\n", err)
 		return err
 	}
-	defer rl.Close()
+	defer func() { _ = rl.Close() }()
 
 	sessionID := strings.TrimSpace(s.cfg.InitialSessionID)
 	if sessionID == "" {
@@ -216,7 +216,7 @@ func isReadTermination(err error) bool {
 	return errors.Is(err, io.EOF)
 }
 
-func handleCommand(input string, eng ReplEngine, sessionID *string, out io.Writer) (handled bool, quit bool) {
+func handleCommand(input string, eng ReplEngine, sessionID *string, out io.Writer) (handled, quit bool) {
 	if out == nil {
 		out = io.Discard
 	}

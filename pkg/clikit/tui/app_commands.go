@@ -369,12 +369,12 @@ func summarizeToolResult(toolName, output string) string {
 	}
 }
 
-func truncLine(s string, max int) string {
+func truncLine(s string, maxLen int) string {
 	s = strings.TrimSpace(s)
-	if len(s) <= max {
+	if len(s) <= maxLen {
 		return s
 	}
-	return s[:max-1] + "…"
+	return s[:maxLen-1] + "…"
 }
 
 func lastNonEmpty(lines []string) string {
