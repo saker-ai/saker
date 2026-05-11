@@ -9,7 +9,26 @@ import (
 
 	"github.com/cinience/saker/pkg/clikit"
 	versionpkg "github.com/cinience/saker/pkg/version"
+	"github.com/mattn/go-isatty"
 )
+
+// resolveTUIMode interprets the --tui flag value (auto|on|off, also accepting
+// true/false/1/0/yes/no for backwards compatibility). When mode is "auto", it
+// returns true iff both stdin and stdout are TTYs — this avoids launching the
+// bubbletea TUI in pipe / CI / non-tty environments where its alt-screen and
+// ANSI escapes would corrupt the output stream.
+func resolveTUIMode(setting string) (bool, error) {
+	switch strings.ToLower(strings.TrimSpace(setting)) {
+	case "on", "true", "1", "yes":
+		return true, nil
+	case "off", "false", "0", "no":
+		return false, nil
+	case "auto", "":
+		return isatty.IsTerminal(os.Stdin.Fd()) && isatty.IsTerminal(os.Stdout.Fd()), nil
+	default:
+		return false, fmt.Errorf("invalid --tui value %q (want auto|on|off)", setting)
+	}
+}
 
 type multiValue []string
 

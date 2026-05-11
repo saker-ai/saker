@@ -29,6 +29,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/landlock-lsm/go-landlock v0.7.0
+	github.com/mattn/go-isatty v0.0.20
 	github.com/modelcontextprotocol/go-sdk v1.1.0
 	github.com/mojatter/s2 v0.10.0
 	github.com/mojatter/s2/s3 v0.10.0
@@ -171,7 +172,6 @@ require (
 	github.com/mailru/easyjson v0.9.1 // indirect
 	github.com/mark3labs/mcp-go v0.43.2 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.21 // indirect
 	github.com/maximhq/bifrost/core v1.5.8 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
