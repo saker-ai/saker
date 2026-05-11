@@ -367,4 +367,3 @@ func (rt *Runtime) beginRun() error {
 func (rt *Runtime) endRun() {
 	rt.runWG.Done()
 }
-

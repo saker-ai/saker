@@ -20,16 +20,16 @@ import (
 //     stripBase64FromResult, which delegates to it.
 func FuzzLooksLikeBase64(f *testing.F) {
 	seeds := []string{
-		"",                                       // empty
-		"hello world",                            // far too short
-		strings.Repeat("A", 600),                 // pure base64 alphabet
-		strings.Repeat("AB12+/=", 200),           // padded base64 mix
-		strings.Repeat("a", 2000) + "!!!",        // mostly b64 but long
-		strings.Repeat("ABC ", 500),              // spaces drop ratio
-		strings.Repeat("héllo", 200),             // unicode (multi-byte)
-		strings.Repeat("AAAA", 400) + "\x00END",  // embedded NUL
-		strings.Repeat("xyz123/+=", 300),         // long, b64-shaped
-		"=" + strings.Repeat("A", 1500),          // leading pad
+		"",                                      // empty
+		"hello world",                           // far too short
+		strings.Repeat("A", 600),                // pure base64 alphabet
+		strings.Repeat("AB12+/=", 200),          // padded base64 mix
+		strings.Repeat("a", 2000) + "!!!",       // mostly b64 but long
+		strings.Repeat("ABC ", 500),             // spaces drop ratio
+		strings.Repeat("héllo", 200),            // unicode (multi-byte)
+		strings.Repeat("AAAA", 400) + "\x00END", // embedded NUL
+		strings.Repeat("xyz123/+=", 300),        // long, b64-shaped
+		"=" + strings.Repeat("A", 1500),         // leading pad
 	}
 	for _, s := range seeds {
 		f.Add(s)

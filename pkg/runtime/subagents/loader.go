@@ -18,11 +18,7 @@ import (
 type LoaderOptions struct {
 	ProjectRoot string
 	ConfigRoot  string
-	// Deprecated: user-level scanning has been removed; this field is ignored.
-	UserHome string
-	// Deprecated: user-level scanning has been removed; this flag is ignored.
-	EnableUser bool
-	FS         *config.FS
+	FS          *config.FS
 }
 
 // SubagentFile captures an on-disk subagent definition.

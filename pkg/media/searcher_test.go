@@ -11,11 +11,11 @@ import (
 
 // mockEmbedder implements embedding.Embedder for testing.
 type mockEmbedder struct {
-	dims       int
-	queryVec   []float32
-	queryErr   error
-	videoVec   []float32
-	videoErr   error
+	dims     int
+	queryVec []float32
+	queryErr error
+	videoVec []float32
+	videoErr error
 }
 
 func (m *mockEmbedder) EmbedVideo(_ context.Context, _ string) ([]float32, error) {

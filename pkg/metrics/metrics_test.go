@@ -49,15 +49,15 @@ func TestSanitizeProvider(t *testing.T) {
 
 func TestSanitizeModel(t *testing.T) {
 	cases := map[string]string{
-		"":                              "unknown",
-		"claude-sonnet-4-20250514":      "claude-sonnet",
-		"claude-opus-4.7":               "claude-opus",
-		"gpt-4o-mini":                   "gpt-4o",
-		"gpt-4.1":                       "gpt-4.1",
-		"o3-mini-high":                  "o3-mini",
-		"qwen2.5-coder-32b":             "qwen",
-		"some-future-model":             "other",
-		"DEEPSEEK-CHAT":                 "deepseek",
+		"":                             "unknown",
+		"claude-sonnet-4-20250514":     "claude-sonnet",
+		"claude-opus-4.7":              "claude-opus",
+		"gpt-4o-mini":                  "gpt-4o",
+		"gpt-4.1":                      "gpt-4.1",
+		"o3-mini-high":                 "o3-mini",
+		"qwen2.5-coder-32b":            "qwen",
+		"some-future-model":            "other",
+		"DEEPSEEK-CHAT":                "deepseek",
 		"  Claude-Haiku-4.5-20251001 ": "claude-haiku",
 	}
 	for in, want := range cases {

@@ -46,16 +46,14 @@ type Request struct {
 // Response aggregates the final agent result together with metadata emitted
 // by the unified runtime pipeline (skills/commands/hooks/etc.).
 type Response struct {
-	Mode           ModeContext
-	RequestID      string `json:"request_id,omitempty"` // UUID for distributed tracing
-	Result         *Result
-	Timeline       []TimelineEntry
-	SkillResults   []SkillExecution
-	CommandResults []CommandExecution
-	Subagent       *subagents.Result
-	HookEvents     []coreevents.Event
-	// Deprecated: Use Settings instead. Kept for backward compatibility.
-	ProjectConfig   *config.Settings
+	Mode            ModeContext
+	RequestID       string `json:"request_id,omitempty"` // UUID for distributed tracing
+	Result          *Result
+	Timeline        []TimelineEntry
+	SkillResults    []SkillExecution
+	CommandResults  []CommandExecution
+	Subagent        *subagents.Result
+	HookEvents      []coreevents.Event
 	Settings        *config.Settings
 	SandboxSnapshot SandboxReport
 	Tags            map[string]string

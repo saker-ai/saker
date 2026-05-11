@@ -75,13 +75,13 @@ func TestMediaFormatToolResult(t *testing.T) {
 		{name: "short_output", toolName: "Bash", output: map[string]any{"output": "hello world"}, want: "[Bash] hello world"},
 		{name: "truncation_at_500", toolName: "Read",
 			output: map[string]any{"output": repeatChar('x', 600)},
-			want: "[Read] " + repeatChar('x', 500) + "…"},
+			want:   "[Read] " + repeatChar('x', 500) + "…"},
 		{name: "exact_500_no_truncation", toolName: "Read",
 			output: map[string]any{"output": repeatChar('a', 500)},
-			want: "[Read] " + repeatChar('a', 500)},
+			want:   "[Read] " + repeatChar('a', 500)},
 		{name: "output_at_501", toolName: "Read",
 			output: map[string]any{"output": repeatChar('b', 501)},
-			want: "[Read] " + repeatChar('b', 500) + "…"},
+			want:   "[Read] " + repeatChar('b', 500) + "…"},
 	}
 
 	for _, tc := range cases {
@@ -190,7 +190,7 @@ func TestMediaExtractArtifactsDataMetadata(t *testing.T) {
 			output: map[string]any{
 				"metadata": map[string]any{
 					"data": map[string]any{
-						"media_type":   "image/png",
+						"media_type":    "image/png",
 						"absolute_path": "/tmp/output/result.png",
 					},
 				},
@@ -212,9 +212,9 @@ func TestMediaExtractArtifactsDataMetadata(t *testing.T) {
 			output: map[string]any{
 				"metadata": map[string]any{
 					"data": map[string]any{
-						"media_type":   "image/png",
+						"media_type":    "image/png",
 						"absolute_path": "/abs/path/img.png",
-						"path":         "rel/path/img.png",
+						"path":          "rel/path/img.png",
 					},
 				},
 			},
@@ -224,7 +224,7 @@ func TestMediaExtractArtifactsDataMetadata(t *testing.T) {
 			output: map[string]any{
 				"metadata": map[string]any{
 					"data": map[string]any{
-						"media_type":   "video/mp4",
+						"media_type":    "video/mp4",
 						"absolute_path": "/tmp/output/clip.mp4",
 					},
 				},
@@ -235,7 +235,7 @@ func TestMediaExtractArtifactsDataMetadata(t *testing.T) {
 			output: map[string]any{
 				"metadata": map[string]any{
 					"data": map[string]any{
-						"media_type":   "audio/wav",
+						"media_type":    "audio/wav",
 						"absolute_path": "/tmp/output/sound.wav",
 					},
 				},
@@ -358,23 +358,23 @@ func TestMediaExtractArtifactsOutputPaths(t *testing.T) {
 		},
 		{name: "empty_output",
 			toolName: "Bash",
-			output: map[string]any{"output": ""},
-			want:   nil,
+			output:   map[string]any{"output": ""},
+			want:     nil,
 		},
 		{name: "no_media_in_output",
 			toolName: "Bash",
-			output: map[string]any{"output": "just regular text output"},
-			want:   nil,
+			output:   map[string]any{"output": "just regular text output"},
+			want:     nil,
 		},
 		{name: "non_string_output",
 			toolName: "Bash",
-			output: map[string]any{"output": 42},
-			want:   nil,
+			output:   map[string]any{"output": 42},
+			want:     nil,
 		},
 		{name: "non_map_payload",
 			toolName: "Bash",
-			output: "not a map",
-			want:   nil,
+			output:   "not a map",
+			want:     nil,
 		},
 	}
 

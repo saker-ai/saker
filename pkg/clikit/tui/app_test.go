@@ -36,10 +36,10 @@ func (m *mockReplEngine) RunStreamForked(_ context.Context, _, _, _ string) (<-c
 	close(ch)
 	return ch, nil
 }
-func (m *mockReplEngine) ModelTurnCount(_ string) int          { return 0 }
+func (m *mockReplEngine) ModelTurnCount(_ string) int                            { return 0 }
 func (m *mockReplEngine) ModelTurnsSince(_ string, _ int) []clikit.ModelTurnStat { return nil }
-func (m *mockReplEngine) RepoRoot() string                     { return m.repoRoot }
-func (m *mockReplEngine) ModelName() string                    { return m.modelName }
+func (m *mockReplEngine) RepoRoot() string                                       { return m.repoRoot }
+func (m *mockReplEngine) ModelName() string                                      { return m.modelName }
 func (m *mockReplEngine) SetModel(_ context.Context, name string) error {
 	if m.setModelErr != nil {
 		return m.setModelErr
@@ -47,8 +47,8 @@ func (m *mockReplEngine) SetModel(_ context.Context, name string) error {
 	m.modelName = name
 	return nil
 }
-func (m *mockReplEngine) Skills() []clikit.SkillMeta  { return m.skills }
-func (m *mockReplEngine) SandboxBackend() string       { return m.sandbox }
+func (m *mockReplEngine) Skills() []clikit.SkillMeta { return m.skills }
+func (m *mockReplEngine) SandboxBackend() string     { return m.sandbox }
 
 func newTestApp() *App {
 	return New(context.Background(), AppConfig{
@@ -633,7 +633,7 @@ func TestFormatToolResult(t *testing.T) {
 			evt: api.StreamEvent{
 				Name: "Bash",
 				Output: map[string]any{
-					"output":  "exit code 1",
+					"output":   "exit code 1",
 					"metadata": map[string]any{"is_error": true},
 				},
 			},
@@ -645,7 +645,7 @@ func TestFormatToolResult(t *testing.T) {
 			evt: api.StreamEvent{
 				Name: "Bash",
 				Output: map[string]any{
-					"output":  "success",
+					"output":   "success",
 					"metadata": map[string]any{},
 				},
 			},
@@ -848,8 +848,8 @@ func TestAppNew_InitializesComponents(t *testing.T) {
 func TestAppNew_UpdateNoticeInHeader(t *testing.T) {
 	t.Parallel()
 	a := New(context.Background(), AppConfig{
-		Engine:        &mockReplEngine{modelName: "m"},
-		UpdateNotice:  "v2.0 available",
+		Engine:       &mockReplEngine{modelName: "m"},
+		UpdateNotice: "v2.0 available",
 	})
 	if a.header.updateNotice != "v2.0 available" {
 		t.Errorf("expected header updateNotice=v2.0 available, got %q", a.header.updateNotice)

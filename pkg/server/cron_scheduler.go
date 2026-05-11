@@ -33,7 +33,7 @@ type Scheduler struct {
 
 	mu      sync.Mutex
 	running map[string]bool // jobID → currently executing
-	sem     chan struct{}    // semaphore bounding concurrent executions
+	sem     chan struct{}   // semaphore bounding concurrent executions
 	stopCh  chan struct{}
 	stopped chan struct{}
 }

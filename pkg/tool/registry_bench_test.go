@@ -13,9 +13,9 @@ type stubBenchTool struct {
 	name string
 }
 
-func (t *stubBenchTool) Name() string                                                { return t.name }
-func (t *stubBenchTool) Description() string                                         { return "bench stub" }
-func (t *stubBenchTool) Schema() *JSONSchema                                         { return nil }
+func (t *stubBenchTool) Name() string        { return t.name }
+func (t *stubBenchTool) Description() string { return "bench stub" }
+func (t *stubBenchTool) Schema() *JSONSchema { return nil }
 func (t *stubBenchTool) Execute(_ context.Context, _ map[string]interface{}) (*ToolResult, error) {
 	return &ToolResult{Output: "ok"}, nil
 }

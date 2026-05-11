@@ -75,11 +75,11 @@ func TestExpandEnvVar_NoEnvPattern(t *testing.T) {
 		want  string
 	}{
 		{"plainpassword", "plainpassword"},
-		{"${}", ""},           // empty var name — prefix/suffix match but no content
+		{"${}", ""},                                  // empty var name — prefix/suffix match but no content
 		{"prefix${VAR}suffix", "prefix${VAR}suffix"}, // has surrounding text, not pure ${...}
-		{"$NOTVAR", "$NOTVAR"},   // missing braces
-		{"{NOTVAR}", "{NOTVAR}"},  // missing dollar
-		{"", ""},                 // empty string
+		{"$NOTVAR", "$NOTVAR"},                       // missing braces
+		{"{NOTVAR}", "{NOTVAR}"},                     // missing dollar
+		{"", ""},                                     // empty string
 	}
 	for _, tc := range tests {
 		got := expandEnvVar(tc.input)
@@ -465,10 +465,10 @@ func TestLDAPProvider_Authenticate_BindDN_EmptySkipsServiceBind(t *testing.T) {
 func TestLDAPProvider_Authenticate_DefaultUserFilter(t *testing.T) {
 	t.Parallel()
 	cfg := &config.LDAPConfig{
-		Enabled:     true,
-		URL:         closedPortURL(t, "ldap"),
-		UserFilter:  "", // empty — default "(uid=%s)" should be used
-		BaseDN:      "dc=example,dc=com",
+		Enabled:    true,
+		URL:        closedPortURL(t, "ldap"),
+		UserFilter: "", // empty — default "(uid=%s)" should be used
+		BaseDN:     "dc=example,dc=com",
 	}
 	p := NewLDAPProvider(cfg, nil)
 
@@ -485,10 +485,10 @@ func TestLDAPProvider_Authenticate_DefaultUserFilter(t *testing.T) {
 func TestLDAPProvider_Authenticate_CustomUserFilter(t *testing.T) {
 	t.Parallel()
 	cfg := &config.LDAPConfig{
-		Enabled:     true,
-		URL:         closedPortURL(t, "ldap"),
-		UserFilter:  "(sAMAccountName=%s)",
-		BaseDN:      "dc=example,dc=com",
+		Enabled:    true,
+		URL:        closedPortURL(t, "ldap"),
+		UserFilter: "(sAMAccountName=%s)",
+		BaseDN:     "dc=example,dc=com",
 	}
 	p := NewLDAPProvider(cfg, nil)
 
@@ -636,10 +636,10 @@ func TestLDAPProvider_AuthResult_FieldMapping(t *testing.T) {
 	t.Parallel()
 	// Simulate what Authenticate builds from a successful LDAP entry.
 	entry := ldap.NewEntry("cn=Alice Zhang,ou=users,dc=example,dc=com", map[string][]string{
-		"uid":       {"alice"},
-		"mail":      {"alice@example.com"},
-		"cn":        {"Alice Zhang"},
-		"memberOf":  {"cn=admins,dc=example,dc=com", "cn=devs,dc=example,dc=com"},
+		"uid":      {"alice"},
+		"mail":     {"alice@example.com"},
+		"cn":       {"Alice Zhang"},
+		"memberOf": {"cn=admins,dc=example,dc=com", "cn=devs,dc=example,dc=com"},
 	})
 
 	p := NewLDAPProvider(&config.LDAPConfig{}, nil)
@@ -702,10 +702,10 @@ func TestLDAPProvider_AuthResult_MissingAttributes_UseFallbacks(t *testing.T) {
 func TestLDAPProvider_AuthResult_CustomAttrs(t *testing.T) {
 	t.Parallel()
 	entry := ldap.NewEntry("cn=Alice,ou=users,dc=example,dc=com", map[string][]string{
-		"sAMAccountName":   {"alice_ad"},
-		"internetEmail":    {"alice@corp.com"},
-		"displayName":      {"Alice AD"},
-		"groupMembership":  {"cn=ops,dc=corp,dc=com"},
+		"sAMAccountName":  {"alice_ad"},
+		"internetEmail":   {"alice@corp.com"},
+		"displayName":     {"Alice AD"},
+		"groupMembership": {"cn=ops,dc=corp,dc=com"},
 	})
 
 	cfg := &config.LDAPConfig{

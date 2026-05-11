@@ -51,10 +51,6 @@ func statFileOverrideOrOS(path string) (fs.FileInfo, error) {
 type LoaderOptions struct {
 	ProjectRoot string
 	ConfigRoot  string
-	// Deprecated: user-level scanning has been removed; this field is ignored.
-	UserHome string
-	// Deprecated: user-level scanning has been removed; this flag is ignored.
-	EnableUser bool
 	// Directories overrides the discovery roots for SKILL.md files.
 	// When empty, defaults to "<ConfigRoot>/skills".
 	Directories []string

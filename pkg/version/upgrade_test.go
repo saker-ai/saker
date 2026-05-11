@@ -84,12 +84,12 @@ func TestFormatUpdateNoticeNoInstallURL(t *testing.T) {
 func TestBuildUpdateInfo(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name         string
-		current      string
-		latest       string
-		installURL   string
-		releaseURL   string
-		message      string
+		name          string
+		current       string
+		latest        string
+		installURL    string
+		releaseURL    string
+		message       string
 		wantHasUpdate bool
 	}{
 		{
@@ -393,9 +393,9 @@ func createTestArchive(t *testing.T, archivePath, fileName string, content []byt
 	defer tw.Close()
 
 	hdr := &tar.Header{
-		Name: fileName,
-		Size: int64(len(content)),
-		Mode: 0o755,
+		Name:     fileName,
+		Size:     int64(len(content)),
+		Mode:     0o755,
 		Typeflag: tar.TypeReg,
 	}
 	if err := tw.WriteHeader(hdr); err != nil {

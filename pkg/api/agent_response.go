@@ -23,7 +23,6 @@ func (rt *Runtime) buildResponse(prep preparedRun, result runResult) *Response {
 		SkillResults:    prep.skillResults,
 		Subagent:        prep.subagentResult,
 		HookEvents:      events,
-		ProjectConfig:   settings,
 		Settings:        settings,
 		SandboxSnapshot: rt.sandboxReport(),
 		Tags:            maps.Clone(prep.normalized.Tags),

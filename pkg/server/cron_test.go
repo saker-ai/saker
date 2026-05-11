@@ -565,7 +565,7 @@ func newCronTestHandler(t *testing.T) (*Handler, *CronStore, *Scheduler) {
 	tracker := NewActiveTurnTracker()
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	h := &Handler{
-		dataDir:  dir,
+		dataDir:   dir,
 		cronStore: store,
 		tracker:   tracker,
 		logger:    logger,

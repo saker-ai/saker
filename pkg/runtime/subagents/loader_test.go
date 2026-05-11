@@ -62,7 +62,8 @@ func TestLoadFromFS_IgnoresUserDir(t *testing.T) {
 		"project prompt",
 	}, "\n"))
 
-	regs, errs := LoadFromFS(LoaderOptions{ProjectRoot: projectRoot, UserHome: userHome, EnableUser: true})
+	_ = userHome // user-level scanning has been removed; dir kept to mirror prior fixture intent
+	regs, errs := LoadFromFS(LoaderOptions{ProjectRoot: projectRoot})
 	if len(errs) != 0 {
 		t.Fatalf("unexpected errors: %v", errs)
 	}
@@ -94,7 +95,8 @@ func TestLoadFromFS_NoProjectDir(t *testing.T) {
 		"user only prompt",
 	}, "\n"))
 
-	regs, errs := LoadFromFS(LoaderOptions{ProjectRoot: projectRoot, UserHome: userHome, EnableUser: true})
+	_ = userHome // user-level scanning has been removed; dir kept to mirror prior fixture intent
+	regs, errs := LoadFromFS(LoaderOptions{ProjectRoot: projectRoot})
 	if len(errs) != 0 {
 		t.Fatalf("unexpected errors: %v", errs)
 	}

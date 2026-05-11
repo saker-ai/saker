@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 
-	aigotools "github.com/cinience/saker/pkg/tool/builtin/aigo"
 	"github.com/cinience/saker/pkg/config"
 	"github.com/cinience/saker/pkg/memory"
 	"github.com/cinience/saker/pkg/model"
@@ -16,6 +15,7 @@ import (
 	"github.com/cinience/saker/pkg/sessiondb"
 	"github.com/cinience/saker/pkg/tool"
 	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	aigotools "github.com/cinience/saker/pkg/tool/builtin/aigo"
 )
 
 // Config returns the last loaded project config.

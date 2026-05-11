@@ -166,11 +166,11 @@ type DirectoryWatchSource struct {
 	pollInterval time.Duration
 	extensions   map[string]struct{}
 
-	mu      sync.Mutex
-	seen    map[string]struct{}
+	mu       sync.Mutex
+	seen     map[string]struct{}
 	seenRing []string // FIFO ring buffer for eviction order
-	ringIdx int       // next write position in the ring
-	done    bool
+	ringIdx  int      // next write position in the ring
+	done     bool
 }
 
 // NewDirectoryWatchSource creates a source that polls a directory for new images.
@@ -184,7 +184,7 @@ func NewDirectoryWatchSource(dir string, pollInterval time.Duration) *DirectoryW
 		extensions: map[string]struct{}{
 			".jpg": {}, ".jpeg": {}, ".png": {}, ".bmp": {}, ".webp": {},
 		},
-		seen:    map[string]struct{}{},
+		seen:     map[string]struct{}{},
 		seenRing: make([]string, maxSeenEntries),
 	}
 }

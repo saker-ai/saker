@@ -7,11 +7,11 @@ import (
 func TestSafeFilename(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name      string
-		source    string
-		start     float64
-		end       float64
-		want      string
+		name   string
+		source string
+		start  float64
+		end    float64
+		want   string
 	}{
 		{
 			name:   "standard source file",
