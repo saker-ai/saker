@@ -5,8 +5,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/google/uuid"
 )
 
 // rpcRESTPath is the URL prefix for the generic RPC-over-HTTP adapter.
@@ -19,6 +17,9 @@ import (
 // WebSocket connection on page load. Streaming methods (turn/send,
 // thread/subscribe, ...) are rejected here because their semantics are
 // bound to a long-lived clientID — they must keep going through /ws.
+//
+// Routes are registered onto the gin engine in registerRPCRoutes
+// (gin_routes_rpc.go); the dispatcher body lives in dispatchRPCREST there.
 const rpcRESTPath = "/api/rpc/"
 
 // methodsRequireWebsocket lists JSON-RPC methods whose return value
@@ -32,77 +33,6 @@ var methodsRequireWebsocket = map[string]bool{
 	"turn/cancel":        true,
 	"approval/respond":   true,
 	"question/respond":   true,
-}
-
-// handleRPCREST translates an HTTP request into a JSON-RPC envelope, runs
-// it through the same Handler.HandleRequest pipeline as /ws (so scope
-// resolution, RBAC, leak detection, and every handler implementation are
-// reused verbatim), then translates the JSON-RPC response back to HTTP.
-//
-// @Summary RPC over HTTP adapter
-// @Description Translates HTTP POST requests into JSON-RPC calls and returns the result. Streaming methods (turn/send, thread/subscribe, etc.) are rejected because they require a WebSocket connection. Body is the JSON-RPC params object; URL path contains the method name.
-// @Tags rpc
-// @Accept json
-// @Produce json
-// @Param method path string true "JSON-RPC method name (e.g. project/list, settings/get)"
-// @Param body body object false "JSON-RPC params object (or empty)"
-// @Success 200 {object} map[string]any "JSON-RPC result"
-// @Failure 400 {object} map[string]any "invalid JSON body or missing method"
-// @Failure 405 {object} map[string]any "POST required or method requires websocket"
-// @Failure 404 {object} map[string]any "method not found"
-// @Failure 500 {object} map[string]any "internal error"
-// @Router /api/rpc/{method} [post]
-func (s *Server) handleRPCREST(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "POST required", http.StatusMethodNotAllowed)
-		return
-	}
-
-	method := strings.TrimPrefix(r.URL.Path, rpcRESTPath)
-	method = strings.Trim(method, "/")
-	if method == "" {
-		http.Error(w, "missing method", http.StatusBadRequest)
-		return
-	}
-
-	if methodsRequireWebsocket[method] {
-		writeJSON(w, http.StatusMethodNotAllowed, map[string]any{
-			"code":    ErrCodeMethodNotFound,
-			"message": "method requires websocket: " + method,
-		})
-		return
-	}
-
-	params, err := decodeRPCParams(r.Body)
-	if err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]any{
-			"code":    ErrCodeInvalidParams,
-			"message": "invalid JSON body: " + err.Error(),
-		})
-		return
-	}
-
-	// HTTP requests don't register a subscriber, so the clientID is just a
-	// per-request token used to satisfy handler signatures. The "http-"
-	// prefix makes leaked log lines easy to spot vs real ws clients.
-	clientID := "http-" + uuid.New().String()
-
-	req := Request{
-		JSONRPC: "2.0",
-		ID:      1,
-		Method:  method,
-		Params:  params,
-	}
-	resp := s.handler.HandleRequest(r.Context(), clientID, req)
-
-	if resp.Error != nil {
-		writeJSON(w, httpStatusForRPCError(resp.Error.Code), map[string]any{
-			"code":    resp.Error.Code,
-			"message": resp.Error.Message,
-		})
-		return
-	}
-	writeJSON(w, http.StatusOK, resp.Result)
 }
 
 // decodeRPCParams reads the request body as a JSON object. Empty body

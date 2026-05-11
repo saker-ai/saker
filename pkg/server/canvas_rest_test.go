@@ -10,11 +10,13 @@ import (
 	"time"
 
 	"github.com/cinience/saker/pkg/canvas"
+	"github.com/gin-gonic/gin"
 )
 
 // newCanvasTestServer wires the four REST endpoints onto an httptest.Server
-// without auth or any other handler dependencies. Mirrors the route table
-// in server.go so tests touch the same dispatcher.
+// via a minimal gin engine that registers the canvas routes the same way
+// production does (registerCanvasRoutes). No auth or other handler
+// dependencies are wired in.
 func newCanvasTestServer(t *testing.T) (*httptest.Server, *Server, *fakeCanvasRuntime) {
 	t.Helper()
 	dir := t.TempDir()
@@ -30,9 +32,12 @@ func newCanvasTestServer(t *testing.T) (*httptest.Server, *Server, *fakeCanvasRu
 	t.Cleanup(func() { h.canvasExecutor.Tracker.Stop() })
 
 	s := &Server{handler: h, opts: Options{DataDir: dir}}
-	mux := http.NewServeMux()
-	mux.HandleFunc(canvasRESTPath, s.handleCanvasREST)
-	srv := httptest.NewServer(mux)
+	gin.SetMode(gin.TestMode)
+	engine := gin.New()
+	engine.HandleMethodNotAllowed = true
+	authed := engine.Group("")
+	s.registerCanvasRoutes(authed)
+	srv := httptest.NewServer(engine)
 	t.Cleanup(srv.Close)
 	return srv, s, rt
 }
@@ -257,7 +262,9 @@ func TestCanvasRESTRejectsEmptyPath(t *testing.T) {
 		t.Fatalf("GET: %v", err)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusBadRequest {
+	// Native gin routes return 404 for the empty resource case (no
+	// matching route) instead of the dispatcher's bespoke 400.
+	if resp.StatusCode != http.StatusNotFound {
 		t.Fatalf("status: %d", resp.StatusCode)
 	}
 }

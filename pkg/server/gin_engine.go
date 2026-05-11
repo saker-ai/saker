@@ -19,6 +19,9 @@ func (s *Server) buildGinEngine() *gin.Engine {
 	}
 
 	engine := gin.New()
+	// Return 405 Method Not Allowed for known paths with unsupported HTTP
+	// methods, matching the semantics of the legacy net/http dispatchers.
+	engine.HandleMethodNotAllowed = true
 
 	// Global middleware (applied to all requests).
 	engine.Use(RequestIDMiddleware())
@@ -98,7 +101,7 @@ func (s *Server) buildGinEngine() *gin.Engine {
 	// Upload: 50MB body limit.
 	authed.POST("/api/upload", BodySizeLimitMiddleware(50*1024*1024), gin.WrapH(http.HandlerFunc(s.handleUpload)))
 	authed.Any(storagecfg.DefaultPublicBaseURL+"/*filepath", gin.WrapH(http.HandlerFunc(s.handleMediaServe)))
-	authed.Any(canvasRESTPath+"*path", gin.WrapH(http.HandlerFunc(s.handleCanvasREST)))
+	s.registerCanvasRoutes(authed)
 
 	// Bearer-keyed app runs (canvas /run, /runs/...) bypass cookie auth, so
 	// without an extra throttle a leaked API key would let an attacker pump
@@ -106,10 +109,10 @@ func (s *Server) buildGinEngine() *gin.Engine {
 	// carrying a Bearer key — cookie/local users are unaffected.
 	bearerLimiter, bearerLimiterCleanup := BearerRateLimitMiddleware(30, 60)
 	s.bearerRateLimiterCleanup = bearerLimiterCleanup
-	authed.Any(appsRESTPath+"*path", bearerLimiter, gin.WrapH(http.HandlerFunc(s.handleAppsREST)))
+	s.registerAppsRoutes(authed, bearerLimiter)
 
-	// RPC: 10MB body limit.
-	authed.Any(rpcRESTPath+"*method", BodySizeLimitMiddleware(10*1024*1024), gin.WrapH(http.HandlerFunc(s.handleRPCREST)))
+	// RPC: 10MB body limit (applied inside registerRPCRoutes).
+	s.registerRPCRoutes(authed)
 
 	// ----- Static catch-all (serves frontend SPA for unmatched routes) -----
 	engine.NoRoute(s.staticCatchAllHandler())
