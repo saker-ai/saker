@@ -8,8 +8,18 @@ import (
 	"testing"
 
 	"github.com/cinience/saker/pkg/config"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
+
+// callGinHandler builds a *gin.Context wrapping the supplied recorder and
+// request and runs the handler. Used by auth tests that previously invoked
+// the (w, r) form directly before the handlers were converted to gin style.
+func callGinHandler(rec *httptest.ResponseRecorder, req *http.Request, h gin.HandlerFunc) {
+	c, _ := gin.CreateTestContext(rec)
+	c.Request = req
+	h(c)
+}
 
 func hashPassword(t *testing.T, plain string) string {
 	t.Helper()
@@ -119,7 +129,7 @@ func TestLoginAndSession(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	am.HandleLogin(rec, req)
+	callGinHandler(rec, req, am.HandleLogin)
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("login expected 200, got %d", rec.Code)
@@ -160,7 +170,7 @@ func TestLoginWrongPassword(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	am.HandleLogin(rec, req)
+	callGinHandler(rec, req, am.HandleLogin)
 
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("expected 401 for wrong password, got %d", rec.Code)
@@ -174,7 +184,7 @@ func TestLoginWrongUsername(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-	am.HandleLogin(rec, req)
+	callGinHandler(rec, req, am.HandleLogin)
 
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("expected 401 for wrong username, got %d", rec.Code)
@@ -188,7 +198,7 @@ func TestLogout(t *testing.T) {
 	body := `{"username":"admin","password":"` + password + `"}`
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", strings.NewReader(body))
 	rec := httptest.NewRecorder()
-	am.HandleLogin(rec, req)
+	callGinHandler(rec, req, am.HandleLogin)
 
 	cookies := rec.Result().Cookies()
 	var sessionCookie *http.Cookie
@@ -206,7 +216,7 @@ func TestLogout(t *testing.T) {
 	logoutReq := httptest.NewRequest(http.MethodPost, "/api/auth/logout", nil)
 	logoutReq.AddCookie(sessionCookie)
 	logoutRec := httptest.NewRecorder()
-	am.HandleLogout(logoutRec, logoutReq)
+	callGinHandler(logoutRec, logoutReq, am.HandleLogout)
 
 	// Session should be invalid now.
 	handler := am.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -230,7 +240,7 @@ func TestAuthStatus(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/api/auth/status", nil)
 	req.RemoteAddr = "192.168.1.100:12345"
 	rec := httptest.NewRecorder()
-	am.HandleStatus(rec, req)
+	callGinHandler(rec, req, am.HandleStatus)
 
 	var resp map[string]bool
 	if err := json.NewDecoder(rec.Body).Decode(&resp); err != nil {
@@ -247,7 +257,7 @@ func TestAuthStatus(t *testing.T) {
 	req2 := httptest.NewRequest(http.MethodGet, "/api/auth/status", nil)
 	req2.RemoteAddr = "127.0.0.1:12345"
 	rec2 := httptest.NewRecorder()
-	am.HandleStatus(rec2, req2)
+	callGinHandler(rec2, req2, am.HandleStatus)
 
 	var resp2 map[string]bool
 	if err := json.NewDecoder(rec2.Body).Decode(&resp2); err != nil {

@@ -1,10 +1,10 @@
 package server
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/cinience/saker/pkg/logging"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
@@ -26,7 +26,9 @@ const (
 // @Tags websocket
 // @Success 101 {string} string "WebSocket upgrade successful"
 // @Router /ws [get]
-func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleWebSocket(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
 	conn, err := s.upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		s.logger.Error("websocket upgrade failed", "error", err, "remote_addr", r.RemoteAddr)

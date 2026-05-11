@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cinience/saker/pkg/apps"
+	"github.com/gin-gonic/gin"
 )
 
 // ── Share-token management ────────────────────────────────────────────────────
@@ -43,7 +44,10 @@ type apiShareToken struct {
 // @Failure 400 {string} string "invalid body"
 // @Failure 500 {string} string "token generation failed"
 // @Router /api/apps/{appId}/share [post]
-func (s *Server) handleAppsShareCollection(w http.ResponseWriter, r *http.Request, appID string) {
+func (s *Server) handleAppsShareCollection(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
 	switch r.Method {
 	case http.MethodGet:
 		store := s.handler.appsStoreFor(r.Context())
@@ -127,11 +131,11 @@ func (s *Server) handleAppsShareCollection(w http.ResponseWriter, r *http.Reques
 // @Success 200 {object} map[string]bool "{ok: true}"
 // @Failure 404 {string} string "share token not found"
 // @Router /api/apps/{appId}/share/{token} [delete]
-func (s *Server) handleAppsShareItem(w http.ResponseWriter, r *http.Request, appID, token string) {
-	if r.Method != http.MethodDelete {
-		http.Error(w, "DELETE required", http.StatusMethodNotAllowed)
-		return
-	}
+func (s *Server) handleAppsShareItem(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
+	token := c.Param("token")
 	store := s.handler.appsStoreFor(r.Context())
 	kf, err := store.LoadKeys(r.Context(), appID)
 	if err != nil {
@@ -163,7 +167,8 @@ func (s *Server) handleAppsShareItem(w http.ResponseWriter, r *http.Request, app
 
 // handleAppsPublic sub-dispatches the anonymous share-token API. parts[0] is
 // always "public"; parts[1] is the token; parts[2] (if present) is the sub-
-// action ("run" or "runs").
+// action ("run" or "runs"). Called from the gin adapters in
+// gin_routes_apps.go which split the catch-all wildcard into parts.
 //
 //	GET  …/public/{token}             → app schema
 //	POST …/public/{token}/run         → start run

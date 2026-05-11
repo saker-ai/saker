@@ -7,6 +7,7 @@ import (
 
 	"github.com/cinience/saker/pkg/apps"
 	"github.com/cinience/saker/pkg/canvas"
+	"github.com/gin-gonic/gin"
 )
 
 // handleAppsList returns every app meta for the resolved scope.
@@ -18,7 +19,9 @@ import (
 // @Success 200 {array} apps.AppMeta "List of app metadata"
 // @Failure 500 {string} string "internal error"
 // @Router /api/apps [get]
-func (s *Server) handleAppsList(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleAppsList(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
 	store := s.handler.appsStoreFor(r.Context())
 	metas, err := store.List(r.Context())
 	if err != nil {
@@ -42,7 +45,9 @@ func (s *Server) handleAppsList(w http.ResponseWriter, r *http.Request) {
 // @Success 201 {object} apps.AppMeta "Created app metadata"
 // @Failure 400 {string} string "invalid JSON body"
 // @Router /api/apps [post]
-func (s *Server) handleAppsCreate(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleAppsCreate(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
 	body := struct {
 		Name           string `json:"name"`
 		Description    string `json:"description,omitempty"`
@@ -88,7 +93,10 @@ type appGetResponse struct {
 // @Success 200 {object} appGetResponse "App metadata with inputs/outputs"
 // @Failure 404 {string} string "app not found"
 // @Router /api/apps/{appId} [get]
-func (s *Server) handleAppsGet(w http.ResponseWriter, r *http.Request, appID string) {
+func (s *Server) handleAppsGet(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
 	store := s.handler.appsStoreFor(r.Context())
 	meta, err := store.Get(r.Context(), appID)
 	if err != nil {
@@ -121,7 +129,10 @@ func (s *Server) handleAppsGet(w http.ResponseWriter, r *http.Request, appID str
 // @Failure 400 {string} string "invalid JSON body"
 // @Failure 404 {string} string "app not found"
 // @Router /api/apps/{appId} [put]
-func (s *Server) handleAppsUpdate(w http.ResponseWriter, r *http.Request, appID string) {
+func (s *Server) handleAppsUpdate(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
 	body := struct {
 		Name           *string `json:"name,omitempty"`
 		Description    *string `json:"description,omitempty"`
@@ -158,7 +169,10 @@ func (s *Server) handleAppsUpdate(w http.ResponseWriter, r *http.Request, appID 
 // @Success 200 {object} map[string]bool "ok: true"
 // @Failure 404 {string} string "app not found"
 // @Router /api/apps/{appId} [delete]
-func (s *Server) handleAppsDelete(w http.ResponseWriter, r *http.Request, appID string) {
+func (s *Server) handleAppsDelete(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
 	store := s.handler.appsStoreFor(r.Context())
 	if err := store.Delete(r.Context(), appID); err != nil {
 		writeAppsError(w, err)
@@ -181,11 +195,10 @@ func (s *Server) handleAppsDelete(w http.ResponseWriter, r *http.Request, appID 
 // @Failure 404 {string} string "app not found"
 // @Failure 405 {string} string "POST required"
 // @Router /api/apps/{appId}/publish [post]
-func (s *Server) handleAppsPublish(w http.ResponseWriter, r *http.Request, appID string) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "POST required", http.StatusMethodNotAllowed)
-		return
-	}
+func (s *Server) handleAppsPublish(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
 	store := s.handler.appsStoreFor(r.Context())
 	meta, err := store.Get(r.Context(), appID)
 	if err != nil {
@@ -218,11 +231,10 @@ func (s *Server) handleAppsPublish(w http.ResponseWriter, r *http.Request, appID
 // @Failure 404 {string} string "app not found"
 // @Failure 405 {string} string "GET required"
 // @Router /api/apps/{appId}/versions [get]
-func (s *Server) handleAppsVersions(w http.ResponseWriter, r *http.Request, appID string) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "GET required", http.StatusMethodNotAllowed)
-		return
-	}
+func (s *Server) handleAppsVersions(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
 	store := s.handler.appsStoreFor(r.Context())
 	versions, err := store.ListVersions(r.Context(), appID)
 	if err != nil {
@@ -247,11 +259,10 @@ func (s *Server) handleAppsVersions(w http.ResponseWriter, r *http.Request, appI
 // @Failure 400 {string} string "version is required or invalid JSON"
 // @Failure 405 {string} string "PUT required"
 // @Router /api/apps/{appId}/published-version [put]
-func (s *Server) handleAppsSetPublishedVersion(w http.ResponseWriter, r *http.Request, appID string) {
-	if r.Method != http.MethodPut {
-		http.Error(w, "PUT required", http.StatusMethodNotAllowed)
-		return
-	}
+func (s *Server) handleAppsSetPublishedVersion(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
 	body := struct {
 		Version string `json:"version"`
 	}{}

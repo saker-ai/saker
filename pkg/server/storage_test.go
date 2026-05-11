@@ -106,7 +106,7 @@ func TestCacheMediaToStore_DataURL_RoundTripsViaMemFS(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, url, nil)
 	rec := httptest.NewRecorder()
-	srv.handleMediaServe(rec, req)
+	callGinHandler(rec, req, srv.handleMediaServe)
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status=%d body=%s", rec.Code, rec.Body.String())
@@ -136,7 +136,7 @@ func TestHandleMediaServe_NotFound(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/media/nope/missing.png", nil)
 	rec := httptest.NewRecorder()
-	srv.handleMediaServe(rec, req)
+	callGinHandler(rec, req, srv.handleMediaServe)
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", rec.Code)
 	}
@@ -150,7 +150,7 @@ func TestHandleMediaServe_NoStoreConfigured(t *testing.T) {
 	srv := &Server{handler: &Handler{}, logger: slog.Default()}
 	req := httptest.NewRequest(http.MethodGet, "/media/whatever.png", nil)
 	rec := httptest.NewRecorder()
-	srv.handleMediaServe(rec, req)
+	callGinHandler(rec, req, srv.handleMediaServe)
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", rec.Code)
 	}

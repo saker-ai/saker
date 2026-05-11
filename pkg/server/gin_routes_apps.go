@@ -8,9 +8,8 @@ import (
 )
 
 // registerAppsRoutes wires the apps REST API onto a gin router group using
-// native parameterised routes instead of the legacy path-split dispatcher
-// (handleAppsREST). Per-handler bodies in apps_rest_*.go are reused
-// unchanged via thin gin → net/http adapters.
+// native parameterised routes. Per-handler bodies in apps_rest_*.go are
+// gin.HandlerFunc.
 //
 // Routes registered (multi-tenant, when s.handler.projects != nil — every
 // route below is prefixed with /api/apps/:projectId; project scope is
@@ -59,19 +58,6 @@ func (s *Server) registerAppsRoutes(authed *gin.RouterGroup, bearerLimiter gin.H
 
 		// Per-project group with scope middleware.
 		grp := root.Group("/:projectId", s.projectScopeMiddleware())
-		// /api/apps/:projectId/public/*rest is the multi-tenant share path
-		// — must NOT inherit the projectScopeMiddleware's auth check, but
-		// the URL still carries the projectId so the bearerProjectScope
-		// path runs. We mount it on the per-project group precisely so the
-		// :projectId param is exposed; the middleware itself bypasses
-		// scope resolution on Bearer/anonymous calls (anonShare path).
-		// Actually: the legacy dispatcher synthesises a bearerProjectScope
-		// for these calls regardless of cookie auth — we mount on the
-		// projectScopeMiddleware-protected group but the middleware's
-		// anonBearer branch routes it through bearerProjectScope. To
-		// preserve the share-public flow we register the public route on
-		// a sibling group WITHOUT the middleware and synthesise the
-		// project scope ourselves.
 		s.registerAppsItemRoutes(grp)
 
 		// Multi-tenant share path with explicit projectId — bypass cookie
@@ -93,131 +79,40 @@ func (s *Server) registerAppsRoutes(authed *gin.RouterGroup, bearerLimiter gin.H
 // too because they share the same scope.
 func (s *Server) registerAppsItemRoutes(grp *gin.RouterGroup) {
 	// Collection-level CRUD.
-	grp.GET("", s.ginAppsList())
-	grp.POST("", s.ginAppsCreate())
+	grp.GET("", s.handleAppsList)
+	grp.POST("", s.handleAppsCreate)
 
 	// /:appId bare meta CRUD.
-	grp.GET("/:appId", s.ginAppsGet())
-	grp.PUT("/:appId", s.ginAppsUpdate())
-	grp.DELETE("/:appId", s.ginAppsDelete())
+	grp.GET("/:appId", s.handleAppsGet)
+	grp.PUT("/:appId", s.handleAppsUpdate)
+	grp.DELETE("/:appId", s.handleAppsDelete)
 
 	// /:appId actions.
-	grp.POST("/:appId/publish", s.ginAppsPublish())
-	grp.GET("/:appId/versions", s.ginAppsVersions())
-	grp.PUT("/:appId/published-version", s.ginAppsSetPublishedVersion())
-	grp.POST("/:appId/run", s.ginAppsRun())
-	grp.GET("/:appId/runs/:runId", s.ginAppsRunStatus())
-	grp.POST("/:appId/runs/:runId/cancel", s.ginAppsRunCancel())
+	grp.POST("/:appId/publish", s.handleAppsPublish)
+	grp.GET("/:appId/versions", s.handleAppsVersions)
+	grp.PUT("/:appId/published-version", s.handleAppsSetPublishedVersion)
+	grp.POST("/:appId/run", s.handleAppsRun)
+	grp.GET("/:appId/runs/:runId", s.handleAppsRunStatus)
+	grp.POST("/:appId/runs/:runId/cancel", s.handleAppsRunCancel)
 
 	// /:appId keys.
-	grp.GET("/:appId/keys", s.ginAppsKeysCollection())
-	grp.POST("/:appId/keys", s.ginAppsKeysCollection())
-	grp.DELETE("/:appId/keys/:keyId", s.ginAppsKeysItem())
-	grp.POST("/:appId/keys/:keyId/rotate", s.ginAppsKeysRotate())
+	grp.GET("/:appId/keys", s.handleAppsKeysCollection)
+	grp.POST("/:appId/keys", s.handleAppsKeysCollection)
+	grp.DELETE("/:appId/keys/:keyId", s.handleAppsKeysItem)
+	grp.POST("/:appId/keys/:keyId/rotate", s.handleAppsKeysRotate)
 
 	// /:appId share tokens.
-	grp.GET("/:appId/share", s.ginAppsShareCollection())
-	grp.POST("/:appId/share", s.ginAppsShareCollection())
-	grp.DELETE("/:appId/share/:token", s.ginAppsShareItem())
+	grp.GET("/:appId/share", s.handleAppsShareCollection)
+	grp.POST("/:appId/share", s.handleAppsShareCollection)
+	grp.DELETE("/:appId/share/:token", s.handleAppsShareItem)
 }
 
-// ── gin → net/http adapters ─────────────────────────────────────────────────
-
-func (s *Server) ginAppsList() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsList(c.Writer, c.Request)
-	}
-}
-
-func (s *Server) ginAppsCreate() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsCreate(c.Writer, c.Request)
-	}
-}
-
-func (s *Server) ginAppsGet() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsGet(c.Writer, c.Request, c.Param("appId"))
-	}
-}
-
-func (s *Server) ginAppsUpdate() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsUpdate(c.Writer, c.Request, c.Param("appId"))
-	}
-}
-
-func (s *Server) ginAppsDelete() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsDelete(c.Writer, c.Request, c.Param("appId"))
-	}
-}
-
-func (s *Server) ginAppsPublish() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsPublish(c.Writer, c.Request, c.Param("appId"))
-	}
-}
-
-func (s *Server) ginAppsVersions() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsVersions(c.Writer, c.Request, c.Param("appId"))
-	}
-}
-
-func (s *Server) ginAppsSetPublishedVersion() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsSetPublishedVersion(c.Writer, c.Request, c.Param("appId"))
-	}
-}
-
-func (s *Server) ginAppsRun() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsRun(c.Writer, c.Request, c.Param("appId"))
-	}
-}
-
-func (s *Server) ginAppsRunStatus() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsRunStatus(c.Writer, c.Request, c.Param("appId"), []string{c.Param("runId")})
-	}
-}
-
-func (s *Server) ginAppsRunCancel() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsRunCancel(c.Writer, c.Request, c.Param("appId"), c.Param("runId"))
-	}
-}
-
-func (s *Server) ginAppsKeysCollection() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsKeysCollection(c.Writer, c.Request, c.Param("appId"))
-	}
-}
-
-func (s *Server) ginAppsKeysItem() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsKeysItem(c.Writer, c.Request, c.Param("appId"), c.Param("keyId"))
-	}
-}
-
-func (s *Server) ginAppsKeysRotate() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsKeysRotate(c.Writer, c.Request, c.Param("appId"), c.Param("keyId"))
-	}
-}
-
-func (s *Server) ginAppsShareCollection() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsShareCollection(c.Writer, c.Request, c.Param("appId"))
-	}
-}
-
-func (s *Server) ginAppsShareItem() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		s.handleAppsShareItem(c.Writer, c.Request, c.Param("appId"), c.Param("token"))
-	}
-}
+// ── gin → handleAppsPublic adapters ────────────────────────────────────────
+//
+// handleAppsPublic remains a parts-based sub-dispatcher (parts[0] == "public",
+// parts[1] == token, etc.) because it is invoked from two distinct gin routes
+// (with and without a projectId prefix) and the legacy implementation already
+// switches on parts.
 
 // ginAppsPublic adapts the anonymous share-token catch-all path:
 //
@@ -225,10 +120,6 @@ func (s *Server) ginAppsShareItem() gin.HandlerFunc {
 //	POST /public/{token}/run             → start run
 //	GET  /public/{token}/runs/{runId}    → status
 //	POST /public/{token}/runs/{runId}/cancel → cancel
-//
-// handleAppsPublic expects parts[0] == "public", parts[1] == token,
-// parts[2] == subaction. We rebuild the legacy parts slice from the
-// captured *rest wildcard so the handler logic stays untouched.
 func (s *Server) ginAppsPublic() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rest := strings.Trim(c.Param("rest"), "/")

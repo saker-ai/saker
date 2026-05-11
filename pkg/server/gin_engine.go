@@ -60,17 +60,17 @@ func (s *Server) buildGinEngine() *gin.Engine {
 
 	// ----- Public routes (no auth middleware) -----
 	public := engine.Group("")
-	public.GET("/health", gin.WrapH(http.HandlerFunc(s.handleHealth)))
+	public.GET("/health", s.handleHealth)
 
 	// Auth endpoints: rate-limited to 5 req/s per IP to prevent brute-force.
 	authLimiter, authLimiterCleanup := RateLimitMiddleware(5, 10)
 	s.rateLimiterCleanup = authLimiterCleanup
-	public.POST("/api/auth/login", authLimiter, gin.WrapH(http.HandlerFunc(s.auth.HandleLogin)))
-	public.GET("/api/auth/status", gin.WrapH(http.HandlerFunc(s.auth.HandleStatus)))
-	public.POST("/api/auth/logout", gin.WrapH(http.HandlerFunc(s.auth.HandleLogout)))
-	public.GET("/api/auth/providers", gin.WrapH(http.HandlerFunc(s.auth.HandleProviders)))
-	public.GET("/api/auth/oidc/login", gin.WrapH(http.HandlerFunc(s.auth.HandleOIDCLogin)))
-	public.GET("/api/auth/oidc/callback", gin.WrapH(http.HandlerFunc(s.auth.HandleOIDCCallback)))
+	public.POST("/api/auth/login", authLimiter, s.auth.HandleLogin)
+	public.GET("/api/auth/status", s.auth.HandleStatus)
+	public.POST("/api/auth/logout", s.auth.HandleLogout)
+	public.GET("/api/auth/providers", s.auth.HandleProviders)
+	public.GET("/api/auth/oidc/login", s.auth.HandleOIDCLogin)
+	public.GET("/api/auth/oidc/callback", s.auth.HandleOIDCCallback)
 
 	// S3 API — has its own auth (SigV4). The embedded handler is resolved
 	// per-request so reload-driven backend swaps take effect immediately.
@@ -95,12 +95,12 @@ func (s *Server) buildGinEngine() *gin.Engine {
 		engine.GET("/metrics", PrometheusHandler())
 	}
 
-	authed.GET("/ws", gin.WrapH(http.HandlerFunc(s.handleWebSocket)))
-	authed.GET("/api/files/*path", gin.WrapH(http.HandlerFunc(s.handleServeFile)))
+	authed.GET("/ws", s.handleWebSocket)
+	authed.GET("/api/files/*path", s.handleServeFile)
 
 	// Upload: 50MB body limit.
-	authed.POST("/api/upload", BodySizeLimitMiddleware(50*1024*1024), gin.WrapH(http.HandlerFunc(s.handleUpload)))
-	authed.Any(storagecfg.DefaultPublicBaseURL+"/*filepath", gin.WrapH(http.HandlerFunc(s.handleMediaServe)))
+	authed.POST("/api/upload", BodySizeLimitMiddleware(50*1024*1024), s.handleUpload)
+	authed.Any(storagecfg.DefaultPublicBaseURL+"/*filepath", s.handleMediaServe)
 	s.registerCanvasRoutes(authed)
 
 	// Bearer-keyed app runs (canvas /run, /runs/...) bypass cookie auth, so

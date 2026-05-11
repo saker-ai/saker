@@ -9,6 +9,7 @@ import (
 
 	"github.com/cinience/saker/pkg/config"
 	storagecfg "github.com/cinience/saker/pkg/storage"
+	"github.com/gin-gonic/gin"
 )
 
 // storageConfigFromSettings translates the JSON settings shape into the
@@ -71,7 +72,9 @@ func storageConfigFromSettings(s *config.Settings) storagecfg.Config {
 // @Failure 404 {string} string "object not found or store not configured"
 // @Failure 500 {string} string "fetch or open failed"
 // @Router /media/{key} [get]
-func (s *Server) handleMediaServe(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleMediaServe(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
 	if s.handler == nil {
 		http.Error(w, "object store not configured", http.StatusNotFound)
 		return

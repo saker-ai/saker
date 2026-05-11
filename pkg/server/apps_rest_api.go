@@ -7,13 +7,16 @@ import (
 	"time"
 
 	"github.com/cinience/saker/pkg/apps"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 // appsAuthBearer validates the Authorization: Bearer ak_... header against
 // the app's KeysFile. Returns true when auth succeeds (handler may proceed),
 // false when it wrote a 401 and the caller must return immediately.
-func (s *Server) appsAuthBearer(w http.ResponseWriter, r *http.Request, appID string) bool {
+func (s *Server) appsAuthBearer(c *gin.Context, appID string) bool {
+	r := c.Request
+	w := c.Writer
 	authHdr := r.Header.Get("Authorization")
 	if authHdr == "" {
 		http.Error(w, "authentication required", http.StatusUnauthorized)
@@ -61,7 +64,10 @@ func (s *Server) appsAuthBearer(w http.ResponseWriter, r *http.Request, appID st
 // @Failure 400 {string} string "invalid body or missing name"
 // @Failure 500 {string} string "key generation failed"
 // @Router /api/apps/{appId}/keys [post]
-func (s *Server) handleAppsKeysCollection(w http.ResponseWriter, r *http.Request, appID string) {
+func (s *Server) handleAppsKeysCollection(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
 	switch r.Method {
 	case http.MethodGet:
 		store := s.handler.appsStoreFor(r.Context())
@@ -145,11 +151,11 @@ func (s *Server) handleAppsKeysCollection(w http.ResponseWriter, r *http.Request
 // @Success 200 {object} map[string]bool "{ok: true}"
 // @Failure 404 {string} string "key not found"
 // @Router /api/apps/{appId}/keys/{keyId} [delete]
-func (s *Server) handleAppsKeysItem(w http.ResponseWriter, r *http.Request, appID, keyID string) {
-	if r.Method != http.MethodDelete {
-		http.Error(w, "DELETE required", http.StatusMethodNotAllowed)
-		return
-	}
+func (s *Server) handleAppsKeysItem(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
+	keyID := c.Param("keyId")
 	store := s.handler.appsStoreFor(r.Context())
 	kf, err := store.LoadKeys(r.Context(), appID)
 	if err != nil {
@@ -196,11 +202,11 @@ func (s *Server) handleAppsKeysItem(w http.ResponseWriter, r *http.Request, appI
 // @Failure 404 {string} string "key not found"
 // @Failure 500 {string} string "key generation failed"
 // @Router /api/apps/{appId}/keys/{keyId}/rotate [post]
-func (s *Server) handleAppsKeysRotate(w http.ResponseWriter, r *http.Request, appID, keyID string) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "POST required", http.StatusMethodNotAllowed)
-		return
-	}
+func (s *Server) handleAppsKeysRotate(c *gin.Context) {
+	r := c.Request
+	w := c.Writer
+	appID := c.Param("appId")
+	keyID := c.Param("keyId")
 	body := struct {
 		Name          *string `json:"name,omitempty"`
 		ExpiresInDays *int    `json:"expiresInDays,omitempty"`
