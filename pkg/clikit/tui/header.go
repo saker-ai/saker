@@ -91,7 +91,7 @@ func (h *Header) View() string {
 
 	if h.updateNotice != "" {
 		updateStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFAA00"))
-		b.WriteString("\n " + updateStyle.Render(h.updateNotice) + "\n")
+		b.WriteString(" " + updateStyle.Render(h.updateNotice) + "\n")
 	}
 
 	return b.String()
