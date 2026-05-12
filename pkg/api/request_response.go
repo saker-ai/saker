@@ -15,6 +15,25 @@ import (
 	"github.com/cinience/saker/pkg/runtime/subagents"
 )
 
+// ModelOverrides bundles per-request sampling parameters that override
+// the runtime defaults for a single completion. All fields are pointer/
+// slice types so the zero value means "no override". Set by the OpenAI
+// inbound gateway to honor standard sampler fields (temperature, top_p,
+// max_tokens, stop, seed) and by future SDK-as-LLM proxy callers.
+//
+// The runtime is free to ignore fields that the underlying provider
+// adapter does not consume (e.g. ToolChoice on a model lacking
+// function calling). Unknown overrides are not an error.
+type ModelOverrides struct {
+	Temperature       *float64 // nil = use runtime default
+	TopP              *float64
+	MaxTokens         *int
+	Stop              []string // nil/empty = no override
+	Seed              *int64
+	ToolChoice        string   // "" = no override; "auto"/"none"/specific tool name
+	ParallelToolCalls *bool
+}
+
 // Request captures a single logical run invocation. Tags/T traits/Channels are
 // forwarded to the declarative runtime layers (skills/subagents) while
 // RunContext overrides the agent-level execution knobs.
@@ -32,6 +51,7 @@ type Request struct {
 	EnablePromptCache    *bool     // Optional: enable prompt caching (nil uses global default)
 	OutputSchema         *model.ResponseFormat
 	OutputSchemaMode     OutputSchemaMode
+	ModelOverrides       *ModelOverrides // Optional: per-request sampling overrides
 	Traits               []string
 	Tags                 map[string]string
 	Channels             []string

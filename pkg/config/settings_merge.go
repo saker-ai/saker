@@ -98,6 +98,8 @@ func MergeSettings(lower, higher *Settings) *Settings {
 	if higher.UserPersonas != nil {
 		result.UserPersonas = higher.UserPersonas
 	}
+	result.Bifrost = mergeBifrost(lower.Bifrost, higher.Bifrost)
+	result.Governance = mergeGovernance(lower.Governance, higher.Governance)
 	return result
 }
 
@@ -129,5 +131,7 @@ func cloneSettings(src *Settings) *Settings {
 	out.WebAuth = cloneWebAuth(src.WebAuth)
 	out.Aigo = cloneAigoConfig(src.Aigo)
 	out.Storage = cloneStorageConfig(src.Storage)
+	out.Bifrost = cloneBifrost(src.Bifrost)
+	out.Governance = cloneGovernance(src.Governance)
 	return &out
 }

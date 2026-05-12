@@ -1,13 +1,10 @@
 # Line ending normalization
 * text=auto eol=lf
-
 # Go language detection
 *.go linguist-language=Go
-
 # Generated files
 go.sum linguist-generated=true
 vendor/ linguist-vendored=true
-
 # Binary files (no normalization)
 *.png binary
 *.jpg binary
@@ -32,16 +29,14 @@ vendor/ linguist-vendored=true
 *.7z binary
 *.jar binary
 *.dex binary
-
 # Documentation
 *.md linguist-language=Markdown
 *.mermaid linguist-language=Mermaid
-
 # Frontend
 web/package-lock.json linguist-generated=true
 web-editor-next/package-lock.json linguist-generated=true
-
 # Large files excluded from diff stats
 *.patch -diff
 *.min.js -diff
 *.min.css -diff
+examples/08-askuserquestion/askuserquestion filter=lfs diff=lfs merge=lfs -text

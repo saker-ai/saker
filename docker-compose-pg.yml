@@ -1,0 +1,30 @@
+# Postgres harness for `pkg/runhub` and `pkg/project/dialect` integration
+# tests gated by `-tags 'postgres integration'`. Mirrors the env used by
+# .github/workflows/postgres-nightly.yml so a local run reproduces CI
+# faithfully (same image, same user/db, same port-mapping).
+#
+# Started by `make test-pg-up`, exercised by `make test-pg-integration`,
+# torn down (with named volume wiped) by `make test-pg-down`. The named
+# volume avoids polluting the worktree and keeps `git status` clean even
+# after a forgotten `down` — `down -v` reclaims the data.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: saker-runhub-pg
+    environment:
+      POSTGRES_USER: saker
+      POSTGRES_PASSWORD: saker
+      POSTGRES_DB: saker_test
+    ports:
+      - "5432:5432"
+    volumes:
+      - saker-runhub-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saker -d saker_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  saker-runhub-pgdata:

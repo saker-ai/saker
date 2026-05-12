@@ -2,7 +2,7 @@
 
 # saker Examples
 
-Seventeen examples → **Twenty examples**. Run everything from the repo root.
+Seventeen examples → **Twenty-one examples**. Run everything from the repo root.
 
 **Environment Setup**
 
@@ -46,8 +46,11 @@ export ANTHROPIC_API_KEY=sk-ant-your-key-here
 | 18 | video-understanding | ~278 | Video content analysis with aigo adapters | Yes |
 | 19 | video-stream | ~127 | Streaming video generation pipeline | Yes |
 | 20 | realtime-video | ~170 | Real-time video frame processing | Yes |
+| 21 | openai-gateway | ~310 | OpenAI-compatible `/v1/*` smoke client (models + chat sync/stream + human_input_mode) | Yes** |
 
 \* Example 11 uses OpenAI API key + DeepSeek base URL.
+
+\*\* Example 21 needs a saker Bearer key (`saker openai-key create`), not a model-provider key — the model API key still has to be configured for the saker server itself.
 
 ## 01-basic — minimal entry
 - Purpose: fastest way to see the SDK loop in action with one request/response.
@@ -227,3 +230,19 @@ go run ./examples/19-video-stream
 source .env
 go run ./examples/20-realtime-video
 ```
+
+## 21-openai-gateway — OpenAI-compatible /v1/* smoke client
+- Key features: stdlib-only client for `/v1/models` and `/v1/chat/completions` (sync + SSE), plus an `extra_body.human_input_mode=never` demo that exercises the AskUserQuestion fallback path. Pairs with `saker --server --openai-gw-enabled`.
+- Run:
+```bash
+# Terminal 1: start saker with the gateway enabled
+./bin/saker --server --server-addr 127.0.0.1:10112 --openai-gw-enabled
+
+# Terminal 2: issue a Bearer key (or use --openai-gw-dev-bypass on the server)
+./bin/saker openai-key create --user $USER --project new --name openai-gw-demo
+export SAKER_API_KEY=ak_...
+
+# Run the four demos
+go run ./examples/21-openai-gateway --api-key "$SAKER_API_KEY"
+```
+- See [21-openai-gateway/README.md](21-openai-gateway/README.md) for equivalent curl recipes and P0/P1 limitations.

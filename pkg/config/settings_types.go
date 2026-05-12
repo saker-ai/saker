@@ -41,6 +41,8 @@ type Settings struct {
 	UserPersonas         map[string]*UserPersonasConfig `json:"userPersonas,omitempty"`         // Per-user persona overrides keyed by username.
 	Storage              *StorageConfig                 `json:"storage,omitempty"`              // Pluggable media object storage (osfs / embedded s2 / s3).
 	CORS                 *CORSConfig                    `json:"cors,omitempty"`                 // CORS policy for the web server.
+	Bifrost              *BifrostConfig                 `json:"bifrost,omitempty"`              // Bifrost SDK enhancements: semantic cache, telemetry/OTel.
+	Governance           *GovernanceConfig              `json:"governance,omitempty"`           // Saker-side governance: virtual keys with budget / RPM / TPM caps.
 }
 
 // StorageConfig configures the media object storage backend. See
@@ -242,9 +244,10 @@ type AigoProvider struct {
 
 // FailoverConfig configures automatic model failover on API errors.
 type FailoverConfig struct {
-	Enabled    *bool                `json:"enabled,omitempty"`    // Whether failover is active.
-	Models     []FailoverModelEntry `json:"models,omitempty"`     // Ordered fallback model list.
-	MaxRetries int                  `json:"maxRetries,omitempty"` // Max retries per model before failover (default 2).
+	Enabled        *bool                `json:"enabled,omitempty"`        // Whether failover is active.
+	Models         []FailoverModelEntry `json:"models,omitempty"`         // Ordered fallback model list.
+	MaxRetries     int                  `json:"maxRetries,omitempty"`     // Max retries per model before failover (default 2).
+	PrimaryKeyPool []ProviderKey        `json:"primaryKeyPool,omitempty"` // Optional multi-key pool for the primary provider; Bifrost weight-balances across keys.
 }
 
 // FailoverModelEntry describes a fallback model with optional credentials.
@@ -253,6 +256,98 @@ type FailoverModelEntry struct {
 	Model    string `json:"model"`             // Model name (e.g. "claude-sonnet-4-5-20250929")
 	APIKey   string `json:"apiKey,omitempty"`  // Optional independent API key; supports ${ENV_VAR} expansion.
 	BaseURL  string `json:"baseUrl,omitempty"` // Optional custom API base URL.
+}
+
+// ProviderKey describes one entry in a multi-key pool. Bifrost balances
+// requests across keys by Weight (default 1.0); Models optionally restricts
+// the key to a whitelist of model names.
+type ProviderKey struct {
+	Provider string   `json:"provider"`         // "anthropic" / "openai" / "dashscope" / etc.
+	APIKey   string   `json:"apiKey"`           // Supports ${ENV_VAR} expansion.
+	Weight   float64  `json:"weight,omitempty"` // Default 1.0; relative share within the pool.
+	Models   []string `json:"models,omitempty"` // Optional model whitelist (empty = all models).
+	Note     string   `json:"note,omitempty"`   // Human label, displayed masked in UI.
+}
+
+// BifrostConfig groups optional Bifrost-SDK enhancements that can be enabled
+// independently. Each sub-block is nil by default; presence + Enabled=true
+// activates the corresponding plugin in the Bifrost engine.
+type BifrostConfig struct {
+	SemanticCache *SemanticCacheConfig `json:"semanticCache,omitempty"` // Vector-similarity prompt cache via Bifrost semanticcache plugin.
+	Telemetry     *TelemetryConfig     `json:"telemetry,omitempty"`     // Provider-side OTLP traces/metrics via Bifrost otel plugin.
+}
+
+// SemanticCacheConfig configures the Bifrost semanticcache plugin. The plugin
+// requires an external vector store (Redis Stack / Qdrant / Pinecone / Weaviate)
+// — there is no in-memory mode upstream. Embedding is computed via the named
+// Provider/EmbeddingModel; cache lookups are gated by Threshold cosine
+// similarity.
+type SemanticCacheConfig struct {
+	Enabled              *bool              `json:"enabled,omitempty"`
+	Provider             string             `json:"provider,omitempty"`             // Embedding provider: "openai" / "cohere" / "ollama" / etc.
+	EmbeddingModel       string             `json:"embeddingModel,omitempty"`       // e.g. "text-embedding-3-small" / "embed-english-v3.0".
+	Dimension            int                `json:"dimension,omitempty"`            // Embedding vector dimension (required by some stores).
+	Threshold            float64            `json:"threshold,omitempty"`            // Cosine similarity gate, default 0.8.
+	TTLSeconds           int                `json:"ttlSeconds,omitempty"`           // Cache entry TTL in seconds (0 = no expiry).
+	Namespace            string             `json:"namespace,omitempty"`            // Vector store namespace / index name.
+	CacheByModel         *bool              `json:"cacheByModel,omitempty"`         // Scope cache key by model name.
+	CacheByProvider      *bool              `json:"cacheByProvider,omitempty"`      // Scope cache key by provider name.
+	ConvHistoryThreshold int                `json:"convHistoryThreshold,omitempty"` // Skip cache when conversation has more than N turns.
+	ExcludeSystemPrompt  *bool              `json:"excludeSystemPrompt,omitempty"`  // Hash only the user/assistant turns, not system prompt.
+	VectorStore          *VectorStoreConfig `json:"vectorStore,omitempty"`          // External store connection details.
+}
+
+// VectorStoreConfig describes how to reach the external vector store backing
+// the semantic cache. Only one of the credential fields will be relevant
+// per Type (e.g. APIKey for Pinecone/Weaviate, Username/Password for Redis).
+type VectorStoreConfig struct {
+	Type     string            `json:"type,omitempty"`     // "redis" | "qdrant" | "pinecone" | "weaviate"
+	Endpoint string            `json:"endpoint,omitempty"` // URL or host:port.
+	APIKey   string            `json:"apiKey,omitempty"`   // Cloud-store auth; supports ${ENV_VAR} expansion.
+	Username string            `json:"username,omitempty"` // Basic auth username (Redis ACL).
+	Password string            `json:"password,omitempty"` // Basic auth password; supports ${ENV_VAR} expansion.
+	Database string            `json:"database,omitempty"` // Collection / index / database name.
+	Headers  map[string]string `json:"headers,omitempty"`  // Extra HTTP headers (e.g. cluster id for Weaviate).
+}
+
+// TelemetryConfig configures the Bifrost otel plugin to ship traces and
+// optional metrics over OTLP gRPC/HTTP. Compatible with Grafana / Datadog /
+// Honeycomb / Jaeger / Tempo / OpenTelemetry Collector.
+type TelemetryConfig struct {
+	Enabled                    *bool             `json:"enabled,omitempty"`
+	ServiceName                string            `json:"serviceName,omitempty"`                // Defaults to "saker" when empty.
+	Protocol                   string            `json:"protocol,omitempty"`                   // "grpc" (default) | "http"
+	Endpoint                   string            `json:"endpoint,omitempty"`                   // OTLP collector URL, e.g. "https://otlp.example.com:4317".
+	Headers                    map[string]string `json:"headers,omitempty"`                    // e.g. {"x-honeycomb-team": "${HONEYCOMB_TOKEN}"}.
+	Insecure                   *bool             `json:"insecure,omitempty"`                   // Skip TLS verify (dev only).
+	TraceType                  string            `json:"traceType,omitempty"`                  // "genai_extension" (default) | "vercel" | "open_inference"
+	MetricsEnabled             *bool             `json:"metricsEnabled,omitempty"`             // Export metrics in addition to traces.
+	MetricsEndpoint            string            `json:"metricsEndpoint,omitempty"`            // Separate metrics endpoint; defaults to Endpoint.
+	MetricsPushIntervalSeconds int               `json:"metricsPushIntervalSeconds,omitempty"` // Metrics export cadence (default 30).
+	Sampling                   float64           `json:"sampling,omitempty"`                   // 0.0~1.0 trace sampling ratio (default 1.0).
+}
+
+// GovernanceConfig configures saker's middleware-layer access control for
+// model calls. Implemented entirely in saker (`pkg/middleware/governance.go`)
+// — independent of the Bifrost governance plugin which is HTTP-gateway
+// oriented and pulls in framework dependencies.
+type GovernanceConfig struct {
+	Enabled     *bool                  `json:"enabled,omitempty"`
+	VirtualKeys []GovernanceVirtualKey `json:"virtualKeys,omitempty"`
+}
+
+// GovernanceVirtualKey caps cost / rate per logical caller. ID is the
+// public-facing identifier callers pass via the `X-Saker-Virtual-Key`
+// header (or middleware ctx value). BudgetUSD / RPM / TPM = 0 means
+// unlimited for that dimension.
+type GovernanceVirtualKey struct {
+	ID            string   `json:"id"`                      // Public identifier; unique within the slice.
+	Name          string   `json:"name,omitempty"`          // Human label.
+	AllowedModels []string `json:"allowedModels,omitempty"` // Optional whitelist; empty = all models.
+	BudgetUSD     float64  `json:"budgetUSD,omitempty"`     // Spend cap in USD per ResetCron window; 0 = unlimited.
+	RPM           int      `json:"rpm,omitempty"`           // Requests-per-minute cap; 0 = unlimited.
+	TPM           int      `json:"tpm,omitempty"`           // Tokens-per-minute cap; 0 = unlimited.
+	ResetCron     string   `json:"resetCron,omitempty"`     // Budget reset schedule: "monthly" (default) / "weekly" / "daily".
 }
 
 // ACPSettings configures ACP client connections to external agents.

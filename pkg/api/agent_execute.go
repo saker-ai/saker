@@ -108,6 +108,7 @@ func (rt *Runtime) runAgentWithMiddleware(prep preparedRun, extras ...middleware
 		rulesLoader:        rt.rulesLoader,
 		enableCache:        enableCache,
 		maxOutputTokens:    rt.opts.MaxOutputTokens,
+		overrides:          prep.normalized.ModelOverrides,
 		hooks:              hookAdapter,
 		recorder:           prep.recorder,
 		compactor:          rt.compactor,

@@ -11,6 +11,9 @@ import (
 // statements at semicolons and applied in one transaction so partial
 // application can never leave the DB in an in-between state.
 //
+// `apply` is an optional custom transaction body for steps that need
+// schema-aware idempotence that SQLite DDL cannot express directly.
+//
 // `guard` is an optional pre-flight check. If it returns skip=true the
 // migration body is not executed but the version is still recorded as
 // applied — used when the destination state was already reached by an
@@ -19,46 +22,80 @@ type migration struct {
 	version int
 	name    string
 	sql     string
+	apply   func(*sql.Tx) error
 	guard   func(*sql.DB) (skip bool, err error)
 }
+
+// initialSchema is the v1 baseline as it existed before messages.hash and
+// messages.pos were added. Keep it separate from store.go's current `schema`:
+// replaying the current schema against a legacy messages table is unsafe
+// because CREATE TABLE IF NOT EXISTS leaves the old table shape untouched while
+// later index DDL may reference newer columns.
+const initialSchema = `
+CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL DEFAULT '',
+    message_count INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT (datetime('now')),
+    updated_at DATETIME NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL DEFAULT '',
+    tool_name TEXT NOT NULL DEFAULT '',
+    created_at DATETIME NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(
+    content,
+    content=messages,
+    content_rowid=id
+);
+
+CREATE TRIGGER IF NOT EXISTS messages_ai AFTER INSERT ON messages BEGIN
+    INSERT INTO messages_fts(rowid, content) VALUES (new.id, new.content);
+END;
+
+CREATE TRIGGER IF NOT EXISTS messages_ad AFTER DELETE ON messages BEGIN
+    INSERT INTO messages_fts(messages_fts, rowid, content) VALUES ('delete', old.id, old.content);
+END;
+
+CREATE TRIGGER IF NOT EXISTS messages_au AFTER UPDATE ON messages BEGIN
+    INSERT INTO messages_fts(messages_fts, rowid, content) VALUES ('delete', old.id, old.content);
+    INSERT INTO messages_fts(rowid, content) VALUES (new.id, new.content);
+END;
+`
 
 // migrations is the canonical, ordered list of schema steps. Append new
 // migrations at the end with strictly increasing version numbers — never
 // rewrite or reorder a published version, since a deployed DB will already
 // have it recorded as applied.
 //
-// Migration #1 is intentionally the full schema string from store.go: it
-// uses CREATE ... IF NOT EXISTS, so re-applying on a database that was
-// already opened by an older binary is a no-op and the migration becomes
-// the recorded baseline.
+// Migration #1 is the original schema shape. Do not replace it with the
+// current schema from store.go: older databases may already have `messages`
+// without newer columns, and SQLite will not reconcile that table through
+// CREATE TABLE IF NOT EXISTS.
 //
 // Migration #2 captures the ad-hoc ALTER TABLE pattern from the older
-// inline code in Open() — adding hash/pos columns. The check guard is the
-// schema_migrations row, not the "duplicate column" error string.
+// inline code in Open() — adding hash/pos columns and the positional index.
+// It probes the actual table shape so partially upgraded databases recover
+// without relying on "duplicate column" error strings.
 var migrations = []migration{
 	{
 		version: 1,
 		name:    "initial_schema",
-		sql:     schema,
+		sql:     initialSchema,
 	},
 	{
 		version: 2,
 		name:    "messages_hash_pos",
-		sql: `
-ALTER TABLE messages ADD COLUMN hash TEXT NOT NULL DEFAULT '';
-ALTER TABLE messages ADD COLUMN pos INTEGER NOT NULL DEFAULT 0;
-`,
-		// Skip when migration #1 already created the columns — the current
-		// `schema` constant in store.go includes hash/pos, so a fresh open
-		// satisfies #2 implicitly. Older databases (created before hash/pos
-		// were folded into the baseline) trigger the real ALTER path.
-		guard: func(db *sql.DB) (bool, error) {
-			has, err := columnExists(db, "messages", "hash")
-			if err != nil {
-				return false, err
-			}
-			return has, nil
-		},
+		apply:   ensureMessagesHashPos,
 	},
 }
 
@@ -80,26 +117,6 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 	applied, err := loadAppliedVersions(db)
 	if err != nil {
 		return err
-	}
-
-	// Special case for pre-existing DBs created before this migration
-	// system existed: detect "messages.hash" column and silently mark
-	// migrations 1+2 as applied so we don't try to ALTER an existing
-	// column.
-	if len(applied) == 0 {
-		if has, err := columnExists(db, "messages", "hash"); err == nil && has {
-			for _, m := range migrations {
-				if m.version > 2 {
-					break
-				}
-				if err := recordMigration(db, m); err != nil {
-					return err
-				}
-				applied[m.version] = true
-			}
-			slog.Info("sessiondb: detected pre-existing schema, baseline marked",
-				"highest_baseline_version", 2)
-		}
 	}
 
 	for _, m := range migrations {
@@ -161,6 +178,12 @@ func applyMigration(db *sql.DB, m migration) error {
 			return fmt.Errorf("exec %q: %w", truncate(stmt, 80), err)
 		}
 	}
+	if m.apply != nil {
+		if err := m.apply(tx); err != nil {
+			_ = tx.Rollback()
+			return err
+		}
+	}
 
 	if _, err := tx.Exec(
 		`INSERT INTO schema_migrations(version, name) VALUES (?, ?)`,
@@ -187,12 +210,51 @@ func recordMigration(db *sql.DB, m migration) error {
 }
 
 func columnExists(db *sql.DB, table, column string) (bool, error) {
-	rows, err := db.Query(`SELECT 1 FROM pragma_table_info(?) WHERE name = ?`, table, column)
+	return columnExistsQuery(db, table, column)
+}
+
+func columnExistsTx(tx *sql.Tx, table, column string) (bool, error) {
+	return columnExistsQuery(tx, table, column)
+}
+
+type sqlQueryer interface {
+	Query(query string, args ...any) (*sql.Rows, error)
+}
+
+func columnExistsQuery(q sqlQueryer, table, column string) (bool, error) {
+	rows, err := q.Query(`SELECT 1 FROM pragma_table_info(?) WHERE name = ?`, table, column)
 	if err != nil {
 		return false, err
 	}
 	defer rows.Close()
 	return rows.Next(), nil
+}
+
+func ensureMessagesHashPos(tx *sql.Tx) error {
+	hasHash, err := columnExistsTx(tx, "messages", "hash")
+	if err != nil {
+		return fmt.Errorf("check messages.hash: %w", err)
+	}
+	if !hasHash {
+		if _, err := tx.Exec(`ALTER TABLE messages ADD COLUMN hash TEXT NOT NULL DEFAULT ''`); err != nil {
+			return fmt.Errorf("add messages.hash: %w", err)
+		}
+	}
+
+	hasPos, err := columnExistsTx(tx, "messages", "pos")
+	if err != nil {
+		return fmt.Errorf("check messages.pos: %w", err)
+	}
+	if !hasPos {
+		if _, err := tx.Exec(`ALTER TABLE messages ADD COLUMN pos INTEGER NOT NULL DEFAULT 0`); err != nil {
+			return fmt.Errorf("add messages.pos: %w", err)
+		}
+	}
+
+	if _, err := tx.Exec(`CREATE INDEX IF NOT EXISTS idx_messages_session_pos ON messages(session_id, pos)`); err != nil {
+		return fmt.Errorf("create idx_messages_session_pos: %w", err)
+	}
+	return nil
 }
 
 // splitStatements breaks a multi-statement SQL blob at top-level semicolons.

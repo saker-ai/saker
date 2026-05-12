@@ -775,6 +775,15 @@ func TestAppsRunWithExpiredCookieAndNoBearer(t *testing.T) {
 		buf, _ := io.ReadAll(resp.Body)
 		t.Fatalf("expected 202 in no-auth mode, got %d body=%s", resp.StatusCode, buf)
 	}
+
+	// The run continues asynchronously after 202. Drain to terminal so the
+	// canvas executor stops writing before t.TempDir cleanup runs — otherwise
+	// RemoveAll races against in-flight writes and reports "directory not empty".
+	var body map[string]any
+	decodeJSON(t, resp.Body, &body)
+	if runID, _ := body["runId"].(string); runID != "" {
+		drainRun(t, s.handler.canvasExecutor, runID)
+	}
 }
 
 // ── Share-token tests ─────────────────────────────────────────────────────────

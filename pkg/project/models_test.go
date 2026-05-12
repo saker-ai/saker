@@ -351,8 +351,8 @@ func TestModelsInviteStruct(t *testing.T) {
 func TestModelsAllModels(t *testing.T) {
 	t.Parallel()
 	models := AllModels()
-	if len(models) != 6 {
-		t.Fatalf("AllModels() returned %d items, want 6", len(models))
+	if len(models) != 7 {
+		t.Fatalf("AllModels() returned %d items, want 7", len(models))
 	}
 	// Verify each model type appears exactly once.
 	wantTypes := map[string]int{
@@ -362,6 +362,7 @@ func TestModelsAllModels(t *testing.T) {
 		"*project.Project":       1,
 		"*project.ProjectMember": 1,
 		"*project.Invite":        1,
+		"*project.APIKey":        1,
 	}
 	gotTypes := map[string]int{}
 	for _, m := range models {

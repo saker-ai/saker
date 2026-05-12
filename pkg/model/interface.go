@@ -104,6 +104,17 @@ type Request struct {
 	Temperature       *float64
 	EnablePromptCache bool // Enable prompt caching for system and recent messages
 	ResponseFormat    *ResponseFormat
+
+	// --- Optional per-request sampling overrides. Provider adapters
+	// consume these when set and ignore them otherwise (so unknown
+	// fields never cause an error at the API surface). The OpenAI
+	// inbound gateway populates these from the standard request body
+	// fields (top_p, stop, seed, tool_choice, parallel_tool_calls).
+	TopP              *float64 // nil = provider default
+	Stop              []string // nil/empty = no stop sequences set by caller
+	Seed              *int64   // nil = no deterministic-seed override
+	ToolChoice        string   // "" = no override; "auto"/"none"/specific tool
+	ParallelToolCalls *bool    // nil = provider default
 }
 
 // Usage reports token accounting for a completion.
@@ -120,7 +131,6 @@ type Response struct {
 	Message    Message
 	Usage      Usage
 	StopReason string
-	RateLimit  *RateLimitInfo `json:"rate_limit,omitempty"`
 }
 
 // StreamResult delivers incremental updates during streaming calls.

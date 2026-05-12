@@ -17,11 +17,93 @@ import (
 	"github.com/cinience/saker/pkg/project"
 	"github.com/cinience/saker/pkg/sandbox/landlockenv"
 	"github.com/cinience/saker/pkg/server"
+	openaigw "github.com/cinience/saker/pkg/server/openai"
+	"github.com/gin-gonic/gin"
 )
+
+// openaiGatewayFlags carries the `--openai-gw-*` flags resolved by main.go.
+// Bundled into a struct so runServerMode's signature stays readable as more
+// knobs are added.
+type openaiGatewayFlags struct {
+	Enabled             bool
+	MaxRuns             int
+	MaxRunsPerTenant    int
+	RPSPerTenant        int
+	RingSize            int
+	ExpiresAfterSeconds int
+	DevBypassAuth       bool
+	// RunHubDSN selects the run-hub backend. Empty = in-memory (default,
+	// zero-config); a sqlite path or sqlite://path = embedded SQLite-backed
+	// persistence; a postgres://... DSN requires the binary to be built
+	// with `-tags postgres`. See pkg/server/openai.Options.RunHubDSN.
+	RunHubDSN string
+	// RunHubBatchSize bounds the persistent hub's async writer batch
+	// size. Zero = default (64).
+	RunHubBatchSize int
+	// RunHubBatchBufferSize bounds the persistent hub's enqueue chan
+	// capacity. Zero = default (1024). Drop-oldest backpressure when full.
+	RunHubBatchBufferSize int
+	// RunHubBatchInterval bounds the persistent hub's writer idle window.
+	// Zero = default (50ms).
+	RunHubBatchInterval time.Duration
+	// RunHubGCInterval is how often the hub sweeper runs. Zero = default
+	// (30s). See pkg/server/openai.Options.RunHubGCInterval.
+	RunHubGCInterval time.Duration
+	// RunHubTerminalRetention is how long terminal runs are retained
+	// before GC reclaims them. Zero = default (60s). See
+	// pkg/server/openai.Options.RunHubTerminalRetention.
+	RunHubTerminalRetention time.Duration
+	// RunHubMaxEventBytes caps per-event payload size. Zero = unbounded
+	// (legacy behavior, NOT recommended in production). Default 1 MiB.
+	// See pkg/server/openai.Options.RunHubMaxEventBytes.
+	RunHubMaxEventBytes int64
+	// RunHubSubscriberIdleTimeout closes per-run subscriber channels
+	// that sit idle past this window. Zero = disabled. See
+	// pkg/server/openai.Options.RunHubSubscriberIdleTimeout.
+	RunHubSubscriberIdleTimeout time.Duration
+	// RunHubSinkBreakerThreshold is the persistent-hub sink circuit
+	// breaker's consecutive-failure threshold. Zero disables the
+	// breaker. See pkg/server/openai.Options.RunHubSinkBreakerThreshold.
+	RunHubSinkBreakerThreshold int
+	// RunHubSinkBreakerCooldown is how long the breaker stays Open
+	// before allowing a probe call. Zero with non-zero threshold
+	// latches Open until restart. See
+	// pkg/server/openai.Options.RunHubSinkBreakerCooldown.
+	RunHubSinkBreakerCooldown time.Duration
+	// RunHubPGCopyThreshold gates the postgres COPY-based bulk insert
+	// path. Zero disables the COPY path entirely; ignored on
+	// non-postgres drivers. See
+	// pkg/server/openai.Options.RunHubPGCopyThreshold.
+	RunHubPGCopyThreshold int
+}
+
+// toOptions converts the raw CLI flag values into an openai.Options.
+func (g openaiGatewayFlags) toOptions() openaigw.Options {
+	return openaigw.Options{
+		Enabled:                     g.Enabled,
+		MaxRuns:                     g.MaxRuns,
+		MaxRunsPerTenant:            g.MaxRunsPerTenant,
+		RPSPerTenant:                g.RPSPerTenant,
+		RingSize:                    g.RingSize,
+		ExpiresAfterSeconds:         g.ExpiresAfterSeconds,
+		DevBypassAuth:               g.DevBypassAuth,
+		RunHubDSN:                   g.RunHubDSN,
+		RunHubBatchSize:             g.RunHubBatchSize,
+		RunHubBatchBufferSize:       g.RunHubBatchBufferSize,
+		RunHubBatchInterval:         g.RunHubBatchInterval,
+		RunHubGCInterval:            g.RunHubGCInterval,
+		RunHubTerminalRetention:     g.RunHubTerminalRetention,
+		RunHubMaxEventBytes:         g.RunHubMaxEventBytes,
+		RunHubSubscriberIdleTimeout: g.RunHubSubscriberIdleTimeout,
+		RunHubSinkBreakerThreshold:  g.RunHubSinkBreakerThreshold,
+		RunHubSinkBreakerCooldown:   g.RunHubSinkBreakerCooldown,
+		RunHubPGCopyThreshold:       g.RunHubPGCopyThreshold,
+	}
+}
 
 // runServerMode starts the embedded HTTP server, wires the project store,
 // auto-enables Landlock when available, and resolves web auth credentials.
-func runServerMode(stdout, stderr io.Writer, opts api.Options, addr, dataDir, staticDir, logDir string, debug bool) error {
+func runServerMode(stdout, stderr io.Writer, opts api.Options, addr, dataDir, staticDir, logDir string, debug bool, gwFlags openaiGatewayFlags) error {
 	opts.EntryPoint = api.EntryPointPlatform
 
 	// Auto-enable Landlock sandbox when kernel supports it and user didn't
@@ -142,6 +224,38 @@ func runServerMode(stdout, stderr io.Writer, opts api.Options, addr, dataDir, st
 		return fmt.Errorf("server mode requires api.Runtime")
 	}
 
+	// Optional OpenAI-compatible gateway. Mounted via Server.EngineHook so the
+	// pkg/server package never has to import pkg/server/openai. The hook
+	// closure runs once during ListenAndServe; a non-nil error aborts startup.
+	// gw is captured here so the SIGTERM path can call Shutdown to drain
+	// background goroutines (hub GC, in-flight runs).
+	var gw *openaigw.Gateway
+	if gwFlags.Enabled {
+		srvOpts.EngineHook = func(engine *gin.Engine) error {
+			deps := openaigw.Deps{
+				Runtime:      apiRuntime,
+				ProjectStore: projectStore,
+				Logger:       logger,
+				Options:      gwFlags.toOptions(),
+			}
+			g, err := openaigw.RegisterOpenAIGateway(engine, deps)
+			if err != nil {
+				return fmt.Errorf("register openai gateway: %w", err)
+			}
+			gw = g
+			return nil
+		}
+		runhubBackend := "in-memory"
+		if gwFlags.RunHubDSN != "" {
+			runhubBackend = "persistent (" + gwFlags.RunHubDSN + ")"
+		}
+		fmt.Fprintf(stdout, "OpenAI-compatible gateway enabled at /v1/* (max_runs=%d, ring=%d, expires=%ds, runhub=%s)\n",
+			gwFlags.MaxRuns, gwFlags.RingSize, gwFlags.ExpiresAfterSeconds, runhubBackend)
+		if gwFlags.DevBypassAuth {
+			fmt.Fprintln(stderr, "WARNING: --openai-gw-dev-bypass=true accepts requests without Bearer auth (localhost identity); never use in production")
+		}
+	}
+
 	// Resolve web auth config: use existing settings or auto-generate credentials.
 	if settings := apiRuntime.Settings(); settings != nil && settings.WebAuth != nil && settings.WebAuth.Password != "" {
 		srvOpts.WebAuth = settings.WebAuth
@@ -188,11 +302,19 @@ func runServerMode(stdout, stderr io.Writer, opts api.Options, addr, dataDir, st
 
 	select {
 	case err := <-errCh:
+		if gw != nil {
+			gw.Shutdown()
+		}
 		return err
 	case <-sigCh:
 		fmt.Fprintln(stdout, "\nShutting down...")
 		shutCtx, shutCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutCancel()
+		// Stop the OpenAI gateway first so the hub GC goroutine and any
+		// in-flight runs are cancelled before the HTTP server stops accepting.
+		if gw != nil {
+			gw.Shutdown()
+		}
 		return srv.Shutdown(shutCtx)
 	}
 }
