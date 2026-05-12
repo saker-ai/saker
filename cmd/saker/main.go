@@ -163,6 +163,27 @@ Options:
 	authUser := flags.String("auth-user", "", "Set web auth username and save to settings.local.json")
 	authPass := flags.String("auth-pass", "", "Set web auth password and save to settings.local.json")
 
+	// OpenAI-compatible inbound gateway (server mode only).
+	// Each flag has zero effect unless --openai-gw-enabled=true AND --server.
+	openaiGwEnabled := flags.Bool("openai-gw-enabled", false, "Enable OpenAI-compatible /v1/* gateway (requires --server)")
+	openaiGwMaxRuns := flags.Int("openai-gw-max-runs", 256, "OpenAI gateway: max in-flight runs the hub will track")
+	openaiGwMaxRunsPerTenant := flags.Int("openai-gw-max-runs-per-tenant", 32, "OpenAI gateway: per-Bearer-key in-flight run cap (0 disables)")
+	openaiGwRPSPerTenant := flags.Int("openai-gw-rps-per-tenant", 10, "OpenAI gateway: per-Bearer-key request rate cap req/s (0 disables)")
+	openaiGwRingSize := flags.Int("openai-gw-ring-size", 512, "OpenAI gateway: per-run event ring buffer size for reconnect replay")
+	openaiGwExpiresAfterSeconds := flags.Int("openai-gw-expires-after-seconds", 600, "OpenAI gateway: default Run idle/await timeout in seconds")
+	openaiGwDevBypass := flags.Bool("openai-gw-dev-bypass", false, "OpenAI gateway: accept requests without a valid Bearer key (DEV ONLY)")
+	openaiGwRunHubDSN := flags.String("openai-gw-runhub-dsn", "", "OpenAI gateway: run-hub persistence DSN (empty=in-memory; sqlite path or sqlite://path; postgres://... requires -tags postgres)")
+	openaiGwRunHubBatchSize := flags.Int("openai-gw-runhub-batch-size", 64, "OpenAI gateway: persistent hub async writer batch size (events per InsertEventsBatch)")
+	openaiGwRunHubBatchBuffer := flags.Int("openai-gw-runhub-batch-buffer", 1024, "OpenAI gateway: persistent hub async writer enqueue chan capacity (drops oldest when full)")
+	openaiGwRunHubBatchInterval := flags.Duration("openai-gw-runhub-batch-interval", 50*time.Millisecond, "OpenAI gateway: persistent hub async writer max idle time before flushing a partial batch")
+	openaiGwRunHubGCInterval := flags.Duration("openai-gw-runhub-gc-interval", 30*time.Second, "OpenAI gateway: how often the hub sweeper reclaims expired/terminal runs (1s..1h)")
+	openaiGwRunHubTerminalRetention := flags.Duration("openai-gw-runhub-terminal-retention", 60*time.Second, "OpenAI gateway: how long terminal runs are retained for reconnect-status reads (1s..24h)")
+	openaiGwRunHubMaxEventBytes := flags.Int64("openai-gw-runhub-max-event-bytes", 1*1024*1024, "OpenAI gateway: per-event payload cap; oversized events are rejected (0 = unbounded; not recommended in production)")
+	openaiGwRunHubSubscriberIdleTimeout := flags.Duration("openai-gw-runhub-subscriber-idle-timeout", 0, "OpenAI gateway: GC closes per-run SSE subscriber chans idle past this window (0 = disabled; recommend 5-15m once event-rate floor is measured)")
+	openaiGwRunHubSinkBreakerThreshold := flags.Int("openai-gw-runhub-sink-breaker-threshold", 10, "OpenAI gateway: persistent-hub sink circuit breaker consecutive failure threshold (0 = disabled)")
+	openaiGwRunHubSinkBreakerCooldown := flags.Duration("openai-gw-runhub-sink-breaker-cooldown", 30*time.Second, "OpenAI gateway: persistent-hub sink circuit breaker cooldown before half-open probe (0 with non-zero threshold = latched-open until restart)")
+	openaiGwRunHubPGCopyThreshold := flags.Int("openai-gw-runhub-pg-copy-threshold", 50, "OpenAI gateway: postgres-only batch-insert COPY threshold; batches >= this size use pgx.CopyFrom into a TEMP staging table (preserves ON CONFLICT DO NOTHING dedup). 0 disables COPY; ignored on non-postgres drivers.")
+
 	profileName := flags.String("profile", "", "Use named profile for isolated settings/memory/history")
 	dangerouslySkipPermissions := flags.Bool("dangerously-skip-permissions", false, "Skip all tool permission checks")
 
@@ -240,6 +261,14 @@ Options:
 	// Handle "eval" subcommand: saker eval <bench> ...
 	if flags.NArg() > 0 && flags.Arg(0) == "eval" {
 		return runEvalCommand(stdout, stderr, flags.Args()[1:])
+	}
+
+	// Handle "openai-key" subcommand: saker openai-key <action> ...
+	// Operator-side CLI for the OpenAI-compatible /v1/* gateway. Resolves
+	// the project store the same way --server does, so keys created here
+	// authenticate immediately against a running gateway.
+	if flags.NArg() > 0 && flags.Arg(0) == "openai-key" {
+		return runOpenAIKeyCommand(stdout, stderr, flags.Args()[1:])
 	}
 
 	// Resolve backward-compat aliases
@@ -345,7 +374,27 @@ Options:
 	}
 
 	if *serverMode {
-		return runServerMode(stdout, stderr, options, *serverAddr, *serverDataDir, *serverStatic, *serverLogDir, *debugFlag)
+		gw := openaiGatewayFlags{
+			Enabled:                     *openaiGwEnabled,
+			MaxRuns:                     *openaiGwMaxRuns,
+			MaxRunsPerTenant:            *openaiGwMaxRunsPerTenant,
+			RPSPerTenant:                *openaiGwRPSPerTenant,
+			RingSize:                    *openaiGwRingSize,
+			ExpiresAfterSeconds:         *openaiGwExpiresAfterSeconds,
+			DevBypassAuth:               *openaiGwDevBypass,
+			RunHubDSN:                   *openaiGwRunHubDSN,
+			RunHubBatchSize:             *openaiGwRunHubBatchSize,
+			RunHubBatchBufferSize:       *openaiGwRunHubBatchBuffer,
+			RunHubBatchInterval:         *openaiGwRunHubBatchInterval,
+			RunHubGCInterval:            *openaiGwRunHubGCInterval,
+			RunHubTerminalRetention:     *openaiGwRunHubTerminalRetention,
+			RunHubMaxEventBytes:         *openaiGwRunHubMaxEventBytes,
+			RunHubSubscriberIdleTimeout: *openaiGwRunHubSubscriberIdleTimeout,
+			RunHubSinkBreakerThreshold:  *openaiGwRunHubSinkBreakerThreshold,
+			RunHubSinkBreakerCooldown:   *openaiGwRunHubSinkBreakerCooldown,
+			RunHubPGCopyThreshold:       *openaiGwRunHubPGCopyThreshold,
+		}
+		return runServerMode(stdout, stderr, options, *serverAddr, *serverDataDir, *serverStatic, *serverLogDir, *debugFlag, gw)
 	}
 
 	// Resolve channels path — IM credentials are user-global, not project-specific.

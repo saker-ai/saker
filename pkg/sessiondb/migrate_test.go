@@ -53,8 +53,49 @@ func TestRunMigrations_PreExistingNoBookkeeping(t *testing.T) {
 	got := appliedVersions(t, db)
 	want := []int{1, 2}
 	if !equalIntSlice(got, want) {
-		t.Fatalf("applied versions = %v, want %v (baseline auto-detect)",
+		t.Fatalf("applied versions = %v, want %v (pre-existing schema)",
 			got, want)
+	}
+}
+
+func TestRunMigrations_PreHashPosNoBookkeeping(t *testing.T) {
+	db := openTestDB(t)
+
+	// Simulate the original DB shape: messages exists, but does not yet have
+	// the diffing columns or the positional index.
+	if _, err := db.Exec(initialSchema); err != nil {
+		t.Fatalf("seed initial schema: %v", err)
+	}
+	if has, err := columnExists(db, "messages", "pos"); err != nil {
+		t.Fatalf("columnExists(pos) before migration: %v", err)
+	} else if has {
+		t.Fatal("test seed unexpectedly already has messages.pos")
+	}
+	if indexExists(t, db, "idx_messages_session_pos") {
+		t.Fatal("test seed unexpectedly already has idx_messages_session_pos")
+	}
+
+	if err := runMigrations(db); err != nil {
+		t.Fatalf("runMigrations: %v", err)
+	}
+
+	for _, col := range []string{"hash", "pos"} {
+		has, err := columnExists(db, "messages", col)
+		if err != nil {
+			t.Fatalf("columnExists(%s): %v", col, err)
+		}
+		if !has {
+			t.Fatalf("messages.%s missing after migration", col)
+		}
+	}
+	if !indexExists(t, db, "idx_messages_session_pos") {
+		t.Fatal("idx_messages_session_pos missing after migration")
+	}
+
+	got := appliedVersions(t, db)
+	want := []int{1, 2}
+	if !equalIntSlice(got, want) {
+		t.Fatalf("applied versions = %v, want %v", got, want)
 	}
 }
 
@@ -138,6 +179,22 @@ func countMigrations(t *testing.T, db *sql.DB) int {
 		t.Fatalf("count: %v", err)
 	}
 	return n
+}
+
+func indexExists(t *testing.T, db *sql.DB, name string) bool {
+	t.Helper()
+	var found int
+	err := db.QueryRow(
+		`SELECT 1 FROM sqlite_master WHERE type = 'index' AND name = ?`,
+		name,
+	).Scan(&found)
+	if err == sql.ErrNoRows {
+		return false
+	}
+	if err != nil {
+		t.Fatalf("indexExists(%s): %v", name, err)
+	}
+	return found == 1
 }
 
 func equalIntSlice(a, b []int) bool {

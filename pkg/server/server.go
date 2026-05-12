@@ -15,6 +15,7 @@ import (
 	"github.com/cinience/saker/pkg/config"
 	"github.com/cinience/saker/pkg/project"
 	storagecfg "github.com/cinience/saker/pkg/storage"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
@@ -35,6 +36,13 @@ type Options struct {
 	// Optional: when nil, the server runs in single-project compatibility mode
 	// using the legacy DataDir layout. P2+ handlers require this to be set.
 	ProjectStore *project.Store
+	// EngineHook, when non-nil, is invoked once during ListenAndServe after
+	// the core routes are mounted but BEFORE the static catch-all NoRoute
+	// handler. Used by cmd_server to mount the optional OpenAI-compatible
+	// gateway (pkg/server/openai) without making the server package import
+	// the gateway package directly. A non-nil error returned from the hook
+	// aborts ListenAndServe.
+	EngineHook func(*gin.Engine) error
 }
 
 func (o *Options) defaults() {
@@ -167,7 +175,10 @@ func New(runtime *api.Runtime, opts Options) (*Server, error) {
 // ListenAndServe starts the HTTP server. Route registration and middleware
 // live in gin_engine.go; background loops live in lifecycle.go.
 func (s *Server) ListenAndServe() error {
-	engine := s.buildGinEngine()
+	engine, err := s.buildGinEngine()
+	if err != nil {
+		return err
+	}
 
 	s.httpSrv = &http.Server{
 		Addr:              s.opts.Addr,

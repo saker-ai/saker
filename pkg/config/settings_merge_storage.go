@@ -25,6 +25,9 @@ func mergeFailover(lower, higher *FailoverConfig) *FailoverConfig {
 	if higher.MaxRetries != 0 {
 		out.MaxRetries = higher.MaxRetries
 	}
+	if len(higher.PrimaryKeyPool) > 0 {
+		out.PrimaryKeyPool = cloneProviderKeys(higher.PrimaryKeyPool)
+	}
 	return out
 }
 
@@ -38,7 +41,150 @@ func cloneFailover(src *FailoverConfig) *FailoverConfig {
 		out.Models = make([]FailoverModelEntry, len(src.Models))
 		copy(out.Models, src.Models)
 	}
+	if len(src.PrimaryKeyPool) > 0 {
+		out.PrimaryKeyPool = cloneProviderKeys(src.PrimaryKeyPool)
+	}
 	return &out
+}
+
+func cloneProviderKeys(src []ProviderKey) []ProviderKey {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make([]ProviderKey, len(src))
+	for i, k := range src {
+		cp := k
+		if len(k.Models) > 0 {
+			cp.Models = append([]string(nil), k.Models...)
+		}
+		out[i] = cp
+	}
+	return out
+}
+
+// mergeBifrost performs a wholesale replacement when higher is non-nil for
+// either sub-block. Sub-block fields are simple value structs; deep-merging
+// inner maps would surprise the UI which always sends a complete patch.
+func mergeBifrost(lower, higher *BifrostConfig) *BifrostConfig {
+	if lower == nil && higher == nil {
+		return nil
+	}
+	if lower == nil {
+		return cloneBifrost(higher)
+	}
+	if higher == nil {
+		return cloneBifrost(lower)
+	}
+	out := cloneBifrost(lower)
+	if higher.SemanticCache != nil {
+		out.SemanticCache = cloneSemanticCache(higher.SemanticCache)
+	}
+	if higher.Telemetry != nil {
+		out.Telemetry = cloneTelemetry(higher.Telemetry)
+	}
+	return out
+}
+
+func cloneBifrost(src *BifrostConfig) *BifrostConfig {
+	if src == nil {
+		return nil
+	}
+	return &BifrostConfig{
+		SemanticCache: cloneSemanticCache(src.SemanticCache),
+		Telemetry:     cloneTelemetry(src.Telemetry),
+	}
+}
+
+func cloneSemanticCache(src *SemanticCacheConfig) *SemanticCacheConfig {
+	if src == nil {
+		return nil
+	}
+	out := *src
+	out.Enabled = cloneBoolPtr(src.Enabled)
+	out.CacheByModel = cloneBoolPtr(src.CacheByModel)
+	out.CacheByProvider = cloneBoolPtr(src.CacheByProvider)
+	out.ExcludeSystemPrompt = cloneBoolPtr(src.ExcludeSystemPrompt)
+	out.VectorStore = cloneVectorStore(src.VectorStore)
+	return &out
+}
+
+func cloneVectorStore(src *VectorStoreConfig) *VectorStoreConfig {
+	if src == nil {
+		return nil
+	}
+	out := *src
+	if len(src.Headers) > 0 {
+		out.Headers = make(map[string]string, len(src.Headers))
+		for k, v := range src.Headers {
+			out.Headers[k] = v
+		}
+	}
+	return &out
+}
+
+func cloneTelemetry(src *TelemetryConfig) *TelemetryConfig {
+	if src == nil {
+		return nil
+	}
+	out := *src
+	out.Enabled = cloneBoolPtr(src.Enabled)
+	out.Insecure = cloneBoolPtr(src.Insecure)
+	out.MetricsEnabled = cloneBoolPtr(src.MetricsEnabled)
+	if len(src.Headers) > 0 {
+		out.Headers = make(map[string]string, len(src.Headers))
+		for k, v := range src.Headers {
+			out.Headers[k] = v
+		}
+	}
+	return &out
+}
+
+func mergeGovernance(lower, higher *GovernanceConfig) *GovernanceConfig {
+	if lower == nil && higher == nil {
+		return nil
+	}
+	if lower == nil {
+		return cloneGovernance(higher)
+	}
+	if higher == nil {
+		return cloneGovernance(lower)
+	}
+	out := cloneGovernance(lower)
+	if higher.Enabled != nil {
+		out.Enabled = boolPtr(*higher.Enabled)
+	}
+	// Higher's VirtualKeys, when non-nil, fully replaces lower's slice. The UI
+	// always patches the entire list, so per-element merging would conflict
+	// with the user's intent (e.g. deleting a key would silently fail).
+	if higher.VirtualKeys != nil {
+		out.VirtualKeys = cloneVirtualKeys(higher.VirtualKeys)
+	}
+	return out
+}
+
+func cloneGovernance(src *GovernanceConfig) *GovernanceConfig {
+	if src == nil {
+		return nil
+	}
+	return &GovernanceConfig{
+		Enabled:     cloneBoolPtr(src.Enabled),
+		VirtualKeys: cloneVirtualKeys(src.VirtualKeys),
+	}
+}
+
+func cloneVirtualKeys(src []GovernanceVirtualKey) []GovernanceVirtualKey {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make([]GovernanceVirtualKey, len(src))
+	for i, k := range src {
+		cp := k
+		if len(k.AllowedModels) > 0 {
+			cp.AllowedModels = append([]string(nil), k.AllowedModels...)
+		}
+		out[i] = cp
+	}
+	return out
 }
 
 func cloneWebAuth(src *WebAuthConfig) *WebAuthConfig {

@@ -1,4 +1,4 @@
-.PHONY: test test-unit test-race test-integration test-short coverage lint lint-new bench fuzz docs-sync notices oss-check build saker saker-full install clean test-pipeline test-pipeline-race test-pipeline-bench test-pipeline-stress test-all test-eval test-eval-bench test-eval-llm test-eval-all test-eval-tb2 test-eval-tb2-smoke eval-tb2 eval-tb2-smoke demo-pipeline server web-deps web-dev web-clean web-build web-editor-deps web-editor-dev web-editor-build web-editor-clean desktop run e2e-build e2e-run e2e-clean changelog swagger check-no-binaries diagrams
+.PHONY: test test-unit test-race test-integration test-short coverage lint lint-new bench fuzz docs-sync notices oss-check build saker saker-full install clean test-pipeline test-pipeline-race test-pipeline-bench test-pipeline-stress test-all test-eval test-eval-bench test-eval-llm test-eval-all test-eval-tb2 test-eval-tb2-smoke eval-tb2 eval-tb2-smoke demo-pipeline server web-deps web-dev web-clean web-build web-editor-deps web-editor-dev web-editor-build web-editor-clean desktop run e2e-build e2e-run e2e-clean test-pg-up test-pg-integration test-pg-down changelog swagger check-no-binaries diagrams
 
 GO ?= go
 PKG ?= ./...
@@ -44,7 +44,7 @@ lint-new: check-no-binaries
 bench:
 	@mkdir -p bench
 	$(GO) test -run=^$$ -bench=. -benchmem -count=5 \
-		./pkg/api/... ./pkg/tool/... ./pkg/middleware/... \
+		./pkg/api/... ./pkg/tool/... ./pkg/middleware/... ./pkg/runhub/... \
 		| tee bench/baseline.txt
 
 # fuzz runs each fuzz test for a short smoke window. Use FUZZTIME=30s as the
@@ -240,6 +240,32 @@ e2e-run:
 e2e-clean:
 	$(DOCKER_COMPOSE) -f e2e/docker-compose.e2e.yml down -v
 	rm -rf e2e/reports/*.json
+
+# Postgres harness for `pkg/runhub` and `pkg/project/dialect` integration tests
+# (build tag `postgres integration`). `up` waits for pg_isready before
+# returning so the next make target can connect immediately. `down -v` wipes
+# the named volume so a re-up starts from a fresh schema, mirroring the
+# fresh-DB guarantee the GitHub Actions service-container provides in CI.
+SAKER_TEST_PG_DSN ?= postgres://saker:saker@localhost:5432/saker_test?sslmode=disable
+
+test-pg-up:
+	$(DOCKER_COMPOSE) -f docker-compose-pg.yml up -d
+	@echo "Waiting for postgres to accept connections..."
+	@for i in $$(seq 1 30); do \
+		if $(DOCKER_COMPOSE) -f docker-compose-pg.yml exec -T postgres pg_isready -U saker -d saker_test >/dev/null 2>&1; then \
+			echo "postgres ready"; exit 0; \
+		fi; sleep 1; \
+	done; \
+	echo "postgres did not become ready in 30s" >&2; \
+	$(DOCKER_COMPOSE) -f docker-compose-pg.yml logs postgres; exit 1
+
+test-pg-integration:
+	SAKER_TEST_PG_DSN="$(SAKER_TEST_PG_DSN)" \
+		$(GO) test -tags 'postgres integration' -count=1 -timeout 300s \
+		./pkg/runhub/... ./pkg/project/dialect/...
+
+test-pg-down:
+	$(DOCKER_COMPOSE) -f docker-compose-pg.yml down -v
 
 # Generate CHANGELOG from conventional commits using git-cliff
 changelog:

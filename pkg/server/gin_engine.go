@@ -11,7 +11,7 @@ import (
 )
 
 // buildGinEngine creates the Gin engine with global middleware and route groups.
-func (s *Server) buildGinEngine() *gin.Engine {
+func (s *Server) buildGinEngine() (*gin.Engine, error) {
 	if s.opts.Debug {
 		gin.SetMode(gin.DebugMode)
 	} else {
@@ -114,10 +114,21 @@ func (s *Server) buildGinEngine() *gin.Engine {
 	// RPC: 10MB body limit (applied inside registerRPCRoutes).
 	s.registerRPCRoutes(authed)
 
+	// ----- Optional engine hook (e.g. OpenAI gateway) -----
+	// Mounted before NoRoute so any /v1/* or other prefixes win over the
+	// SPA catch-all. A non-nil error from the hook aborts startup so the
+	// operator notices misconfiguration immediately instead of silently
+	// running without the optional surface.
+	if s.opts.EngineHook != nil {
+		if err := s.opts.EngineHook(engine); err != nil {
+			return nil, err
+		}
+	}
+
 	// ----- Static catch-all (serves frontend SPA for unmatched routes) -----
 	engine.NoRoute(s.staticCatchAllHandler())
 
-	return engine
+	return engine, nil
 }
 
 // s3GinHandler returns a Gin handler that strips the S3 mount prefix and

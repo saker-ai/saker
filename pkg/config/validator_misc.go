@@ -157,8 +157,21 @@ func validateFailoverConfig(cfg *FailoverConfig) []error {
 		return nil
 	}
 	var errs []error
+	// PrimaryKeyPool can be configured even when failover.enabled is false —
+	// multi-key load balancing is independent of cross-provider failover.
+	for i, k := range cfg.PrimaryKeyPool {
+		if strings.TrimSpace(k.Provider) == "" {
+			errs = append(errs, fmt.Errorf("failover.primaryKeyPool[%d].provider is required", i))
+		}
+		if strings.TrimSpace(k.APIKey) == "" {
+			errs = append(errs, fmt.Errorf("failover.primaryKeyPool[%d].apiKey is required", i))
+		}
+		if k.Weight < 0 {
+			errs = append(errs, fmt.Errorf("failover.primaryKeyPool[%d].weight must be >=0, got %v", i, k.Weight))
+		}
+	}
 	if cfg.Enabled == nil || !*cfg.Enabled {
-		return nil
+		return errs
 	}
 	if len(cfg.Models) == 0 {
 		errs = append(errs, errors.New("failover.models is required when failover is enabled"))
@@ -173,6 +186,140 @@ func validateFailoverConfig(cfg *FailoverConfig) []error {
 	}
 	if cfg.MaxRetries < 0 {
 		errs = append(errs, fmt.Errorf("failover.maxRetries must be >=0, got %d", cfg.MaxRetries))
+	}
+	return errs
+}
+
+func validateBifrostConfig(cfg *BifrostConfig) []error {
+	if cfg == nil {
+		return nil
+	}
+	var errs []error
+	errs = append(errs, validateSemanticCacheConfig(cfg.SemanticCache)...)
+	errs = append(errs, validateTelemetryConfig(cfg.Telemetry)...)
+	return errs
+}
+
+func validateSemanticCacheConfig(cfg *SemanticCacheConfig) []error {
+	if cfg == nil {
+		return nil
+	}
+	enabled := cfg.Enabled != nil && *cfg.Enabled
+	var errs []error
+	if cfg.Threshold < 0 || cfg.Threshold > 1 {
+		errs = append(errs, fmt.Errorf("bifrost.semanticCache.threshold must be in [0,1], got %v", cfg.Threshold))
+	}
+	if cfg.TTLSeconds < 0 {
+		errs = append(errs, fmt.Errorf("bifrost.semanticCache.ttlSeconds must be >=0, got %d", cfg.TTLSeconds))
+	}
+	if cfg.Dimension < 0 {
+		errs = append(errs, fmt.Errorf("bifrost.semanticCache.dimension must be >=0, got %d", cfg.Dimension))
+	}
+	if cfg.ConvHistoryThreshold < 0 {
+		errs = append(errs, fmt.Errorf("bifrost.semanticCache.convHistoryThreshold must be >=0, got %d", cfg.ConvHistoryThreshold))
+	}
+	if !enabled {
+		return errs
+	}
+	if strings.TrimSpace(cfg.Provider) == "" {
+		errs = append(errs, errors.New("bifrost.semanticCache.provider is required when enabled"))
+	}
+	if strings.TrimSpace(cfg.EmbeddingModel) == "" {
+		errs = append(errs, errors.New("bifrost.semanticCache.embeddingModel is required when enabled"))
+	}
+	if cfg.VectorStore == nil {
+		errs = append(errs, errors.New("bifrost.semanticCache.vectorStore is required when enabled"))
+	} else {
+		errs = append(errs, validateVectorStoreConfig(cfg.VectorStore)...)
+	}
+	return errs
+}
+
+func validateVectorStoreConfig(cfg *VectorStoreConfig) []error {
+	if cfg == nil {
+		return nil
+	}
+	var errs []error
+	typ := strings.ToLower(strings.TrimSpace(cfg.Type))
+	switch typ {
+	case "redis", "qdrant", "pinecone", "weaviate":
+	case "":
+		errs = append(errs, errors.New("bifrost.semanticCache.vectorStore.type is required (redis|qdrant|pinecone|weaviate)"))
+	default:
+		errs = append(errs, fmt.Errorf("bifrost.semanticCache.vectorStore.type %q is not supported (use redis|qdrant|pinecone|weaviate)", cfg.Type))
+	}
+	if strings.TrimSpace(cfg.Endpoint) == "" {
+		errs = append(errs, errors.New("bifrost.semanticCache.vectorStore.endpoint is required"))
+	}
+	return errs
+}
+
+func validateTelemetryConfig(cfg *TelemetryConfig) []error {
+	if cfg == nil {
+		return nil
+	}
+	var errs []error
+	if cfg.Sampling < 0 || cfg.Sampling > 1 {
+		errs = append(errs, fmt.Errorf("bifrost.telemetry.sampling must be in [0,1], got %v", cfg.Sampling))
+	}
+	if cfg.MetricsPushIntervalSeconds < 0 {
+		errs = append(errs, fmt.Errorf("bifrost.telemetry.metricsPushIntervalSeconds must be >=0, got %d", cfg.MetricsPushIntervalSeconds))
+	}
+	enabled := cfg.Enabled != nil && *cfg.Enabled
+	if !enabled {
+		return errs
+	}
+	proto := strings.ToLower(strings.TrimSpace(cfg.Protocol))
+	switch proto {
+	case "", "grpc", "http":
+	default:
+		errs = append(errs, fmt.Errorf("bifrost.telemetry.protocol %q is not supported (use grpc or http)", cfg.Protocol))
+	}
+	endpoint := strings.TrimSpace(cfg.Endpoint)
+	if endpoint == "" {
+		errs = append(errs, errors.New("bifrost.telemetry.endpoint is required when enabled"))
+	} else if u, err := url.Parse(endpoint); err != nil || u.Host == "" {
+		errs = append(errs, fmt.Errorf("bifrost.telemetry.endpoint %q is not a valid URL", endpoint))
+	}
+	traceType := strings.ToLower(strings.TrimSpace(cfg.TraceType))
+	switch traceType {
+	case "", "genai_extension", "vercel", "open_inference":
+	default:
+		errs = append(errs, fmt.Errorf("bifrost.telemetry.traceType %q is not supported", cfg.TraceType))
+	}
+	return errs
+}
+
+func validateGovernanceConfig(cfg *GovernanceConfig) []error {
+	if cfg == nil {
+		return nil
+	}
+	var errs []error
+	seen := make(map[string]int, len(cfg.VirtualKeys))
+	for i, vk := range cfg.VirtualKeys {
+		id := strings.TrimSpace(vk.ID)
+		if id == "" {
+			errs = append(errs, fmt.Errorf("governance.virtualKeys[%d].id is required", i))
+			continue
+		}
+		if prev, dup := seen[id]; dup {
+			errs = append(errs, fmt.Errorf("governance.virtualKeys[%d].id %q duplicates entry [%d]", i, id, prev))
+		}
+		seen[id] = i
+		if vk.BudgetUSD < 0 {
+			errs = append(errs, fmt.Errorf("governance.virtualKeys[%d].budgetUSD must be >=0, got %v", i, vk.BudgetUSD))
+		}
+		if vk.RPM < 0 {
+			errs = append(errs, fmt.Errorf("governance.virtualKeys[%d].rpm must be >=0, got %d", i, vk.RPM))
+		}
+		if vk.TPM < 0 {
+			errs = append(errs, fmt.Errorf("governance.virtualKeys[%d].tpm must be >=0, got %d", i, vk.TPM))
+		}
+		switch strings.ToLower(strings.TrimSpace(vk.ResetCron)) {
+		case "", "monthly", "weekly", "daily":
+		default:
+			errs = append(errs, fmt.Errorf("governance.virtualKeys[%d].resetCron %q is not supported (use monthly|weekly|daily)", i, vk.ResetCron))
+		}
 	}
 	return errs
 }

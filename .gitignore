@@ -34,6 +34,8 @@ Thumbs.db
 *~
 .idea/
 .vscode/
+.docs/
+.other/
 
 # Build output
 bin/
@@ -80,7 +82,12 @@ saker-linux-amd64
 /saker
 /server
 /run_eval
+/21-openai-gateway
 *.mp4
+
+# Example binaries produced by local `go build`.
+/examples/08-askuserquestion/askuserquestion
+/examples/21-openai-gateway/21-openai-gateway
 
 # Web frontend
 node_modules/

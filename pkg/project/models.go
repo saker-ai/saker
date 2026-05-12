@@ -166,5 +166,6 @@ func AllModels() []any {
 		&Project{},
 		&ProjectMember{},
 		&Invite{},
+		&APIKey{},
 	}
 }

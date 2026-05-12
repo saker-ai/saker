@@ -68,6 +68,12 @@ func ValidateSettings(s *Settings) error {
 	// cors
 	errs = append(errs, validateCORSConfig(s.CORS)...)
 
+	// bifrost (semantic cache + telemetry)
+	errs = append(errs, validateBifrostConfig(s.Bifrost)...)
+
+	// governance (saker virtual keys)
+	errs = append(errs, validateGovernanceConfig(s.Governance)...)
+
 	if len(errs) == 0 {
 		return nil
 	}

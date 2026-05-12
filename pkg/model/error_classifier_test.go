@@ -3,7 +3,6 @@ package model
 import (
 	"errors"
 	"fmt"
-	"net"
 	"testing"
 )
 
@@ -15,16 +14,6 @@ type mockHTTPError struct {
 
 func (e *mockHTTPError) Error() string       { return e.msg }
 func (e *mockHTTPError) HTTPStatusCode() int { return e.code }
-
-// mockNetError simulates a network timeout error.
-type mockNetError struct{ msg string }
-
-func (e *mockNetError) Error() string   { return e.msg }
-func (e *mockNetError) Timeout() bool   { return true }
-func (e *mockNetError) Temporary() bool { return true }
-
-// Ensure mockNetError satisfies net.Error.
-var _ net.Error = (*mockNetError)(nil)
 
 func TestClassifyError_Nil(t *testing.T) {
 	c := ClassifyError(nil)
@@ -44,15 +33,11 @@ func TestClassifyError_StatusCodes(t *testing.T) {
 	}{
 		{"401 unauthorized", 401, "unauthorized", FailoverAuth, false, true},
 		{"403 forbidden", 403, "access forbidden", FailoverAuth, false, true},
-		{"403 key limit", 403, "key limit exceeded", FailoverBilling, false, true},
 		{"402 billing", 402, "insufficient credits", FailoverBilling, false, true},
-		{"402 transient", 402, "usage limit, try again in 5m", FailoverRateLimit, true, true},
 		{"404 not found", 404, "model not found", FailoverModelNotFound, false, true},
 		{"413 too large", 413, "request entity too large", FailoverContextOverflow, true, false},
 		{"429 rate limit", 429, "too many requests", FailoverRateLimit, true, true},
 		{"400 context overflow", 400, "context length exceeded", FailoverContextOverflow, true, false},
-		{"400 model not found", 400, "invalid model specified", FailoverModelNotFound, false, true},
-		{"400 rate limit in body", 400, "rate limit exceeded", FailoverRateLimit, true, true},
 		{"400 generic", 400, "bad request", FailoverFormatError, false, true},
 		{"500 server error", 500, "internal server error", FailoverServerError, true, false},
 		{"502 bad gateway", 502, "bad gateway", FailoverServerError, true, false},
@@ -80,46 +65,8 @@ func TestClassifyError_StatusCodes(t *testing.T) {
 	}
 }
 
-func TestClassifyError_MessagePatterns(t *testing.T) {
-	tests := []struct {
-		name       string
-		msg        string
-		wantReason FailoverReason
-	}{
-		{"billing pattern", "insufficient credits for this request", FailoverBilling},
-		{"rate limit pattern", "rate limit reached, throttled", FailoverRateLimit},
-		{"context overflow", "context length exceeded maximum", FailoverContextOverflow},
-		{"auth pattern", "invalid api key provided", FailoverAuth},
-		{"model not found", "unknown model gpt-99", FailoverModelNotFound},
-		{"usage limit transient", "usage limit exceeded, try again later", FailoverRateLimit},
-		{"usage limit permanent", "usage limit exceeded permanently", FailoverBilling},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := errors.New(tt.msg)
-			c := ClassifyError(err)
-			if c.Reason != tt.wantReason {
-				t.Errorf("reason: got %s, want %s", c.Reason, tt.wantReason)
-			}
-		})
-	}
-}
-
-func TestClassifyError_NetworkError(t *testing.T) {
-	err := &mockNetError{msg: "connection timeout"}
-	c := ClassifyError(err)
-	if c.Reason != FailoverTimeout {
-		t.Errorf("reason: got %s, want timeout", c.Reason)
-	}
-	if !c.Retryable {
-		t.Error("network errors should be retryable")
-	}
-}
-
-func TestClassifyError_Unknown(t *testing.T) {
-	err := errors.New("something completely unexpected happened")
-	c := ClassifyError(err)
+func TestClassifyError_NoStatusUnknown(t *testing.T) {
+	c := ClassifyError(errors.New("something completely unexpected happened"))
 	if c.Reason != FailoverUnknown {
 		t.Errorf("reason: got %s, want unknown", c.Reason)
 	}

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/cinience/saker/pkg/model"
+	"github.com/maximhq/bifrost/core/schemas"
 )
 
 const (
@@ -25,10 +26,11 @@ func newDeepSeekModel(t *testing.T) model.Model {
 	if apiKey == "" {
 		t.Skip("DEEPSEEK_API_KEY not set, skipping DeepSeek integration test")
 	}
-	mdl, err := model.NewOpenAI(model.OpenAIConfig{
+	mdl, err := model.NewBifrost(model.BifrostConfig{
+		Provider:  schemas.OpenAI,
 		APIKey:    apiKey,
 		BaseURL:   deepseekBaseURL,
-		Model:     deepseekModel,
+		ModelName: deepseekModel,
 		MaxTokens: 4096,
 	})
 	if err != nil {
@@ -185,10 +187,11 @@ func newDeepSeekAnthropicModel(t *testing.T) model.Model {
 	if apiKey == "" {
 		t.Skip("DEEPSEEK_API_KEY not set, skipping DeepSeek Anthropic integration test")
 	}
-	mdl, err := model.NewAnthropic(model.AnthropicConfig{
+	mdl, err := model.NewBifrost(model.BifrostConfig{
+		Provider:  schemas.Anthropic,
 		APIKey:    apiKey,
 		BaseURL:   deepseekAnthropicBaseURL,
-		Model:     deepseekModel,
+		ModelName: deepseekModel,
 		MaxTokens: 4096,
 	})
 	if err != nil {

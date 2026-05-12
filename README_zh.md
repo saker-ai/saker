@@ -99,13 +99,15 @@ make web-editor-dev               # 剪辑器开发服务器
 
 ### 模型
 
+底层由 [Bifrost](https://github.com/maximhq/bifrost) 驱动（`pkg/model/bifrost_adapter.go`），saker 的 `Provider` 类型仅作 SDK 层封装。
+
 | 能力 | 说明 |
 |---|---|
-| Provider | Anthropic、OpenAI（Chat + Responses API）、MCP 路由的第三方 |
-| 失败转移 | 多模型 fallback，指数退避，stream buffering |
-| 智能路由 | 基于 prompt 复杂度 / 成本权衡的模型选择 |
-| 限流跟踪 | 通过 HTTP transport wrapper 抓取每家 provider 的 header |
-| Prompt 缓存 | system 与最近若干轮消息的缓存 |
+| Provider | 通过 Bifrost 接入 23+：Anthropic、OpenAI、AWS Bedrock、Google Vertex、Azure OpenAI、Ollama、Cohere、Mistral、Groq、Gemini、XAI、DashScope（OpenAI 兼容协议）、Cerebras、Fireworks、OpenRouter、HuggingFace、Replicate … |
+| 鉴权 | API Key、AWS IAM 角色（Bedrock）、GCP 服务账号或 IAM 角色(Vertex)、Azure API Key 或 client_secret/tenant(Azure)|
+| 失败转移 | Bifrost SDK 层的 `Fallbacks` 跨 provider 路由;observer 插件按请求发送切换事件 |
+| Prompt 缓存 | system 与最近若干轮消息上挂 ephemeral cache_control（Anthropic / Bedrock-Anthropic）|
+| 可观测性 | 可选 `ObservationSink` 插件抓取每次请求的 provider/model/usage/duration;OTel span attrs 含 cache 与 total token |
 
 ### 工具（33 个内置 + memory + MCP）
 
@@ -188,7 +190,7 @@ Saker 可以桥接 10 个聊天平台，让用户在熟悉的 app 里直接和 a
 1. **Surface** &mdash; CLI/TUI/HTTP/IM/ACP 入口解析输入并选定 profile。
 2. **Runtime** &mdash; `pkg/api.Runtime` 加载设置，构建沙箱，注册 builtin + MCP + 远程工具，挂上人格 / 记忆 / sessiondb / skills / subagents / cache。
 3. **Loop** &mdash; `pkg/agent.Agent.Run` 迭代直到 `StopReason` 触发；预算、死循环检测、压缩在循环外把守。
-4. **Model** &mdash; `pkg/model` provider 走 failover 与路由；调用经由 `pkg/metrics` 与（开启 `-tags otel` 时）`pkg/api/otel.go` 仪表化。
+4. **Model** &mdash; `pkg/model` 包封装 Bifrost,跨 provider 失败转移交由 Bifrost SDK 层的 `Fallbacks`。调用由 `pkg/metrics`、可选的 `ObservationSink` 插件,以及（开启 `-tags otel` 时）`pkg/api/otel.go` 仪表化。
 5. **Tool** &mdash; 解析权限、跑 PreToolUse hook，分发到 builtin / MCP / 远程工具。涉及文件的工具会跨越 `pkg/sandbox` 边界。
 6. **Stream** &mdash; 结果以 `StreamEvent` 形式流回 SSE / WebSocket 客户端、TUI 瀑布或 IM 网关。
 
@@ -263,6 +265,12 @@ ANTHROPIC_API_KEY=    # Anthropic
 OPENAI_API_KEY=       # OpenAI
 DASHSCOPE_API_KEY=    # DashScope（走 OpenAI 兼容协议）
 SAKER_MODEL=          # 默认模型，例如 claude-sonnet-4-5-20250929
+
+# 可选 — Bifrost 接入的其他 provider
+AWS_REGION=           # Bedrock（或 AWS_DEFAULT_REGION）;留空 AWS_ACCESS_KEY_ID 时走 IAM 角色
+GOOGLE_CLOUD_PROJECT= # Vertex;GOOGLE_CLOUD_REGION 可选,默认 us-central1
+AZURE_OPENAI_ENDPOINT=  # Azure OpenAI;搭配 AZURE_OPENAI_API_KEY 或 client_secret 三元组
+OLLAMA_BASE_URL=      # Ollama（默认 http://localhost:11434）
 ```
 
 服务器端认证：

@@ -10,7 +10,6 @@ require (
 	github.com/AlexxIT/go2rtc v1.9.14
 	github.com/BurntSushi/toml v1.6.0
 	github.com/andybalholm/brotli v1.2.1
-	github.com/anthropics/anthropic-sdk-go v1.18.0
 	github.com/chromedp/chromedp v0.15.1
 	github.com/chzyer/readline v1.5.1
 	github.com/coder/acp-go-sdk v0.6.4-0.20260227160919-584abe6abe22
@@ -30,10 +29,10 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/landlock-lsm/go-landlock v0.7.0
 	github.com/mattn/go-isatty v0.0.20
+	github.com/maximhq/bifrost/core v1.5.8
 	github.com/modelcontextprotocol/go-sdk v1.1.0
 	github.com/mojatter/s2 v0.10.0
 	github.com/mojatter/s2/s3 v0.10.0
-	github.com/openai/openai-go v1.12.0
 	github.com/pemistahl/lingua-go v1.4.0
 	github.com/philippgille/chromem-go v0.7.0
 	github.com/pion/opus v0.0.0-20260408170506-085f78c96784
@@ -173,7 +172,6 @@ require (
 	github.com/mark3labs/mcp-go v0.43.2 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-runewidth v0.0.21 // indirect
-	github.com/maximhq/bifrost/core v1.5.8 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect

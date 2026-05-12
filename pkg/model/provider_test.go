@@ -95,7 +95,7 @@ func TestProviderAnthropic_ModelWithExplicitAPIKey(t *testing.T) {
 }
 
 func TestProviderAnthropic_CachingReturnsSameModel(t *testing.T) {
-	p := &AnthropicProvider{APIKey: "key", CacheTTL: time.Minute}
+	p := &AnthropicProvider{APIKey: "key", ModelName: "claude-test", CacheTTL: time.Minute}
 	m1, err := p.Model(context.Background())
 	if err != nil {
 		t.Fatalf("first call: %v", err)
@@ -110,7 +110,7 @@ func TestProviderAnthropic_CachingReturnsSameModel(t *testing.T) {
 }
 
 func TestProviderAnthropic_NoCacheReturnsNewModel(t *testing.T) {
-	p := &AnthropicProvider{APIKey: "key", CacheTTL: 0}
+	p := &AnthropicProvider{APIKey: "key", ModelName: "claude-test", CacheTTL: 0}
 	m1, err := p.Model(context.Background())
 	if err != nil {
 		t.Fatalf("first call: %v", err)
@@ -296,7 +296,7 @@ func TestProviderAnthropic_ModelTrimsSpaces(t *testing.T) {
 }
 
 func TestProviderAnthropic_ConcurrentModelCalls(t *testing.T) {
-	p := &AnthropicProvider{APIKey: "key", CacheTTL: time.Minute}
+	p := &AnthropicProvider{APIKey: "key", ModelName: "claude-test", CacheTTL: time.Minute}
 
 	var wg sync.WaitGroup
 	results := make(chan Model, 20)
@@ -337,7 +337,7 @@ func TestProviderAnthropic_ImplementsProvider(t *testing.T) {
 }
 
 func TestProviderAnthropic_DoubleCheckedLocking(t *testing.T) {
-	p := &AnthropicProvider{APIKey: "key", CacheTTL: 50 * time.Millisecond}
+	p := &AnthropicProvider{APIKey: "key", ModelName: "claude-test", CacheTTL: 50 * time.Millisecond}
 
 	m1, err := p.Model(context.Background())
 	if err != nil {
@@ -364,7 +364,7 @@ func TestProviderAnthropic_DoubleCheckedLocking(t *testing.T) {
 }
 
 func TestProviderAnthropic_ZeroFieldsWithEnvKey(t *testing.T) {
-	p := &AnthropicProvider{}
+	p := &AnthropicProvider{ModelName: "claude-test"}
 	t.Setenv("ANTHROPIC_API_KEY", "envkey")
 	mdl, err := p.Model(context.Background())
 	if err != nil {
@@ -684,7 +684,7 @@ func TestProviderOpenAI_DoubleCheckedLocking(t *testing.T) {
 }
 
 func TestProviderOpenAI_ZeroFieldsWithEnvKey(t *testing.T) {
-	p := &OpenAIProvider{}
+	p := &OpenAIProvider{ModelName: "gpt-test"}
 	t.Setenv("OPENAI_API_KEY", "envkey")
 	mdl, err := p.Model(context.Background())
 	if err != nil {
