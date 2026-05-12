@@ -12,7 +12,7 @@
     "test": "tsx --test src/features/editor-runtime/webavCompose.test.mts src/features/editor-bridge/protocol.test.mts src/features/skills/shared/useSkillhubRpc.test.mts"
   },
   "dependencies": {
-    "@chenglou/pretext": "^0.0.5",
+    "@chenglou/pretext": "^0.0.7",
     "@saker/editor-protocol": "workspace:*",
     "@webav/av-cliper": "^1.2.8",
     "@xyflow/react": "^12.10.2",
