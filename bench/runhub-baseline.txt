@@ -1,0 +1,21 @@
+goos: linux
+goarch: amd64
+pkg: github.com/cinience/saker/pkg/runhub
+cpu: 12th Gen Intel(R) Core(TM) i5-12450H
+BenchmarkPublish_Memory-12           	 3358519	       357.0 ns/op	 179.25 MB/s	     632 B/op	       8 allocs/op
+BenchmarkPublish_Memory-12           	 3339912	       359.9 ns/op	 177.81 MB/s	     632 B/op	       8 allocs/op
+BenchmarkPublish_Memory-12           	 3346950	       355.1 ns/op	 180.25 MB/s	     632 B/op	       8 allocs/op
+BenchmarkPublish_Memory-12           	 3413182	       346.0 ns/op	 184.95 MB/s	     632 B/op	       8 allocs/op
+BenchmarkPublish_Memory-12           	 3490198	       352.0 ns/op	 181.80 MB/s	     632 B/op	       8 allocs/op
+BenchmarkPublish_SQLiteBatch-12      	 1391592	       858.2 ns/op	  74.57 MB/s	     920 B/op	      12 allocs/op
+BenchmarkPublish_SQLiteBatch-12      	 1299280	       961.6 ns/op	  66.56 MB/s	     924 B/op	      12 allocs/op
+BenchmarkPublish_SQLiteBatch-12      	 1310880	       923.9 ns/op	  69.27 MB/s	     921 B/op	      12 allocs/op
+BenchmarkPublish_SQLiteBatch-12      	 1303682	       909.6 ns/op	  70.36 MB/s	     923 B/op	      12 allocs/op
+BenchmarkPublish_SQLiteBatch-12      	 1280275	       903.9 ns/op	  70.81 MB/s	     924 B/op	      12 allocs/op
+BenchmarkPublish_SQLiteSyncish-12    	 1356264	       891.2 ns/op	  71.81 MB/s	     906 B/op	      12 allocs/op
+BenchmarkPublish_SQLiteSyncish-12    	 1357772	       870.5 ns/op	  73.52 MB/s	     905 B/op	      12 allocs/op
+BenchmarkPublish_SQLiteSyncish-12    	 1367977	       874.2 ns/op	  73.21 MB/s	     905 B/op	      12 allocs/op
+BenchmarkPublish_SQLiteSyncish-12    	 1383643	       878.8 ns/op	  72.83 MB/s	     906 B/op	      12 allocs/op
+BenchmarkPublish_SQLiteSyncish-12    	 1357413	       922.7 ns/op	  69.36 MB/s	     907 B/op	      12 allocs/op
+PASS
+ok  	github.com/cinience/saker/pkg/runhub	31.444s

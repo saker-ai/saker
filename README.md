@@ -99,13 +99,15 @@ make web-editor-dev               # editor dev server
 
 ### Models
 
+Backed by [Bifrost](https://github.com/maximhq/bifrost) (`pkg/model/bifrost_adapter.go`); saker `Provider` types wrap Bifrost as the SDK-level engine.
+
 | Capability | Notes |
 |---|---|
-| Providers | Anthropic, OpenAI (Chat + Responses API), MCP-routed third-party |
-| Failover | Multi-model fallback with exponential backoff and stream buffering |
-| Smart routing | Prompt-complexity / cost-aware model selection |
-| Rate-limit tracking | Per-provider header capture via HTTP transport wrapper |
-| Prompt caching | System and recent-message caching |
+| Providers | 23+ via Bifrost: Anthropic, OpenAI, AWS Bedrock, Google Vertex, Azure OpenAI, Ollama, Cohere, Mistral, Groq, Gemini, XAI, DashScope (via OpenAI-compatible), Cerebras, Fireworks, OpenRouter, HuggingFace, Replicate, … |
+| Auth | API key, AWS IAM (Bedrock), GCP service account or IAM role (Vertex), Azure API key or client_secret/tenant (Azure) |
+| Failover | Bifrost SDK-level `Fallbacks` cross-provider routing; observer plugin emits per-request switch events |
+| Prompt caching | System and recent-message ephemeral cache_control on Anthropic / Bedrock-Anthropic |
+| Observability | Optional `ObservationSink` plugin captures per-request provider/model/usage/duration; OTel span attrs include cache & total tokens |
 
 ### Tools (33 builtin + memory + MCP)
 
@@ -188,7 +190,7 @@ For per-package roles see [docs/architecture.md](docs/architecture.md).
 1. **Surface** &mdash; CLI/TUI/HTTP/IM/ACP entry point parses input and resolves a profile.
 2. **Runtime** &mdash; `pkg/api.Runtime` loads settings, builds the sandbox, registers builtin + MCP + remote tools, attaches persona / memory / sessiondb / skills / subagents / cache.
 3. **Loop** &mdash; `pkg/agent.Agent.Run` iterates until a `StopReason` fires; budget, loop-detect, and compaction guard the loop.
-4. **Model** &mdash; `pkg/model` provider with failover and routing; calls are instrumented by `pkg/metrics` and (when built with `-tags otel`) by `pkg/api/otel.go`.
+4. **Model** &mdash; `pkg/model` provider wraps Bifrost; cross-provider failover is handled by Bifrost SDK-level `Fallbacks`. Calls are instrumented by `pkg/metrics`, the optional `ObservationSink` plugin, and (when built with `-tags otel`) by `pkg/api/otel.go`.
 5. **Tool** &mdash; resolved permission, PreToolUse hook, dispatched to a builtin / MCP / remote tool. File-touching tools cross the `pkg/sandbox` boundary.
 6. **Stream** &mdash; results flow back as `StreamEvent`s for SSE / WebSocket clients, the TUI waterfall, or the IM gateway.
 
@@ -263,6 +265,12 @@ ANTHROPIC_API_KEY=    # Anthropic
 OPENAI_API_KEY=       # OpenAI
 DASHSCOPE_API_KEY=    # DashScope (via OpenAI-compatible)
 SAKER_MODEL=          # Default model, e.g. claude-sonnet-4-5-20250929
+
+# Optional — Bifrost-backed providers
+AWS_REGION=           # Bedrock (or AWS_DEFAULT_REGION); IAM role used when AWS_ACCESS_KEY_ID empty
+GOOGLE_CLOUD_PROJECT= # Vertex; GOOGLE_CLOUD_REGION optional (defaults us-central1)
+AZURE_OPENAI_ENDPOINT=  # Azure OpenAI; pair with AZURE_OPENAI_API_KEY or client_secret tuple
+OLLAMA_BASE_URL=      # Ollama (defaults http://localhost:11434)
 ```
 
 Server authentication:

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/cinience/saker/pkg/security"
+	"github.com/maximhq/bifrost/core/schemas"
 )
 
 // Provider gives runtime access to lazily-instantiated models.
@@ -60,14 +61,16 @@ func (p *AnthropicProvider) Model(ctx context.Context) (Model, error) {
 		return p.cached, nil
 	}
 
-	mdl, err := NewAnthropic(AnthropicConfig{
-		APIKey:      p.resolveAPIKey(),
-		BaseURL:     strings.TrimSpace(p.BaseURL),
-		Model:       strings.TrimSpace(p.ModelName),
-		MaxTokens:   p.MaxTokens,
-		MaxRetries:  p.MaxRetries,
-		System:      p.System,
-		Temperature: p.Temperature,
+	mdl, err := NewBifrost(BifrostConfig{
+		Provider:     schemas.Anthropic,
+		ModelName:    strings.TrimSpace(p.ModelName),
+		APIKey:       p.resolveAPIKey(),
+		BaseURL:      strings.TrimSpace(p.BaseURL),
+		MaxTokens:    p.MaxTokens,
+		MaxRetries:   p.MaxRetries,
+		System:       p.System,
+		Temperature:  p.Temperature,
+		ExtraHeaders: newAnthropicHeaders(nil, nil),
 	})
 	if err != nil {
 		return nil, err
@@ -126,9 +129,10 @@ type OpenAIProvider struct {
 	System      string
 	Temperature *float64
 	CacheTTL    time.Duration
-	// ExtraBody is forwarded to OpenAIConfig — see that field for semantics.
-	// Used by Dashscope wiring to pass enable_thinking and similar
-	// vendor-specific top-level body fields.
+	// ExtraBody carries vendor-specific top-level body fields such as
+	// DashScope's `enable_thinking`. It maps onto Bifrost
+	// ChatParameters.ExtraParams when Model() builds the underlying
+	// bifrostModel; see bifrostModel.buildRequest for the wire format.
 	ExtraBody map[string]any
 
 	mu      sync.RWMutex
@@ -152,15 +156,19 @@ func (p *OpenAIProvider) Model(ctx context.Context) (Model, error) {
 		return p.cached, nil
 	}
 
-	mdl, err := NewOpenAI(OpenAIConfig{
+	mdl, err := NewBifrost(BifrostConfig{
+		Provider:    schemas.OpenAI,
+		ModelName:   strings.TrimSpace(p.ModelName),
 		APIKey:      p.resolveAPIKey(),
 		BaseURL:     strings.TrimSpace(p.BaseURL),
-		Model:       strings.TrimSpace(p.ModelName),
 		MaxTokens:   p.MaxTokens,
 		MaxRetries:  p.MaxRetries,
 		System:      p.System,
 		Temperature: p.Temperature,
-		ExtraBody:   p.ExtraBody,
+		// DashScope `enable_thinking` and similar vendor-specific params live in
+		// ExtraBody. Bifrost surfaces them through ChatParameters.ExtraParams +
+		// the Passthrough context flag (see bifrostModel.buildRequest).
+		ExtraParams: p.ExtraBody,
 	})
 	if err != nil {
 		return nil, err

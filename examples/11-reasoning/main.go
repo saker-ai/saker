@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/cinience/saker/pkg/model"
+	"github.com/maximhq/bifrost/core/schemas"
 )
 
 func main() {
@@ -159,28 +160,22 @@ func printBoxed(text string) {
 }
 
 func createModel(apiKey, provider string) model.Model {
+	cfg := model.BifrostConfig{
+		APIKey:    apiKey,
+		ModelName: "deepseek-reasoner",
+		MaxTokens: 4096,
+	}
 	switch provider {
 	case "anthropic":
-		mdl, err := model.NewAnthropic(model.AnthropicConfig{
-			APIKey:    apiKey,
-			BaseURL:   "https://api.deepseek.com/anthropic",
-			Model:     "deepseek-reasoner",
-			MaxTokens: 4096,
-		})
-		if err != nil {
-			log.Fatalf("create anthropic model: %v", err)
-		}
-		return mdl
+		cfg.Provider = schemas.Anthropic
+		cfg.BaseURL = "https://api.deepseek.com/anthropic"
 	default:
-		mdl, err := model.NewOpenAI(model.OpenAIConfig{
-			APIKey:    apiKey,
-			BaseURL:   "https://api.deepseek.com",
-			Model:     "deepseek-reasoner",
-			MaxTokens: 4096,
-		})
-		if err != nil {
-			log.Fatalf("create openai model: %v", err)
-		}
-		return mdl
+		cfg.Provider = schemas.OpenAI
+		cfg.BaseURL = "https://api.deepseek.com"
 	}
+	mdl, err := model.NewBifrost(cfg)
+	if err != nil {
+		log.Fatalf("create %s model: %v", provider, err)
+	}
+	return mdl
 }

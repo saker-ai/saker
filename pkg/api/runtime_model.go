@@ -37,6 +37,19 @@ const (
 )
 
 // wrapWithFailover wraps a model with failover if configured in settings.
+//
+// As of the Bifrost migration, failover is driven entirely by Bifrost's
+// SDK-level Fallbacks routing. Instead of stacking saker-side wrappers around
+// N independent models, we extract the primary's BifrostConfig and rebuild it
+// with FallbackProviders populated, then construct a single bifrostModel that
+// owns the full fallback chain. This keeps cross-provider authentication,
+// retries, and stream atomicity inside Bifrost rather than re-implementing
+// them in saker.
+//
+// Returns primary unchanged when:
+// - failover is disabled or unconfigured
+// - the primary isn't a bifrostModel (e.g. unit-test stubs); saker no longer
+//   has its own failover wrapper, so a non-Bifrost primary just runs alone.
 func (rt *Runtime) wrapWithFailover(primary model.Model) model.Model {
 	rt.mu.RLock()
 	cfg := rt.settings.Failover
@@ -46,38 +59,64 @@ func (rt *Runtime) wrapWithFailover(primary model.Model) model.Model {
 		return primary
 	}
 
-	models := []model.Model{primary}
-	for _, entry := range cfg.Models {
-		m, err := rt.createModelFromEntry(entry)
-		if err != nil {
-			slog.Warn("api: failover: skip model", "provider", entry.Provider, "model", entry.Model, "error", err)
-			continue
-		}
-		models = append(models, m)
-	}
-	if len(models) <= 1 {
+	rebuilder, ok := primary.(model.BifrostRebuilder)
+	if !ok {
+		// Non-Bifrost primary (test stubs etc.) — failover is a no-op.
+		slog.Warn("api: failover: primary is not a Bifrost-backed model; skipping fallback chain")
 		return primary
 	}
 
-	maxRetries := cfg.MaxRetries
-	if maxRetries <= 0 {
-		maxRetries = 2
+	specs := make([]model.BifrostFallbackSpec, 0, len(cfg.Models))
+	for _, entry := range cfg.Models {
+		spec, err := buildFallbackSpec(entry)
+		if err != nil {
+			slog.Warn("api: failover: skip fallback", "provider", entry.Provider, "model", entry.Model, "error", err)
+			continue
+		}
+		specs = append(specs, spec)
 	}
-	fm, err := model.NewFailoverModel(model.FailoverConfig{
-		Models:     models,
-		MaxRetries: maxRetries,
-		OnFailover: func(from, to string, reason model.ClassifiedError) {
-			slog.Info("api: failover", "from", from, "to", to, "reason", reason.Reason, "status", reason.StatusCode)
-		},
+	if len(specs) == 0 {
+		return primary
+	}
+
+	rebuilt, err := rebuilder.RebuildWithFallbacks(specs, func(from, to string, statusCode int, message string) {
+		slog.Info("api: failover", "from", from, "to", to, "status", statusCode, "message", message)
 	})
 	if err != nil {
 		slog.Error("api: failover model creation failed", "error", err)
 		return primary
 	}
-	return fm
+	return rebuilt
 }
 
-// createModelFromEntry creates a model.Model from a failover config entry.
+// buildFallbackSpec converts a saker FailoverModelEntry into a Bifrost
+// fallback spec. DashScope is mapped to OpenAI provider with the DashScope
+// base URL since Bifrost reaches it via the OpenAI-compatible path.
+func buildFallbackSpec(entry config.FailoverModelEntry) (model.BifrostFallbackSpec, error) {
+	switch strings.ToLower(entry.Provider) {
+	case "anthropic":
+		return model.BifrostFallbackSpec{
+			Provider: model.BifrostProviderAnthropic,
+			Model:    entry.Model,
+			APIKey:   entry.APIKey,
+			BaseURL:  entry.BaseURL,
+		}, nil
+	case "openai", "dashscope":
+		return model.BifrostFallbackSpec{
+			Provider: model.BifrostProviderOpenAI,
+			Model:    entry.Model,
+			APIKey:   entry.APIKey,
+			BaseURL:  entry.BaseURL,
+		}, nil
+	default:
+		return model.BifrostFallbackSpec{}, fmt.Errorf("unknown provider: %s", entry.Provider)
+	}
+}
+
+// createModelFromEntry creates a single primary model.Model from a failover
+// config entry. Used by SetModel and persona model overrides which need a
+// standalone primary (no fallback chain) — distinct from buildFallbackSpec
+// which only emits fallback specs feeding into Bifrost's SDK-level routing.
 func (rt *Runtime) createModelFromEntry(entry config.FailoverModelEntry) (model.Model, error) {
 	switch strings.ToLower(entry.Provider) {
 	case "anthropic":
@@ -134,6 +173,7 @@ type conversationModel struct {
 	rulesLoader        *config.RulesLoader
 	enableCache        bool // Enable prompt caching for this conversation
 	maxOutputTokens    int  // Soft cap on req.MaxTokens; 0 = let provider decide.
+	overrides          *ModelOverrides
 	usage              model.Usage
 	stopReason         string
 	hooks              *runtimeHookAdapter
@@ -194,6 +234,7 @@ func (m *conversationModel) Generate(ctx context.Context, _ *agent.Context) (*ag
 		Temperature:       nil,
 		EnablePromptCache: m.enableCache,
 	}
+	applyModelOverrides(&req, m.overrides)
 	if len(m.systemPromptBlocks) > 0 {
 		// Use cache-optimized blocks; append rules to the last (dynamic) block.
 		blocks := append([]string(nil), m.systemPromptBlocks...)
@@ -259,6 +300,9 @@ func (m *conversationModel) Generate(ctx context.Context, _ *agent.Context) (*ag
 		if resp != nil {
 			attrs["model.input_tokens"] = resp.Usage.InputTokens
 			attrs["model.output_tokens"] = resp.Usage.OutputTokens
+			attrs["model.cache_read_tokens"] = resp.Usage.CacheReadTokens
+			attrs["model.cache_creation_tokens"] = resp.Usage.CacheCreationTokens
+			attrs["model.total_tokens"] = resp.Usage.TotalTokens
 			attrs["model.stop_reason"] = resp.StopReason
 			attrs["model.tool_calls"] = len(resp.Message.ToolCalls)
 		}
@@ -365,6 +409,9 @@ func (rt *Runtime) applyOutputSchema(
 		EnablePromptCache: false,
 		ResponseFormat:    cloneResponseFormat(schema),
 	}
+	// applyOutputSchema runs an isolated formatting pass; per-request
+	// sampling overrides intentionally do NOT apply here — the schema
+	// extraction must always run with deterministic defaults.
 	if history != nil {
 		if snapshot := history.All(); len(snapshot) > 0 {
 			if len(snapshot) > outputSchemaMaxHistory {
@@ -402,4 +449,39 @@ func mergeModelUsage(base, extra model.Usage) model.Usage {
 		merged.TotalTokens = merged.InputTokens + merged.OutputTokens
 	}
 	return merged
+}
+
+// applyModelOverrides copies non-nil/non-empty fields from o onto req.
+// MaxTokens is the only override allowed to drop the runtime default to a
+// smaller positive number; zero/negative is ignored so a careless caller
+// can't accidentally disable token caps.
+func applyModelOverrides(req *model.Request, o *ModelOverrides) {
+	if req == nil || o == nil {
+		return
+	}
+	if o.Temperature != nil {
+		v := *o.Temperature
+		req.Temperature = &v
+	}
+	if o.TopP != nil {
+		v := *o.TopP
+		req.TopP = &v
+	}
+	if o.MaxTokens != nil && *o.MaxTokens > 0 {
+		req.MaxTokens = *o.MaxTokens
+	}
+	if len(o.Stop) > 0 {
+		req.Stop = append([]string(nil), o.Stop...)
+	}
+	if o.Seed != nil {
+		v := *o.Seed
+		req.Seed = &v
+	}
+	if o.ToolChoice != "" {
+		req.ToolChoice = o.ToolChoice
+	}
+	if o.ParallelToolCalls != nil {
+		v := *o.ParallelToolCalls
+		req.ParallelToolCalls = &v
+	}
 }

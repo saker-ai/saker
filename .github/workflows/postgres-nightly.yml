@@ -40,12 +40,13 @@ jobs:
         with:
           go-version: "1.26"
 
-      # Belt & suspenders: confirm the dialect package still compiles with the
-      # postgres tag in case the integration test suite ever gets skipped.
-      - name: Compile postgres dialect
-        run: go build -tags postgres ./pkg/project/dialect/...
+      # Belt & suspenders: confirm the postgres-tagged packages still compile
+      # in case the integration test suite ever gets skipped. Covers the
+      # dialect package and the runhub LISTEN/NOTIFY pool (pgx-backed).
+      - name: Compile postgres-tagged packages
+        run: go build -tags postgres ./pkg/project/dialect/... ./pkg/runhub/...
 
       - name: Run postgres integration tests
         env:
           SAKER_TEST_PG_DSN: postgres://saker:saker@localhost:5432/saker_test?sslmode=disable
-        run: go test -tags 'postgres integration' -count=1 ./pkg/project/dialect/...
+        run: go test -tags 'postgres integration' -count=1 ./pkg/runhub/... ./pkg/project/dialect/...

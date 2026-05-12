@@ -24,7 +24,7 @@ func TestProviderFuncNil(t *testing.T) {
 }
 
 func TestAnthropicProviderCaching(t *testing.T) {
-	p := &AnthropicProvider{APIKey: "key", CacheTTL: time.Minute}
+	p := &AnthropicProvider{APIKey: "key", ModelName: "claude-test", CacheTTL: time.Minute}
 	m1, err := p.Model(context.Background())
 	if err != nil {
 		t.Fatalf("model: %v", err)
@@ -73,7 +73,7 @@ func TestProviderModelNil(t *testing.T) {
 }
 
 func TestProviderModelSuccess(t *testing.T) {
-	ok, err := ProviderModel(stubProvider{mdl: &anthropicModel{}})
+	ok, err := ProviderModel(stubProvider{mdl: &bifrostModel{}})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -87,7 +87,7 @@ func TestAnthropicProviderCacheDisabled(t *testing.T) {
 	if got := p.cachedModel(); got != nil {
 		t.Fatalf("expected nil cached model when cache disabled")
 	}
-	p.store(&anthropicModel{})
+	p.store(&bifrostModel{})
 	if got := p.cachedModel(); got != nil {
 		t.Fatalf("expected nil cached model when cache disabled")
 	}
@@ -95,7 +95,7 @@ func TestAnthropicProviderCacheDisabled(t *testing.T) {
 
 func TestAnthropicProviderCacheExpiry(t *testing.T) {
 	p := &AnthropicProvider{CacheTTL: time.Millisecond}
-	p.store(&anthropicModel{})
+	p.store(&bifrostModel{})
 	p.expires = time.Now().Add(-time.Minute)
 	if got := p.cachedModel(); got != nil {
 		t.Fatalf("expected expired cache to return nil")

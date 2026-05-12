@@ -33,14 +33,14 @@ The R4 plan called for adopting `golang-migrate/migrate` as a
 `pkg/sessiondb/migrate.go` adds:
 
 - A `migration` struct (`version int`, `name string`, `sql string`,
-  optional `guard func(*sql.DB) (skip bool, error)`).
+  optional `apply func(*sql.Tx) error`, optional
+  `guard func(*sql.DB) (skip bool, error)`).
 - A bookkeeping table `schema_migrations(version, name, applied_at)`.
 - A `runMigrations` driver that applies any unapplied migration in
   one transaction per version, recording the version on commit.
-- A baseline-detection special case: when the bookkeeping table is
-  empty *and* `messages.hash` already exists (a database opened by
-  the pre-migration binary), record migrations 1+2 as applied and
-  skip them.
+- A schema-aware second migration: it probes `messages.hash` and
+  `messages.pos` separately, adds whichever columns are missing,
+  then creates the positional index.
 - A `splitStatements` helper that handles SQLite trigger
   `BEGIN ... END;` blocks correctly when slicing multi-statement
   SQL.
@@ -62,9 +62,10 @@ We chose **not** to pull in `golang-migrate/migrate` because:
 - **No multi-database support needed.** sessiondb is SQLite-only.
   We don't need cross-engine migration files, sql/postgres-aware
   syntax, or pgx connection strings.
-- **Stricter testing for less code.** Forty lines of test cover
+- **Stricter testing for less code.** Focused tests cover
   every branch of the in-house runner (fresh DB, idempotent reopen,
-  baseline detection, statement splitting, column existence). The
+  pre-existing current schema, pre-hash/pos legacy schema, statement
+  splitting, column existence). The
   golang-migrate equivalent would need integration-test plumbing
   for the migrate CLI surface that we'd never use.
 
@@ -74,8 +75,8 @@ Migrations live as Go structs in `migrate.go`, not as filesystem
 files:
 
 ```go
-{version: 1, name: "initial_schema", sql: schema}
-{version: 2, name: "messages_hash_pos", sql: alterStmts, guard: ...}
+{version: 1, name: "initial_schema", sql: initialSchema}
+{version: 2, name: "messages_hash_pos", apply: ensureMessagesHashPos}
 ```
 
 This is fine because:
@@ -96,17 +97,19 @@ shorter and easier to test.
 
 ### Positive
 
-- **No more error-string sniffing.** Migration #2 has an explicit
-  guard that probes the actual schema via `pragma_table_info`.
+- **No more error-string sniffing.** Migration #2 probes the actual
+  schema via `pragma_table_info` and only executes the needed DDL.
 - **Visible bookkeeping.** Operators can inspect
   `schema_migrations` to know what's been applied; previously
   state was inferred from column existence at boot.
 - **Idempotent and safe.** Repeated `Open()` calls (e.g. test
   reuse) re-run `runMigrations` cheaply: the
   `schema_migrations` lookup short-circuits each version.
-- **Backward compatible.** Pre-existing databases (no
-  bookkeeping table, columns already present) get auto-baselined
-  on first boot of the new binary.
+- **Backward compatible.** Pre-existing databases with no
+  bookkeeping table run through the baseline safely. Databases that
+  predate `messages.hash` / `messages.pos` get those columns and the
+  positional index; databases that already have them simply record the
+  migrations.
 
 ### Negative
 
@@ -127,8 +130,8 @@ shorter and easier to test.
 ### Pointers
 
 - `pkg/sessiondb/migrate.go` — runner + migration list
-- `pkg/sessiondb/migrate_test.go` — fresh / idempotent / baseline
-  / split / column-exists coverage
+- `pkg/sessiondb/migrate_test.go` — fresh / idempotent /
+  pre-existing / legacy / split / column-exists coverage
 - `pkg/sessiondb/store.go::Open` — single call site
 - ADR-0006 — distributed-lock decision (related deferred
   infrastructure choice)
