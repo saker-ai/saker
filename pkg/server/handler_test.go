@@ -11,9 +11,9 @@ func TestIsLowValueToolOutput(t *testing.T) {
 		{"empty", "", true},
 		{"no matches", "[Glob] no matches", true},
 		{"no files found", "[Grep] No files found", true},
-		{"no results", "[Bash] no results", true},
-		{"no such file", "[Bash] No such file or directory", true},
-		{"real output", "[Bash] hello world", false},
+		{"no results", "[bash] no results", true},
+		{"no such file", "[bash] No such file or directory", true},
+		{"real output", "[bash] hello world", false},
 		{"tool output", "[Glob] file1.go\nfile2.go", false},
 		{"no bracket", "just some text", false},
 		{"partial match", "[Glob] no matches found here", false},
@@ -65,10 +65,10 @@ func TestFormatToolResult(t *testing.T) {
 		output interface{}
 		want   string
 	}{
-		{"nil output", "Bash", nil, ""},
-		{"empty map", "Bash", map[string]any{}, ""},
-		{"with output", "Bash", map[string]any{"output": "hello"}, "[Bash] hello"},
-		{"truncated", "Bash", map[string]any{"output": string(make([]byte, 600))}, ""},
+		{"nil output", "bash", nil, ""},
+		{"empty map", "bash", map[string]any{}, ""},
+		{"with output", "bash", map[string]any{"output": "hello"}, "[bash] hello"},
+		{"truncated", "bash", map[string]any{"output": string(make([]byte, 600))}, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -111,7 +111,7 @@ func TestExtractArtifacts(t *testing.T) {
 				},
 			},
 		}
-		arts := extractArtifacts("ImageRead", output)
+		arts := extractArtifacts("image_read", output)
 		if len(arts) != 1 || arts[0].Type != "image" || arts[0].URL != "/api/files/home/user/photo.png" {
 			t.Fatalf("unexpected artifacts: %+v", arts)
 		}
@@ -121,7 +121,7 @@ func TestExtractArtifacts(t *testing.T) {
 		output := map[string]any{
 			"output": "Image saved to /output/ai-image/elephant.png successfully",
 		}
-		arts := extractArtifacts("Bash", output)
+		arts := extractArtifacts("bash", output)
 		if len(arts) != 1 || arts[0].Type != "image" || arts[0].URL != "/api/files/output/ai-image/elephant.png" {
 			t.Fatalf("unexpected artifacts: %+v", arts)
 		}
@@ -131,7 +131,7 @@ func TestExtractArtifacts(t *testing.T) {
 		output := map[string]any{
 			"output": "command completed successfully",
 		}
-		arts := extractArtifacts("Bash", output)
+		arts := extractArtifacts("bash", output)
 		if len(arts) != 0 {
 			t.Fatalf("expected empty, got %+v", arts)
 		}

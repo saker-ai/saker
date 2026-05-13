@@ -55,7 +55,7 @@ func NewBashOutputTool(store *ShellStore) *BashOutputTool {
 	return &BashOutputTool{store: store}
 }
 
-func (b *BashOutputTool) Name() string { return "BashOutput" }
+func (b *BashOutputTool) Name() string { return "bash_output" }
 
 func (b *BashOutputTool) Description() string { return bashOutputDescription }
 

@@ -58,7 +58,7 @@ func TestRequestNormalizedPopulatesDefaults(t *testing.T) {
 		SessionID:     "",
 		Channels:      []string{"c2", "c1", "c1"},
 		Traits:        []string{"t2", "t1", "t2"},
-		ToolWhitelist: []string{"Bash", "Bash"},
+		ToolWhitelist: []string{"bash", "bash"},
 	}
 
 	normalized := req.normalized(defaultMode, "  sess  ")
@@ -79,7 +79,7 @@ func TestRequestNormalizedPopulatesDefaults(t *testing.T) {
 	if !reflect.DeepEqual(normalized.Traits, []string{"t1", "t2"}) {
 		t.Fatalf("Traits=%v, want [t1 t2]", normalized.Traits)
 	}
-	if !reflect.DeepEqual(normalized.ToolWhitelist, []string{"Bash"}) {
+	if !reflect.DeepEqual(normalized.ToolWhitelist, []string{"bash"}) {
 		t.Fatalf("ToolWhitelist=%v, want [Bash]", normalized.ToolWhitelist)
 	}
 }

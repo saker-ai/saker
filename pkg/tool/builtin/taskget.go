@@ -31,7 +31,7 @@ func NewTaskGetTool(store tasks.Store) *TaskGetTool {
 	return &TaskGetTool{store: store}
 }
 
-func (t *TaskGetTool) Name() string { return "TaskGet" }
+func (t *TaskGetTool) Name() string { return "task_get" }
 
 func (t *TaskGetTool) Description() string { return taskGetDescription }
 

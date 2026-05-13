@@ -23,17 +23,17 @@ func TestPermissionMatcherPriority(t *testing.T) {
 		t.Fatalf("matcher: %v", err)
 	}
 
-	alwaysAllowed := matcher.Match("Read", map[string]any{"file_path": "/work/notes/readme.md"})
+	alwaysAllowed := matcher.Match("read", map[string]any{"file_path": "/work/notes/readme.md"})
 	if alwaysAllowed.Action != PermissionAllow {
 		t.Fatalf("expected allow, got %v", alwaysAllowed.Action)
 	}
 
-	ask := matcher.Match("Read", map[string]any{"file_path": "/work/drafts/draft.md"})
+	ask := matcher.Match("read", map[string]any{"file_path": "/work/drafts/draft.md"})
 	if ask.Action != PermissionAsk || ask.Rule != "Read(**/draft.md)" {
 		t.Fatalf("expected ask, got %+v", ask)
 	}
 
-	deny := matcher.Match("Read", map[string]any{"file_path": "/work/private/secret.md"})
+	deny := matcher.Match("read", map[string]any{"file_path": "/work/private/secret.md"})
 	if deny.Action != PermissionDeny || deny.Rule != "Read(**/secret.md)" {
 		t.Fatalf("expected deny, got %+v", deny)
 	}
@@ -49,12 +49,12 @@ func TestPermissionMatcherRegexAndGlob(t *testing.T) {
 		t.Fatalf("matcher: %v", err)
 	}
 
-	bash := matcher.Match("Bash", map[string]any{"command": "ls -la"})
+	bash := matcher.Match("bash", map[string]any{"command": "ls -la"})
 	if bash.Action != PermissionAllow || bash.Rule == "" || bash.Target == "" {
 		t.Fatalf("regex rule not matched: %+v", bash)
 	}
 
-	deny := matcher.Match("Read", map[string]any{"file_path": "/repo/config/.env"})
+	deny := matcher.Match("read", map[string]any{"file_path": "/repo/config/.env"})
 	if deny.Action != PermissionDeny {
 		t.Fatalf("expected deny, got %+v", deny)
 	}
@@ -110,15 +110,15 @@ func TestSandboxLoadPermissionsFromClaudeDir(t *testing.T) {
 		t.Fatalf("load permissions: %v", err)
 	}
 
-	deny := sb.mustDecision(t, "Read", map[string]any{"file_path": filepath.Join(root, "secret.txt")})
+	deny := sb.mustDecision(t, "read", map[string]any{"file_path": filepath.Join(root, "secret.txt")})
 	if deny.Action != PermissionDeny {
 		t.Fatalf("expected deny, got %+v", deny)
 	}
-	allow := sb.mustDecision(t, "Bash", map[string]any{"command": "ls"})
+	allow := sb.mustDecision(t, "bash", map[string]any{"command": "ls"})
 	if allow.Action != PermissionAllow {
 		t.Fatalf("expected allow, got %+v", allow)
 	}
-	ask := sb.mustDecision(t, "Read", map[string]any{"file_path": filepath.Join(root, "maybe.txt")})
+	ask := sb.mustDecision(t, "read", map[string]any{"file_path": filepath.Join(root, "maybe.txt")})
 	if ask.Action != PermissionAsk {
 		t.Fatalf("expected ask, got %+v", ask)
 	}
@@ -159,7 +159,7 @@ func TestCheckToolPermissionConcurrent(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			res, err := sb.CheckToolPermission("Read", map[string]any{"file_path": filepath.Join(root, "doc.md")})
+			res, err := sb.CheckToolPermission("read", map[string]any{"file_path": filepath.Join(root, "doc.md")})
 			if err != nil {
 				errCh <- err
 				return

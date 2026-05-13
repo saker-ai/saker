@@ -182,7 +182,7 @@ func TestSelectorCombinedToolAndPayloadPattern(t *testing.T) {
 	))
 
 	// Selector that requires tool_name=Bash AND payload contains "ls"
-	sel, err := NewSelector("^Bash$", `"command":"ls"`)
+	sel, err := NewSelector("^bash$", `"command":"ls"`)
 	require.NoError(t, err)
 
 	exec := NewExecutor()
@@ -191,7 +191,7 @@ func TestSelectorCombinedToolAndPayloadPattern(t *testing.T) {
 	// Should match: tool=Bash, payload has command=ls
 	results, err := exec.Execute(context.Background(), events.Event{
 		Type:    events.PreToolUse,
-		Payload: events.ToolUsePayload{Name: "Bash", Params: map[string]any{"command": "ls"}},
+		Payload: events.ToolUsePayload{Name: "bash", Params: map[string]any{"command": "ls"}},
 	})
 	require.NoError(t, err)
 	require.Len(t, results, 1, "selector with both tool and payload pattern should match")
@@ -199,7 +199,7 @@ func TestSelectorCombinedToolAndPayloadPattern(t *testing.T) {
 	// Should NOT match: tool=Bash but payload has command=rm
 	results, err = exec.Execute(context.Background(), events.Event{
 		Type:    events.PreToolUse,
-		Payload: events.ToolUsePayload{Name: "Bash", Params: map[string]any{"command": "rm"}},
+		Payload: events.ToolUsePayload{Name: "bash", Params: map[string]any{"command": "rm"}},
 	})
 	require.NoError(t, err)
 	require.Len(t, results, 0, "payload pattern mismatch should not match")
@@ -207,7 +207,7 @@ func TestSelectorCombinedToolAndPayloadPattern(t *testing.T) {
 	// Should NOT match: tool=Read (tool pattern mismatch)
 	results, err = exec.Execute(context.Background(), events.Event{
 		Type:    events.PreToolUse,
-		Payload: events.ToolUsePayload{Name: "Read", Params: map[string]any{"command": "ls"}},
+		Payload: events.ToolUsePayload{Name: "read", Params: map[string]any{"command": "ls"}},
 	})
 	require.NoError(t, err)
 	require.Len(t, results, 0, "tool pattern mismatch should not match")
@@ -221,7 +221,7 @@ func TestSelectorEmptyMatchesAll(t *testing.T) {
 	// Empty selector should match any event
 	evt := events.Event{
 		Type:    events.PreToolUse,
-		Payload: events.ToolUsePayload{Name: "Bash", Params: map[string]any{}},
+		Payload: events.ToolUsePayload{Name: "bash", Params: map[string]any{}},
 	}
 	require.True(t, sel.Match(evt), "empty selector should match all events")
 }
@@ -608,7 +608,7 @@ func TestMiddlewareCanModifyEvent(t *testing.T) {
 	// Start with a Bash tool use payload
 	_, err := exec.Execute(context.Background(), events.Event{
 		Type:    events.PreToolUse,
-		Payload: events.ToolUsePayload{Name: "Bash", Params: map[string]any{"command": "ls"}},
+		Payload: events.ToolUsePayload{Name: "bash", Params: map[string]any{"command": "ls"}},
 	})
 	require.NoError(t, err)
 

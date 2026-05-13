@@ -330,7 +330,7 @@ func TestAskUserQuestionConcurrentExecutions(t *testing.T) {
 
 func TestAskUserQuestionMetadata(t *testing.T) {
 	tool := NewAskUserQuestionTool()
-	if tool.Name() != "AskUserQuestion" {
+	if tool.Name() != "ask_user_question" {
 		t.Fatalf("unexpected name %q", tool.Name())
 	}
 	if tool.Description() != askUserQuestionDescription {

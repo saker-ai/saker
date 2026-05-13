@@ -269,7 +269,7 @@ func deriveTarget(tool string, params map[string]any) string {
 		if p := firstString(params, "file_path", "path"); p != "" {
 			return filepath.Clean(p)
 		}
-	case "taskcreate", "taskget", "taskupdate", "tasklist":
+	case "task_create", "task_get", "task_update", "task_list":
 		if id := firstString(params, "task_id", "id"); id != "" {
 			return id
 		}

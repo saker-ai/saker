@@ -14,7 +14,7 @@ import (
 
 func TestTaskToolMetadata(t *testing.T) {
 	task := NewTaskTool()
-	if task.Name() != "Task" {
+	if task.Name() != "task" {
 		t.Fatalf("unexpected name: %s", task.Name())
 	}
 	if desc := task.Description(); !strings.Contains(desc, "Launch a specialized subagent execution") {

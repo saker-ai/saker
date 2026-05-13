@@ -44,7 +44,7 @@ func NewTaskCreateTool(store tasks.Store) *TaskCreateTool {
 	return &TaskCreateTool{store: store}
 }
 
-func (t *TaskCreateTool) Name() string { return "TaskCreate" }
+func (t *TaskCreateTool) Name() string { return "task_create" }
 
 func (t *TaskCreateTool) Description() string { return taskCreateDescription }
 

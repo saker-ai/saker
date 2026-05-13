@@ -22,7 +22,7 @@ func TestManagerCheckToolPermissionLoadsAndAudits(t *testing.T) {
 
 	mgr := NewManager(NewFileSystemAllowList(root), nil, nil)
 
-	deny, err := mgr.CheckToolPermission("Bash", map[string]any{"command": "rm -rf /"})
+	deny, err := mgr.CheckToolPermission("bash", map[string]any{"command": "rm -rf /"})
 	if err != nil {
 		t.Fatalf("check deny: %v", err)
 	}
@@ -30,7 +30,7 @@ func TestManagerCheckToolPermissionLoadsAndAudits(t *testing.T) {
 		t.Fatalf("unexpected deny decision: %+v", deny)
 	}
 
-	allow, err := mgr.CheckToolPermission("Bash", map[string]any{"command": "ls"})
+	allow, err := mgr.CheckToolPermission("bash", map[string]any{"command": "ls"})
 	if err != nil {
 		t.Fatalf("check allow: %v", err)
 	}
@@ -63,7 +63,7 @@ func TestManagerCheckToolPermissionCachesErrors(t *testing.T) {
 	}
 
 	mgr := NewManager(NewFileSystemAllowList(root), nil, nil)
-	if _, err := mgr.CheckToolPermission("Bash", map[string]any{"command": "ls"}); err == nil {
+	if _, err := mgr.CheckToolPermission("bash", map[string]any{"command": "ls"}); err == nil {
 		t.Fatal("expected error from malformed permissions")
 	}
 
@@ -72,7 +72,7 @@ func TestManagerCheckToolPermissionCachesErrors(t *testing.T) {
 	if err := os.WriteFile(settingsPath, []byte(good), 0o600); err != nil {
 		t.Fatalf("write good settings: %v", err)
 	}
-	if _, err := mgr.CheckToolPermission("Bash", map[string]any{"command": "ls"}); err == nil || !strings.Contains(err.Error(), "permission") {
+	if _, err := mgr.CheckToolPermission("bash", map[string]any{"command": "ls"}); err == nil || !strings.Contains(err.Error(), "permission") {
 		t.Fatalf("expected cached error after fix, got %v", err)
 	}
 	if audits := mgr.PermissionAudits(); len(audits) != 0 {

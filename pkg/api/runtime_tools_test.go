@@ -80,12 +80,12 @@ func TestRuntimeToolsFormatApprovalCommand(t *testing.T) {
 		target   string
 		want     string
 	}{
-		{"Bash", "/tmp/script.sh", "Bash(/tmp/script.sh)"},
-		{"Bash", "", "Bash"},
+		{"bash", "/tmp/script.sh", "bash(/tmp/script.sh)"},
+		{"bash", "", "bash"},
 		{"", "/tmp/file", "tool(/tmp/file)"},
 		{"", "", "tool"},
-		{"  Read  ", "  /etc/hosts  ", "Read(/etc/hosts)"},
-		{"  Read  ", "   ", "Read"},
+		{"  read  ", "  /etc/hosts  ", "read(/etc/hosts)"},
+		{"  read  ", "   ", "read"},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("%s/%s", tt.toolName, tt.target), func(t *testing.T) {
@@ -106,14 +106,14 @@ func TestRuntimeToolsDecisionWithAction(t *testing.T) {
 	base := security.PermissionDecision{
 		Action: security.PermissionAsk,
 		Rule:   "Bash(*)",
-		Tool:   "Bash",
+		Tool:   "bash",
 		Target: "/tmp/script.sh",
 	}
 	allow := decisionWithAction(base, security.PermissionAllow)
 	if allow.Action != security.PermissionAllow {
 		t.Fatalf("expected allow action, got %v", allow.Action)
 	}
-	if allow.Rule != "Bash(*)" || allow.Tool != "Bash" || allow.Target != "/tmp/script.sh" {
+	if allow.Rule != "Bash(*)" || allow.Tool != "bash" || allow.Target != "/tmp/script.sh" {
 		t.Fatalf("other fields should be preserved: %+v", allow)
 	}
 	deny := decisionWithAction(base, security.PermissionDeny)
@@ -272,7 +272,7 @@ func TestRuntimeToolsFilterBuiltinNames(t *testing.T) {
 	}
 
 	// Case-insensitive matching.
-	got = filterBuiltinNames([]string{"BASH", "Grep"}, order)
+	got = filterBuiltinNames([]string{"BASH", "grep"}, order)
 	if len(got) != 2 || got[0] != "bash" || got[1] != "grep" {
 		t.Fatalf("expected case-insensitive match, got %v", got)
 	}
@@ -614,20 +614,20 @@ func TestRuntimeToolsCoreToolUsePayload(t *testing.T) {
 	t.Parallel()
 	call := agent.ToolCall{
 		ID:    "id-1",
-		Name:  "Bash",
+		Name:  "bash",
 		Input: map[string]any{"command": "ls"},
 	}
 	payload := coreToolUsePayload(call)
-	if payload.Name != "Bash" {
+	if payload.Name != "bash" {
 		t.Fatalf("expected Name=Bash, got %q", payload.Name)
 	}
 	if payload.Params["command"] != "ls" {
 		t.Fatalf("expected command param, got %v", payload.Params)
 	}
 	// Verify nil Input is passed as nil Params.
-	call2 := agent.ToolCall{Name: "Read", Input: nil}
+	call2 := agent.ToolCall{Name: "read", Input: nil}
 	payload2 := coreToolUsePayload(call2)
-	if payload2.Name != "Read" {
+	if payload2.Name != "read" {
 		t.Fatalf("expected Name=Read, got %q", payload2.Name)
 	}
 }
@@ -638,11 +638,11 @@ func TestRuntimeToolsCoreToolUsePayload(t *testing.T) {
 
 func TestRuntimeToolsCoreToolResultPayload(t *testing.T) {
 	t.Parallel()
-	call := agent.ToolCall{ID: "id-1", Name: "Bash"}
+	call := agent.ToolCall{ID: "id-1", Name: "bash"}
 
 	// nil result, nil error.
 	payload := coreToolResultPayload(call, nil, nil)
-	if payload.Name != "Bash" {
+	if payload.Name != "bash" {
 		t.Fatalf("expected Name=Bash, got %q", payload.Name)
 	}
 	if payload.Result != nil {
@@ -655,7 +655,7 @@ func TestRuntimeToolsCoreToolResultPayload(t *testing.T) {
 	// With result.
 	now := time.Now()
 	result := &tool.CallResult{
-		Call:        tool.Call{Name: "Bash"},
+		Call:        tool.Call{Name: "bash"},
 		Result:      &tool.ToolResult{Output: "hello"},
 		StartedAt:   now,
 		CompletedAt: now.Add(100 * time.Millisecond),
@@ -676,7 +676,7 @@ func TestRuntimeToolsCoreToolResultPayload(t *testing.T) {
 	}
 
 	// Result with nil inner ToolResult: payload.Result stays nil.
-	resultNilInner := &tool.CallResult{Call: tool.Call{Name: "Bash"}}
+	resultNilInner := &tool.CallResult{Call: tool.Call{Name: "bash"}}
 	payload = coreToolResultPayload(call, resultNilInner, nil)
 	if payload.Result != nil {
 		t.Fatalf("expected nil Result when inner result is nil, got %v", payload.Result)
@@ -720,7 +720,7 @@ func TestRuntimeToolsIsAllowed(t *testing.T) {
 	if !restricted.isAllowed(ctx, "bash") {
 		t.Fatalf("bash should be allowed in restricted map")
 	}
-	if !restricted.isAllowed(ctx, "Bash") {
+	if !restricted.isAllowed(ctx, "bash") {
 		t.Fatalf("Bash (uppercase) should be allowed (canonical lowercase)")
 	}
 	if restricted.isAllowed(ctx, "grep") {

@@ -86,7 +86,7 @@ func (g *GlobTool) SetRespectGitignore(respect bool) {
 	}
 }
 
-func (g *GlobTool) Name() string { return "Glob" }
+func (g *GlobTool) Name() string { return "glob" }
 
 func (g *GlobTool) Description() string { return globToolDesc }
 

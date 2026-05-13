@@ -60,12 +60,12 @@ func TestEval_AllBuiltinToolsRegister(t *testing.T) {
 
 	// Core builtin tools that must always be present (PascalCase names).
 	expectedTools := map[string]string{
-		"Bash":  "Bash",
-		"Read":  "Read",
-		"Write": "Write",
-		"Edit":  "Edit",
-		"Grep":  "Grep",
-		"Glob":  "Glob",
+		"bash":  "bash",
+		"read":  "read",
+		"write": "write",
+		"edit":  "edit",
+		"grep":  "grep",
+		"glob":  "glob",
 	}
 
 	for name, label := range expectedTools {
@@ -104,7 +104,7 @@ func TestEval_ToolSchemaValidity(t *testing.T) {
 	}
 	defer rt.Close()
 
-	toolsToCheck := []string{"Bash", "Read", "Write", "Grep", "Glob"}
+	toolsToCheck := []string{"bash", "read", "write", "grep", "glob"}
 	for _, name := range toolsToCheck {
 		name := name
 		t.Run(name, func(t *testing.T) {
@@ -210,9 +210,9 @@ func TestEval_DisallowedToolExclusion(t *testing.T) {
 		toolName string
 		wantGone bool
 	}{
-		{"grep_excluded", "Grep", true},
-		{"glob_excluded", "Glob", true},
-		{"bash_still_present", "Bash", false},
+		{"grep_excluded", "grep", true},
+		{"glob_excluded", "glob", true},
+		{"bash_still_present", "bash", false},
 	}
 
 	for _, tc := range cases {

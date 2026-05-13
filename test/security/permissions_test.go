@@ -49,13 +49,13 @@ func TestPermissionsIntegration(t *testing.T) {
 	mgr := sandbox.NewManager(fs, nil, nil)
 
 	reg := tool.NewRegistry()
-	bash := &integrationTool{name: "Bash"}
+	bash := &integrationTool{name: "bash"}
 	if err := reg.Register(bash); err != nil {
 		t.Fatalf("register: %v", err)
 	}
 
 	exec := tool.NewExecutor(reg, mgr)
-	_, err = exec.Execute(context.Background(), tool.Call{Name: "Bash", Params: map[string]any{"command": "ls -la"}, Path: root})
+	_, err = exec.Execute(context.Background(), tool.Call{Name: "bash", Params: map[string]any{"command": "ls -la"}, Path: root})
 	if err == nil {
 		t.Fatalf("expected deny error")
 	}
@@ -63,7 +63,7 @@ func TestPermissionsIntegration(t *testing.T) {
 		t.Fatalf("tool should not run when denied")
 	}
 
-	_, err = exec.Execute(context.Background(), tool.Call{Name: "Bash", Params: map[string]any{"command": "printf hi"}, Path: root})
+	_, err = exec.Execute(context.Background(), tool.Call{Name: "bash", Params: map[string]any{"command": "printf hi"}, Path: root})
 	if err != nil {
 		t.Fatalf("unexpected error for allowed command: %v", err)
 	}

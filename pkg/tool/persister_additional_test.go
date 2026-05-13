@@ -79,7 +79,7 @@ func TestOutputPersisterThresholdOverrides(t *testing.T) {
 		DefaultThresholdBytes: 10,
 		PerToolThresholdBytes: map[string]int{"bash": 1},
 	}
-	if got := p.thresholdFor("Bash"); got != 1 {
+	if got := p.thresholdFor("bash"); got != 1 {
 		t.Fatalf("expected per-tool threshold, got %d", got)
 	}
 	if got := p.thresholdFor("Other"); got != 10 {

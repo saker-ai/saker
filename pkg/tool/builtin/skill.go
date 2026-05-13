@@ -75,7 +75,7 @@ func (s *SkillTool) SetContextWindow(tokens int) {
 	}
 }
 
-func (s *SkillTool) Name() string { return "Skill" }
+func (s *SkillTool) Name() string { return "skill" }
 
 func (s *SkillTool) Description() string {
 	var defs []skills.Definition

@@ -240,8 +240,6 @@ github.com/goccy/go-yaml v1.19.2/go.mod h1:XBurs7gK8ATbW4ZPGKgcbrY1Br56PdM69F7Lk
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/godbus/dbus/v5 v5.1.0 h1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=
 github.com/godbus/dbus/v5 v5.1.0/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
-github.com/godeps/aigo v0.16.0 h1:Cf0SIm+zXDkT4+3H+lliSCSisDSpf1vo3nQysABSyho=
-github.com/godeps/aigo v0.16.0/go.mod h1:T1uVhwX3MvtuAngTGj3ST+LZlbjFMLLN6eQiqkH6wr4=
 github.com/godeps/goim v0.1.2 h1:obQaVgFRIKIiXXHbKIGDzHzWVys3a2iRUaQyY3c5hdg=
 github.com/godeps/goim v0.1.2/go.mod h1:kRHkLwZ8+IRHsFUkCSN6VOdlb6xlC+PiLRw4tXhSeiw=
 github.com/godeps/govm v0.1.4-0.20260320035657-7ab34655fe79 h1:NKkn5xAEZ4sUxlkrv3HXKEom3vpEybnHCH9ncP0jy0s=

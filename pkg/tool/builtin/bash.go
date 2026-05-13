@@ -278,7 +278,7 @@ func (b *BashTool) SetEnvironment(env sandboxenv.ExecutionEnvironment) {
 	}
 }
 
-func (b *BashTool) Name() string { return "Bash" }
+func (b *BashTool) Name() string { return "bash" }
 
 func (b *BashTool) Description() string {
 	return bashDescript

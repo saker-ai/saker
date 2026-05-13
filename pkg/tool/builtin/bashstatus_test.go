@@ -140,7 +140,7 @@ func TestBashStatusUnknownTaskReturnsError(t *testing.T) {
 
 func TestBashStatusMetadata(t *testing.T) {
 	statusTool := NewBashStatusTool()
-	if statusTool.Name() != "BashStatus" {
+	if statusTool.Name() != "bash_status" {
 		t.Fatalf("unexpected name %q", statusTool.Name())
 	}
 	if strings.TrimSpace(statusTool.Description()) == "" {

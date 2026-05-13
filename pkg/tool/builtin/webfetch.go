@@ -123,7 +123,7 @@ func NewWebFetchTool(opts *WebFetchOptions) *WebFetchTool {
 	return tool
 }
 
-func (w *WebFetchTool) Name() string { return "WebFetch" }
+func (w *WebFetchTool) Name() string { return "web_fetch" }
 
 func (w *WebFetchTool) Description() string { return webFetchDescription }
 

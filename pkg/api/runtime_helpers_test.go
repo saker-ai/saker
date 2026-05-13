@@ -29,11 +29,11 @@ func TestAvailableToolsAndSchemaToMap(t *testing.T) {
 	t.Parallel()
 
 	reg := tool.NewRegistry()
-	if err := reg.Register(&helperStubTool{name: "Bash"}); err != nil {
+	if err := reg.Register(&helperStubTool{name: "bash"}); err != nil {
 		t.Fatalf("register: %v", err)
 	}
 	defs := availableTools(reg, map[string]struct{}{"bash": {}})
-	if len(defs) != 1 || defs[0].Name != "Bash" {
+	if len(defs) != 1 || defs[0].Name != "bash" {
 		t.Fatalf("unexpected tool defs %v", defs)
 	}
 	if schema := schemaToMap(&tool.JSONSchema{Type: "object", Properties: map[string]any{"a": "b"}}); schema["type"] != "object" {

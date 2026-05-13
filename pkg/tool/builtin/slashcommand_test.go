@@ -74,7 +74,7 @@ func (cmdStringer) String() string { return "pretty" }
 
 func TestSlashCommandMetadataAndFormatting(t *testing.T) {
 	tool := NewSlashCommandTool(commands.NewExecutor())
-	if tool.Name() != "SlashCommand" {
+	if tool.Name() != "slash_command" {
 		t.Fatalf("unexpected name %q", tool.Name())
 	}
 	if tool.Description() == "" || tool.Schema() == nil {

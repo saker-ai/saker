@@ -22,7 +22,7 @@ func TestOptionsFrozenClonesCollections(t *testing.T) {
 	}
 	subDef := subagents.Definition{
 		Name:        "sub",
-		BaseContext: subagents.Context{SessionID: "sess", Metadata: map[string]any{"k": "v"}, ToolWhitelist: []string{"Bash"}},
+		BaseContext: subagents.Context{SessionID: "sess", Metadata: map[string]any{"k": "v"}, ToolWhitelist: []string{"bash"}},
 		Matchers:    []skills.Matcher{matcher},
 	}
 

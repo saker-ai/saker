@@ -52,7 +52,7 @@ func TestCollapseToolOutputs_preservesRecent(t *testing.T) {
 		t.Error("old tool output should be collapsed")
 	}
 	if !strings.Contains(result[1].ToolCalls[0].Result, "collapsed") &&
-		!strings.Contains(result[1].ToolCalls[0].Result, "Bash") {
+		!strings.Contains(result[1].ToolCalls[0].Result, "bash") {
 		t.Errorf("collapsed output should contain marker, got: %s", result[1].ToolCalls[0].Result)
 	}
 	// Last tool (recent) should be preserved.
@@ -86,10 +86,10 @@ func TestCollapseOutput_toolSpecific(t *testing.T) {
 		toolName string
 		contains string
 	}{
-		{"read", "file_read", "Read"},
-		{"bash", "bash", "Bash"},
-		{"grep", "grep", "Grep"},
-		{"glob", "glob", "Glob"},
+		{"read", "file_read", "read"},
+		{"bash", "bash", "bash"},
+		{"grep", "grep", "grep"},
+		{"glob", "glob", "glob"},
 		{"write", "file_write", "file_write"},
 		{"unknown", "custom_tool", "collapsed"},
 	}

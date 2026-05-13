@@ -76,11 +76,11 @@ func toolNameSet(names []string) map[string]bool {
 // defaultBuiltinToolNames lists well-known built-in tool names for system prompt
 // generation. Used before the tool registry is fully populated.
 var defaultBuiltinToolNames = []string{
-	"Bash", "Read", "Write", "Edit", "Grep", "Glob", "ImageRead",
-	"Task", "TaskCreate", "TaskUpdate", "TaskList", "TaskGet",
-	"AskUserQuestion", "Skill", "SlashCommand",
+	"bash", "read", "write", "edit", "grep", "glob", "image_read",
+	"task", "task_create", "task_update", "task_list", "task_get",
+	"ask_user_question", "skill", "slash_command",
 	"analyze_video", "video_sampler", "video_summarizer", "frame_analyzer",
-	"WebFetch", "WebSearch",
+	"web_fetch", "web_search",
 }
 
 // --- Section builders ---
@@ -156,14 +156,14 @@ func sectionUsingTools(toolNames []string) string {
  - You can call multiple tools in a single response. If there are no dependencies between calls, make all independent tool calls in parallel.
  - If some tool calls depend on previous results, call them sequentially — do NOT use placeholders or guess missing parameters.`)
 
-	if toolSet["task"] || toolSet["taskcreate"] {
+	if toolSet["task"] || toolSet["task_create"] {
 		sb.WriteString(`
  - Use the Task tools to break down and manage complex work. Mark each task completed as you finish it.`)
 	}
 
-	if toolSet["askuserquestion"] {
+	if toolSet["ask_user_question"] {
 		sb.WriteString(`
- - If a tool call is denied, use AskUserQuestion to understand why and adjust your approach.`)
+ - If a tool call is denied, use ask_user_question to understand why and adjust your approach.`)
 	}
 
 	return sb.String()
@@ -195,9 +195,9 @@ If you can say it in one sentence, don't use three.`
 
 func sectionMultimodal(toolNames []string) string {
 	toolSet := toolNameSet(toolNames)
-	hasImage := toolSet["imageread"]
+	hasImage := toolSet["image_read"]
 	hasVideo := toolSet["analyze_video"] || toolSet["video_sampler"]
-	hasWeb := toolSet["webfetch"] || toolSet["websearch"]
+	hasWeb := toolSet["web_fetch"] || toolSet["web_search"]
 	if !hasImage && !hasVideo && !hasWeb {
 		return ""
 	}
@@ -206,7 +206,7 @@ func sectionMultimodal(toolNames []string) string {
 	sb.WriteString("# Multimodal capabilities\nYou are a multimodal agent that can understand images, videos, documents, and web content.")
 
 	if hasImage {
-		sb.WriteString("\n - When users provide image file paths or screenshots, use ImageRead to inspect them. Supported formats: PNG, JPG, GIF, WebP.")
+		sb.WriteString("\n - When users provide image file paths or screenshots, use image_read to inspect them. Supported formats: PNG, JPG, GIF, WebP.")
 	}
 	if hasVideo {
 		sb.WriteString("\n - For video analysis tasks, use analyze_video which provides comprehensive multi-track annotation" +
@@ -219,11 +219,11 @@ func sectionMultimodal(toolNames []string) string {
 			"\n     If information is uncertain or conflicting across segments, explicitly note the uncertainty rather than guessing.")
 	}
 	if hasWeb {
-		if toolSet["websearch"] {
-			sb.WriteString("\n - Use WebSearch for up-to-date information, current events, or documentation lookup.")
+		if toolSet["web_search"] {
+			sb.WriteString("\n - Use web_search for up-to-date information, current events, or documentation lookup.")
 		}
-		if toolSet["webfetch"] {
-			sb.WriteString("\n - Use WebFetch to retrieve and process content from a specific URL.")
+		if toolSet["web_fetch"] {
+			sb.WriteString("\n - Use web_fetch to retrieve and process content from a specific URL.")
 		}
 	}
 
@@ -232,7 +232,7 @@ func sectionMultimodal(toolNames []string) string {
 
 func sectionAgentTool(toolNames []string) string {
 	toolSet := toolNameSet(toolNames)
-	if !toolSet["task"] && !toolSet["taskcreate"] {
+	if !toolSet["task"] && !toolSet["task_create"] {
 		return ""
 	}
 	return `# Subagent tool
@@ -283,7 +283,7 @@ func sectionSessionGuidance(toolNames []string, entryPoint EntryPoint) string {
 
 	var parts []string
 
-	if toolSet["skill"] || toolSet["slashcommand"] {
+	if toolSet["skill"] || toolSet["slash_command"] {
 		parts = append(parts, " - Skills can be invoked via /skill-name or $skill-name syntax.")
 	}
 

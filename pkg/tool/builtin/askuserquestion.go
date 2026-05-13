@@ -57,7 +57,7 @@ type AskUserQuestionTool struct{}
 
 func NewAskUserQuestionTool() *AskUserQuestionTool { return &AskUserQuestionTool{} }
 
-func (t *AskUserQuestionTool) Name() string { return "AskUserQuestion" }
+func (t *AskUserQuestionTool) Name() string { return "ask_user_question" }
 
 func (t *AskUserQuestionTool) Description() string { return askUserQuestionDescription }
 
@@ -81,7 +81,7 @@ func (t *AskUserQuestionTool) Execute(ctx context.Context, params map[string]int
 	// the question text, which causes hallucinated user answers downstream.
 	if len(answers) == 0 {
 		askFn := AskQuestionFuncFromContext(ctx)
-		slog.Debug("AskUserQuestion", "has_answers", len(answers) > 0, "has_askFn", askFn != nil)
+		slog.Debug("ask_user_question", "has_answers", len(answers) > 0, "has_askFn", askFn != nil)
 		if askFn == nil {
 			return &tool.ToolResult{
 				Success: false,

@@ -24,7 +24,7 @@ func TestContextMetadataAndLookup(t *testing.T) {
 }
 
 func TestNormalizeToolsDeduplicates(t *testing.T) {
-	tools := normalizeTools([]string{"Bash", "bash", "read", " "})
+	tools := normalizeTools([]string{"bash", "bash", "read", " "})
 	if !reflect.DeepEqual(tools, []string{"bash", "read"}) {
 		t.Fatalf("expected normalized tools, got %v", tools)
 	}

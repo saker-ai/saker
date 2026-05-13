@@ -155,7 +155,7 @@ func NewTaskTool() *TaskTool {
 	return &TaskTool{}
 }
 
-func (t *TaskTool) Name() string { return "Task" }
+func (t *TaskTool) Name() string { return "task" }
 
 func (t *TaskTool) Description() string {
 	t.mu.RLock()

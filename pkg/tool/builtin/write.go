@@ -55,7 +55,7 @@ func NewWriteToolWithSandbox(root string, sandbox *security.Sandbox) *WriteTool 
 	return &WriteTool{base: newFileSandboxWithSandbox(root, sandbox)}
 }
 
-func (w *WriteTool) Name() string { return "Write" }
+func (w *WriteTool) Name() string { return "write" }
 
 func (w *WriteTool) Description() string { return writeDescription }
 

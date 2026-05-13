@@ -29,7 +29,7 @@ type BashStatusTool struct{}
 
 func NewBashStatusTool() *BashStatusTool { return &BashStatusTool{} }
 
-func (b *BashStatusTool) Name() string { return "BashStatus" }
+func (b *BashStatusTool) Name() string { return "bash_status" }
 
 func (b *BashStatusTool) Description() string { return bashStatusDescription }
 

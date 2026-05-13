@@ -61,7 +61,7 @@ func TestEval_SystemPromptContainsBuiltinTools(t *testing.T) {
 	}
 
 	// Core builtin tools that must always be registered (PascalCase names).
-	expectedTools := []string{"Bash", "Read", "Write", "Edit", "Grep", "Glob"}
+	expectedTools := []string{"bash", "read", "write", "edit", "grep", "glob"}
 
 	for _, name := range expectedTools {
 		pass := toolNames[name]
@@ -191,7 +191,7 @@ func TestEval_SystemPromptDisabledBuiltins(t *testing.T) {
 	infos := rt.ToolInfos()
 
 	// With empty EnabledBuiltinTools, no builtin tools should be registered.
-	builtinNames := []string{"Bash", "Read", "Write", "Grep", "Glob"}
+	builtinNames := []string{"bash", "read", "write", "grep", "glob"}
 	registeredBuiltins := 0
 	for _, info := range infos {
 		for _, bn := range builtinNames {

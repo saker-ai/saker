@@ -96,8 +96,8 @@ func TestBuildForkedMessages_WithToolCalls(t *testing.T) {
 		Role:    "assistant",
 		Content: "I'll help you",
 		ToolCalls: []message.ToolCall{
-			{ID: "tc_1", Name: "Bash", Arguments: map[string]any{"command": "ls"}},
-			{ID: "tc_2", Name: "Read", Arguments: map[string]any{"path": "file.go"}},
+			{ID: "tc_1", Name: "bash", Arguments: map[string]any{"command": "ls"}},
+			{ID: "tc_2", Name: "read", Arguments: map[string]any{"path": "file.go"}},
 		},
 	}
 
@@ -142,7 +142,7 @@ func TestBuildForkedMessages_DoesNotMutateOriginal(t *testing.T) {
 		Role:    "assistant",
 		Content: "original content",
 		ToolCalls: []message.ToolCall{
-			{ID: "tc_1", Name: "Bash", Arguments: map[string]any{"command": "ls"}},
+			{ID: "tc_1", Name: "bash", Arguments: map[string]any{"command": "ls"}},
 		},
 	}
 	originalContent := original.Content

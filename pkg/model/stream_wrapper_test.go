@@ -64,7 +64,7 @@ func TestStreamOnlyModel_Complete_UsesStream(t *testing.T) {
 }
 
 func TestStreamOnlyModel_Complete_ToolCalls(t *testing.T) {
-	tc := ToolCall{ID: "t1", Name: "Bash", Arguments: map[string]any{"command": "ls"}}
+	tc := ToolCall{ID: "t1", Name: "bash", Arguments: map[string]any{"command": "ls"}}
 	want := &Response{
 		Message: Message{
 			Role:      "assistant",

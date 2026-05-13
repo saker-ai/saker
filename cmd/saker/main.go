@@ -123,7 +123,7 @@ Options:
 	streamAlias := flags.Bool("stream", false, "Stream events (alias for --print)")
 
 	// --output-format (Claude Code style), with --stream-format as backward-compat alias
-	outputFormat := flags.String("output-format", "text", "Output format: text, json, stream-json (only with --print)")
+	outputFormat := flags.String("output-format", "", "Output format: text, json, stream-json (only with --print)")
 	streamFormatAlias := flags.String("stream-format", "", "Output format (alias for --output-format)")
 
 	repl := flags.Bool("repl", false, "Run interactive REPL mode")
@@ -280,7 +280,7 @@ Options:
 	// --stream → --print
 	stream := *printMode || *printShort || *streamAlias
 	// --stream-format → --output-format
-	if *streamFormatAlias != "" && *outputFormat == "text" {
+	if *streamFormatAlias != "" && *outputFormat == "" {
 		// Map old format names to new ones
 		switch strings.ToLower(strings.TrimSpace(*streamFormatAlias)) {
 		case "json":
@@ -292,8 +292,12 @@ Options:
 		}
 	}
 	// When --print is used without explicit --output-format, default to stream-json
-	if stream && *outputFormat == "text" && *streamFormatAlias == "" {
+	if stream && *outputFormat == "" {
 		*outputFormat = "stream-json"
+	}
+	// Final fallback for non-print mode
+	if *outputFormat == "" {
+		*outputFormat = "text"
 	}
 
 	if *gvisorHelper {

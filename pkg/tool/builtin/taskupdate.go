@@ -67,7 +67,7 @@ func NewTaskUpdateTool(store tasks.Store) *TaskUpdateTool {
 	return &TaskUpdateTool{store: store}
 }
 
-func (t *TaskUpdateTool) Name() string { return "TaskUpdate" }
+func (t *TaskUpdateTool) Name() string { return "task_update" }
 
 func (t *TaskUpdateTool) Description() string { return taskUpdateDescription }
 

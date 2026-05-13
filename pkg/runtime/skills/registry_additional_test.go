@@ -118,7 +118,7 @@ func TestNormalizeDefinitionNewFields(t *testing.T) {
 		Model:            " claude-sonnet ",
 		ExecutionContext: " fork ",
 		UserInvocable:    true,
-		AllowedTools:     []string{"Bash", "Read"},
+		AllowedTools:     []string{"bash", "read"},
 		Paths:            []string{"test/**"},
 	}
 	norm := normalizeDefinition(def)
@@ -141,7 +141,7 @@ func TestNormalizeDefinitionNewFields(t *testing.T) {
 	if len(norm.Arguments) != 2 || norm.Arguments[0] != "prompt" {
 		t.Fatalf("Arguments not copied: %v", norm.Arguments)
 	}
-	if len(norm.AllowedTools) != 2 || norm.AllowedTools[0] != "Bash" {
+	if len(norm.AllowedTools) != 2 || norm.AllowedTools[0] != "bash" {
 		t.Fatalf("AllowedTools not copied: %v", norm.AllowedTools)
 	}
 	if len(norm.Paths) != 1 || norm.Paths[0] != "test/**" {

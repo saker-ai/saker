@@ -130,21 +130,19 @@ func collapseOutput(toolName, output string, maxLen int) string {
 	var summary string
 	switch {
 	case strings.Contains(name, "read"):
-		// Extract file path from first line or arguments.
-		summary = fmt.Sprintf("[Read: %d lines collapsed]", lineCount)
+		summary = fmt.Sprintf("[read: %d lines collapsed]", lineCount)
 
 	case strings.Contains(name, "bash"):
-		// Keep last N lines for bash output.
 		tail := lastNLines(lines, collapsedTailLines)
-		summary = fmt.Sprintf("[Bash output: %d lines total]\n…\n%s", lineCount, tail)
+		summary = fmt.Sprintf("[bash output: %d lines total]\n…\n%s", lineCount, tail)
 
 	case strings.Contains(name, "grep"):
 		nonEmpty := countNonEmpty(lines)
-		summary = fmt.Sprintf("[Grep: %d matches collapsed]", nonEmpty)
+		summary = fmt.Sprintf("[grep: %d matches collapsed]", nonEmpty)
 
 	case strings.Contains(name, "glob"):
 		nonEmpty := countNonEmpty(lines)
-		summary = fmt.Sprintf("[Glob: %d files collapsed]", nonEmpty)
+		summary = fmt.Sprintf("[glob: %d files collapsed]", nonEmpty)
 
 	case strings.Contains(name, "write") || strings.Contains(name, "edit"):
 		summary = fmt.Sprintf("[%s: %d lines collapsed]", toolName, lineCount)

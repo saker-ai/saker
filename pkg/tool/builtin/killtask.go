@@ -37,7 +37,7 @@ type KillTaskTool struct{}
 
 func NewKillTaskTool() *KillTaskTool { return &KillTaskTool{} }
 
-func (k *KillTaskTool) Name() string { return "KillTask" }
+func (k *KillTaskTool) Name() string { return "kill_task" }
 
 func (k *KillTaskTool) Description() string { return killTaskDescription }
 

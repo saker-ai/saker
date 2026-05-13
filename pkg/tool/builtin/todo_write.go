@@ -63,7 +63,7 @@ func NewTodoWriteTool() *TodoWriteTool {
 	return &TodoWriteTool{}
 }
 
-func (t *TodoWriteTool) Name() string { return "TodoWrite" }
+func (t *TodoWriteTool) Name() string { return "todo_write" }
 
 func (t *TodoWriteTool) Description() string { return todoWriteDescription }
 

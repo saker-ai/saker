@@ -30,17 +30,17 @@ func TestMediaIsLowValueToolOutput(t *testing.T) {
 		want    bool
 	}{
 		{name: "empty", content: "", want: true},
-		{name: "bracket_only_no_output", content: "[Bash] ", want: true},
+		{name: "bracket_only_no_output", content: "[bash] ", want: true},
 		{name: "bracket_only_whitespace", content: "[Grep]  \t\n", want: true},
 		{name: "no_matches_exact", content: "[Grep] no matches", want: true},
 		{name: "no_matches_case_insensitive", content: "[Grep] No Matches", want: true},
 		{name: "no_files_found", content: "[Glob] no files found", want: true},
-		{name: "no_results", content: "[Bash] no results", want: true},
-		{name: "no_such_file", content: "[Bash] no such file or directory", want: true},
+		{name: "no_results", content: "[bash] no results", want: true},
+		{name: "no_such_file", content: "[bash] no such file or directory", want: true},
 		{name: "no_bracket_separator", content: "just some text", want: false},
-		{name: "meaningful_output", content: "[Bash] 3 files changed", want: false},
+		{name: "meaningful_output", content: "[bash] 3 files changed", want: false},
 		{name: "partial_match_not_exact", content: "[Grep] no matches found for pattern", want: false},
-		{name: "bracket_with_content", content: "[Read] file contents here", want: false},
+		{name: "bracket_with_content", content: "[read] file contents here", want: false},
 	}
 
 	for _, tc := range cases {
@@ -68,20 +68,20 @@ func TestMediaFormatToolResult(t *testing.T) {
 		output   interface{}
 		want     string
 	}{
-		{name: "non_map_output", toolName: "Bash", output: "just a string", want: ""},
-		{name: "nil_output", toolName: "Bash", output: nil, want: ""},
-		{name: "map_no_output_key", toolName: "Read", output: map[string]any{"error": "oops"}, want: ""},
-		{name: "map_empty_output", toolName: "Read", output: map[string]any{"output": ""}, want: ""},
-		{name: "short_output", toolName: "Bash", output: map[string]any{"output": "hello world"}, want: "[Bash] hello world"},
-		{name: "truncation_at_500", toolName: "Read",
+		{name: "non_map_output", toolName: "bash", output: "just a string", want: ""},
+		{name: "nil_output", toolName: "bash", output: nil, want: ""},
+		{name: "map_no_output_key", toolName: "read", output: map[string]any{"error": "oops"}, want: ""},
+		{name: "map_empty_output", toolName: "read", output: map[string]any{"output": ""}, want: ""},
+		{name: "short_output", toolName: "bash", output: map[string]any{"output": "hello world"}, want: "[bash] hello world"},
+		{name: "truncation_at_500", toolName: "read",
 			output: map[string]any{"output": repeatChar('x', 600)},
-			want:   "[Read] " + repeatChar('x', 500) + "…"},
-		{name: "exact_500_no_truncation", toolName: "Read",
+			want:   "[read] " + repeatChar('x', 500) + "…"},
+		{name: "exact_500_no_truncation", toolName: "read",
 			output: map[string]any{"output": repeatChar('a', 500)},
-			want:   "[Read] " + repeatChar('a', 500)},
-		{name: "output_at_501", toolName: "Read",
+			want:   "[read] " + repeatChar('a', 500)},
+		{name: "output_at_501", toolName: "read",
 			output: map[string]any{"output": repeatChar('b', 501)},
-			want:   "[Read] " + repeatChar('b', 500) + "…"},
+			want:   "[read] " + repeatChar('b', 500) + "…"},
 	}
 
 	for _, tc := range cases {
@@ -114,7 +114,7 @@ func TestMediaExtractArtifactsStructuredMetadata(t *testing.T) {
 		output   interface{}
 		want     []Artifact
 	}{
-		{name: "valid_structured", toolName: "ImageRead",
+		{name: "valid_structured", toolName: "image_read",
 			output: map[string]any{
 				"metadata": map[string]any{
 					"structured": map[string]any{
@@ -123,9 +123,9 @@ func TestMediaExtractArtifactsStructuredMetadata(t *testing.T) {
 					},
 				},
 			},
-			want: []Artifact{{Type: "image/png", URL: "https://cdn.example.com/img.png", Name: "ImageRead"}},
+			want: []Artifact{{Type: "image/png", URL: "https://cdn.example.com/img.png", Name: "image_read"}},
 		},
-		{name: "missing_media_type", toolName: "ImageRead",
+		{name: "missing_media_type", toolName: "image_read",
 			output: map[string]any{
 				"metadata": map[string]any{
 					"structured": map[string]any{
@@ -135,7 +135,7 @@ func TestMediaExtractArtifactsStructuredMetadata(t *testing.T) {
 			},
 			want: nil,
 		},
-		{name: "missing_media_url", toolName: "ImageRead",
+		{name: "missing_media_url", toolName: "image_read",
 			output: map[string]any{
 				"metadata": map[string]any{
 					"structured": map[string]any{
@@ -145,7 +145,7 @@ func TestMediaExtractArtifactsStructuredMetadata(t *testing.T) {
 			},
 			want: nil,
 		},
-		{name: "structured_nil", toolName: "ImageRead",
+		{name: "structured_nil", toolName: "image_read",
 			output: map[string]any{
 				"metadata": map[string]any{
 					"structured": nil,
@@ -153,7 +153,7 @@ func TestMediaExtractArtifactsStructuredMetadata(t *testing.T) {
 			},
 			want: nil,
 		},
-		{name: "metadata_nil", toolName: "ImageRead",
+		{name: "metadata_nil", toolName: "image_read",
 			output: map[string]any{
 				"metadata": nil,
 			},
@@ -186,7 +186,7 @@ func TestMediaExtractArtifactsDataMetadata(t *testing.T) {
 		output   interface{}
 		want     []Artifact
 	}{
-		{name: "image_with_absolute_path", toolName: "ImageRead",
+		{name: "image_with_absolute_path", toolName: "image_read",
 			output: map[string]any{
 				"metadata": map[string]any{
 					"data": map[string]any{
@@ -195,9 +195,9 @@ func TestMediaExtractArtifactsDataMetadata(t *testing.T) {
 					},
 				},
 			},
-			want: []Artifact{{Type: "image", URL: "/api/files/tmp/output/result.png", Name: "ImageRead"}},
+			want: []Artifact{{Type: "image", URL: "/api/files/tmp/output/result.png", Name: "image_read"}},
 		},
-		{name: "image_with_relative_path_fallback", toolName: "ImageRead",
+		{name: "image_with_relative_path_fallback", toolName: "image_read",
 			output: map[string]any{
 				"metadata": map[string]any{
 					"data": map[string]any{
@@ -206,9 +206,9 @@ func TestMediaExtractArtifactsDataMetadata(t *testing.T) {
 					},
 				},
 			},
-			want: []Artifact{{Type: "image", URL: "/api/files/output/result.png", Name: "ImageRead"}},
+			want: []Artifact{{Type: "image", URL: "/api/files/output/result.png", Name: "image_read"}},
 		},
-		{name: "absolute_path_preferred_over_path", toolName: "ImageRead",
+		{name: "absolute_path_preferred_over_path", toolName: "image_read",
 			output: map[string]any{
 				"metadata": map[string]any{
 					"data": map[string]any{
@@ -218,7 +218,7 @@ func TestMediaExtractArtifactsDataMetadata(t *testing.T) {
 					},
 				},
 			},
-			want: []Artifact{{Type: "image", URL: "/api/files/abs/path/img.png", Name: "ImageRead"}},
+			want: []Artifact{{Type: "image", URL: "/api/files/abs/path/img.png", Name: "image_read"}},
 		},
 		{name: "video_type", toolName: "VideoSampler",
 			output: map[string]any{
@@ -242,7 +242,7 @@ func TestMediaExtractArtifactsDataMetadata(t *testing.T) {
 			},
 			want: []Artifact{{Type: "audio", URL: "/api/files/tmp/output/sound.wav", Name: "AudioTool"}},
 		},
-		{name: "missing_mime", toolName: "ImageRead",
+		{name: "missing_mime", toolName: "image_read",
 			output: map[string]any{
 				"metadata": map[string]any{
 					"data": map[string]any{
@@ -252,7 +252,7 @@ func TestMediaExtractArtifactsDataMetadata(t *testing.T) {
 			},
 			want: nil,
 		},
-		{name: "missing_path", toolName: "ImageRead",
+		{name: "missing_path", toolName: "image_read",
 			output: map[string]any{
 				"metadata": map[string]any{
 					"data": map[string]any{
@@ -262,7 +262,7 @@ func TestMediaExtractArtifactsDataMetadata(t *testing.T) {
 			},
 			want: nil,
 		},
-		{name: "data_nil", toolName: "ImageRead",
+		{name: "data_nil", toolName: "image_read",
 			output: map[string]any{
 				"metadata": map[string]any{
 					"data": nil,
@@ -298,18 +298,18 @@ func TestMediaExtractArtifactsOutputPaths(t *testing.T) {
 		want     []Artifact
 	}{
 		{name: "http_url_image",
-			toolName: "Bash",
+			toolName: "bash",
 			output: map[string]any{
 				"output": "Image saved to https://cdn.example.com/generated/image.png",
 			},
-			want: []Artifact{{Type: "image", URL: "https://cdn.example.com/generated/image.png", Name: "Bash"}},
+			want: []Artifact{{Type: "image", URL: "https://cdn.example.com/generated/image.png", Name: "bash"}},
 		},
 		{name: "http_url_with_query",
-			toolName: "Bash",
+			toolName: "bash",
 			output: map[string]any{
 				"output": "Result: https://cdn.example.com/img.png?Expires=123&Signature=abc",
 			},
-			want: []Artifact{{Type: "image", URL: "https://cdn.example.com/img.png?Expires=123&Signature=abc", Name: "Bash"}},
+			want: []Artifact{{Type: "image", URL: "https://cdn.example.com/img.png?Expires=123&Signature=abc", Name: "bash"}},
 		},
 		{name: "http_url_video",
 			toolName: "VideoSampler",
@@ -326,53 +326,53 @@ func TestMediaExtractArtifactsOutputPaths(t *testing.T) {
 			want: []Artifact{{Type: "audio", URL: "https://cdn.example.com/track.mp3", Name: "AudioTool"}},
 		},
 		{name: "absolute_path_image",
-			toolName: "Bash",
+			toolName: "bash",
 			output: map[string]any{
 				"output": "Saved to /home/user/output/render.png",
 			},
-			want: []Artifact{{Type: "image", URL: "/api/files/home/user/output/render.png", Name: "Bash"}},
+			want: []Artifact{{Type: "image", URL: "/api/files/home/user/output/render.png", Name: "bash"}},
 		},
 		{name: "relative_path_image",
-			toolName: "Bash",
+			toolName: "bash",
 			output: map[string]any{
 				"output": "Saved to output/render.png",
 			},
-			want: []Artifact{{Type: "image", URL: "/api/files/output/render.png", Name: "Bash"}},
+			want: []Artifact{{Type: "image", URL: "/api/files/output/render.png", Name: "bash"}},
 		},
 		{name: "multiple_urls_deduped",
-			toolName: "Bash",
+			toolName: "bash",
 			output: map[string]any{
 				"output": "See https://cdn.example.com/a.png and https://cdn.example.com/a.png again",
 			},
-			want: []Artifact{{Type: "image", URL: "https://cdn.example.com/a.png", Name: "Bash"}},
+			want: []Artifact{{Type: "image", URL: "https://cdn.example.com/a.png", Name: "bash"}},
 		},
 		{name: "url_and_path_no_dedup_cross_type",
-			toolName: "Bash",
+			toolName: "bash",
 			output: map[string]any{
 				"output": "Remote https://cdn.example.com/a.png and local path /tmp/a.png",
 			},
 			want: []Artifact{
-				{Type: "image", URL: "https://cdn.example.com/a.png", Name: "Bash"},
-				{Type: "image", URL: "/api/files/tmp/a.png", Name: "Bash"},
+				{Type: "image", URL: "https://cdn.example.com/a.png", Name: "bash"},
+				{Type: "image", URL: "/api/files/tmp/a.png", Name: "bash"},
 			},
 		},
 		{name: "empty_output",
-			toolName: "Bash",
+			toolName: "bash",
 			output:   map[string]any{"output": ""},
 			want:     nil,
 		},
 		{name: "no_media_in_output",
-			toolName: "Bash",
+			toolName: "bash",
 			output:   map[string]any{"output": "just regular text output"},
 			want:     nil,
 		},
 		{name: "non_string_output",
-			toolName: "Bash",
+			toolName: "bash",
 			output:   map[string]any{"output": 42},
 			want:     nil,
 		},
 		{name: "non_map_payload",
-			toolName: "Bash",
+			toolName: "bash",
 			output:   "not a map",
 			want:     nil,
 		},
@@ -557,8 +557,8 @@ func TestMediaCacheArtifactMediaNonHTTP(t *testing.T) {
 		name string
 		art  Artifact
 	}{
-		{name: "api_files_path", art: Artifact{Type: "image", URL: "/api/files/tmp/img.png", Name: "Read"}},
-		{name: "relative_path", art: Artifact{Type: "image", URL: "output/img.png", Name: "Bash"}},
+		{name: "api_files_path", art: Artifact{Type: "image", URL: "/api/files/tmp/img.png", Name: "read"}},
+		{name: "relative_path", art: Artifact{Type: "image", URL: "output/img.png", Name: "bash"}},
 		{name: "data_uri", art: Artifact{Type: "image", URL: "data:image/png;base64,abc", Name: "Gen"}},
 	}
 
@@ -592,7 +592,7 @@ func TestMediaCacheArtifactMediaHTTPViaProjectRoot(t *testing.T) {
 
 	h, projectRoot := newMediaTestHandler(t)
 
-	art := Artifact{Type: "image", URL: server.URL + "/test.png", Name: "Bash"}
+	art := Artifact{Type: "image", URL: server.URL + "/test.png", Name: "bash"}
 	got := h.cacheArtifactMedia(context.Background(), art)
 
 	if got.URL == art.URL {
@@ -629,7 +629,7 @@ func TestMediaCacheArtifactAsyncCooldownSkips(t *testing.T) {
 	}
 	thread := store.CreateThread("test")
 	item := store.AppendItemWithArtifacts(thread.ID, "assistant", "x", "turn-1", []Artifact{
-		{Type: "image", URL: "https://cdn.example.com/fail.png", Name: "Bash"},
+		{Type: "image", URL: "https://cdn.example.com/fail.png", Name: "bash"},
 	})
 
 	h := &Handler{
@@ -642,7 +642,7 @@ func TestMediaCacheArtifactAsyncCooldownSkips(t *testing.T) {
 	h.cacheFailed.Store("https://cdn.example.com/fail.png", time.Now().Add(10*time.Minute))
 
 	h.cacheArtifactAsync(store, thread.ID, item.ID, Artifact{
-		Type: "image", URL: "https://cdn.example.com/fail.png", Name: "Bash",
+		Type: "image", URL: "https://cdn.example.com/fail.png", Name: "bash",
 	})
 
 	// Verify the item's artifact URL was NOT updated (still the original remote URL).
@@ -680,13 +680,13 @@ func TestMediaCacheArtifactAsyncExpiredCooldownProceeds(t *testing.T) {
 	thread := store.CreateThread("test")
 	artURL := server.URL + "/img.png"
 	item := store.AppendItemWithArtifacts(thread.ID, "assistant", "x", "turn-1", []Artifact{
-		{Type: "image", URL: artURL, Name: "Bash"},
+		{Type: "image", URL: artURL, Name: "bash"},
 	})
 
 	// Store a past cooldown time (already expired).
 	h.cacheFailed.Store(artURL, time.Now().Add(-1*time.Minute))
 
-	h.cacheArtifactAsync(store, thread.ID, item.ID, Artifact{Type: "image", URL: artURL, Name: "Bash"})
+	h.cacheArtifactAsync(store, thread.ID, item.ID, Artifact{Type: "image", URL: artURL, Name: "bash"})
 
 	// The expired cooldown entry should have been deleted.
 	if _, ok := h.cacheFailed.Load(artURL); ok {
@@ -717,7 +717,7 @@ func TestMediaCacheArtifactAsyncDedupSkips(t *testing.T) {
 	thread := store.CreateThread("test")
 	artURL := "https://cdn.example.com/dedup.png"
 	item := store.AppendItemWithArtifacts(thread.ID, "assistant", "x", "turn-1", []Artifact{
-		{Type: "image", URL: artURL, Name: "Bash"},
+		{Type: "image", URL: artURL, Name: "bash"},
 	})
 
 	h := &Handler{
@@ -729,7 +729,7 @@ func TestMediaCacheArtifactAsyncDedupSkips(t *testing.T) {
 	// Simulate an in-flight download for the same URL.
 	h.cacheInflight.Store(artURL, struct{}{})
 
-	h.cacheArtifactAsync(store, thread.ID, item.ID, Artifact{Type: "image", URL: artURL, Name: "Bash"})
+	h.cacheArtifactAsync(store, thread.ID, item.ID, Artifact{Type: "image", URL: artURL, Name: "bash"})
 
 	// The item's artifact URL should NOT have been updated (dedup skip).
 	gotItem, ok := store.GetItem(item.ID)
@@ -756,10 +756,10 @@ func TestMediaCacheArtifactAsyncFailureStoresCooldown(t *testing.T) {
 	// Use a URL that points to nothing -- caching will fail and return original URL.
 	artURL := "https://nonexistent.invalid/fail.png"
 	item := store.AppendItemWithArtifacts(thread.ID, "assistant", "x", "turn-1", []Artifact{
-		{Type: "image", URL: artURL, Name: "Bash"},
+		{Type: "image", URL: artURL, Name: "bash"},
 	})
 
-	h.cacheArtifactAsync(store, thread.ID, item.ID, Artifact{Type: "image", URL: artURL, Name: "Bash"})
+	h.cacheArtifactAsync(store, thread.ID, item.ID, Artifact{Type: "image", URL: artURL, Name: "bash"})
 
 	// The URL should now be in cacheFailed with a future cooldown time.
 	failUntil, ok := h.cacheFailed.Load(artURL)
@@ -792,11 +792,11 @@ func TestMediaMigrateRemoteArtifactsDedup(t *testing.T) {
 
 	// Item with a remote artifact URL (should trigger async caching).
 	store.AppendItemWithArtifacts(thread.ID, "assistant", "x", "turn-1", []Artifact{
-		{Type: "image", URL: "https://cdn.example.com/img.png", Name: "Bash"},
+		{Type: "image", URL: "https://cdn.example.com/img.png", Name: "bash"},
 	})
 	// Item with a local artifact URL (should be skipped).
 	store.AppendItemWithArtifacts(thread.ID, "assistant", "y", "turn-2", []Artifact{
-		{Type: "image", URL: "/api/files/tmp/local.png", Name: "Read"},
+		{Type: "image", URL: "/api/files/tmp/local.png", Name: "read"},
 	})
 	// Item with no artifacts (should be skipped).
 	store.AppendItem(thread.ID, "assistant", "z", "turn-3")
@@ -850,12 +850,12 @@ func TestMediaMigrateRemoteArtifactsCachesRemote(t *testing.T) {
 	thread := store.CreateThread("test")
 	artURL := server.URL + "/migrate.png"
 	store.AppendItemWithArtifacts(thread.ID, "assistant", "x", "turn-1", []Artifact{
-		{Type: "image", URL: artURL, Name: "Bash"},
+		{Type: "image", URL: artURL, Name: "bash"},
 	})
 	// Local artifact should stay untouched.
 	localURL := "/api/files/tmp/local.png"
 	store.AppendItemWithArtifacts(thread.ID, "assistant", "y", "turn-2", []Artifact{
-		{Type: "image", URL: localURL, Name: "Read"},
+		{Type: "image", URL: localURL, Name: "read"},
 	})
 
 	h.migrateRemoteArtifacts(store, thread.ID)
@@ -865,10 +865,10 @@ func TestMediaMigrateRemoteArtifactsCachesRemote(t *testing.T) {
 	var remoteUpdated, localUntouched bool
 	for _, item := range items {
 		for _, a := range item.Artifacts {
-			if a.Name == "Bash" && a.URL != artURL {
+			if a.Name == "bash" && a.URL != artURL {
 				remoteUpdated = true
 			}
-			if a.Name == "Read" && a.URL == localURL {
+			if a.Name == "read" && a.URL == localURL {
 				localUntouched = true
 			}
 		}

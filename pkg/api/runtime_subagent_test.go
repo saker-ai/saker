@@ -345,8 +345,8 @@ func TestNormalizeStringsSubagent(t *testing.T) {
 	}{
 		{name: "nil input returns nil", in: nil, want: nil},
 		{name: "empty input returns nil", in: []string{}, want: nil},
-		{name: "single element returns sorted", in: []string{"Bash"}, want: []string{"Bash"}},
-		{name: "multiple elements are sorted and deduplicated", in: []string{"grep", "Bash", "grep"}, want: []string{"Bash", "grep"}},
+		{name: "single element returns sorted", in: []string{"bash"}, want: []string{"bash"}},
+		{name: "multiple elements are sorted and deduplicated", in: []string{"grep", "bash", "grep"}, want: []string{"bash", "grep"}},
 		{name: "already sorted returns same", in: []string{"a", "b", "c"}, want: []string{"a", "b", "c"}},
 		{name: "reverse sorted is corrected", in: []string{"z", "m", "a"}, want: []string{"a", "m", "z"}},
 		{name: "duplicates are compacted", in: []string{"x", "x", "x"}, want: []string{"x"}},
@@ -878,7 +878,7 @@ func TestExecuteSubagentToolWhitelistNormalization(t *testing.T) {
 	req := &Request{
 		TargetSubagent: subagents.TypeGeneralPurpose,
 		Mode:           ModeContext{EntryPoint: EntryPointCLI},
-		ToolWhitelist:  []string{"grep", "Bash", "grep"},
+		ToolWhitelist:  []string{"grep", "bash", "grep"},
 	}
 	taskCtx := subagents.WithTaskDispatch(context.Background())
 	_, _, err := rt.executeSubagent(taskCtx, "prompt", skills.ActivationContext{}, req)
@@ -889,7 +889,7 @@ func TestExecuteSubagentToolWhitelistNormalization(t *testing.T) {
 	if len(capturedReq.ToolWhitelist) != 2 {
 		t.Fatalf("ToolWhitelist length = %d, want 2", len(capturedReq.ToolWhitelist))
 	}
-	if capturedReq.ToolWhitelist[0] != "Bash" || capturedReq.ToolWhitelist[1] != "grep" {
+	if capturedReq.ToolWhitelist[0] != "bash" || capturedReq.ToolWhitelist[1] != "grep" {
 		t.Errorf("ToolWhitelist = %v, want [Bash, grep]", capturedReq.ToolWhitelist)
 	}
 }
@@ -1295,7 +1295,7 @@ func TestCombineToolWhitelistsSubagent(t *testing.T) {
 		},
 		{
 			name:      "subagent nil, requested set returns requested",
-			requested: []string{"Bash", "Grep"},
+			requested: []string{"bash", "grep"},
 			subagent:  nil,
 			wantLen:   2,
 			wantHas:   []string{"bash", "grep"},
@@ -1351,7 +1351,7 @@ func TestToLowerSetSubagent(t *testing.T) {
 	}{
 		{name: "nil returns nil", vals: nil, want: nil},
 		{name: "empty returns nil", vals: []string{}, want: nil},
-		{name: "mixed case is lowered", vals: []string{"Bash", "GREP"}, want: map[string]struct{}{"bash": {}, "grep": {}}},
+		{name: "mixed case is lowered", vals: []string{"bash", "GREP"}, want: map[string]struct{}{"bash": {}, "grep": {}}},
 		{name: "duplicates are deduplicated", vals: []string{"bash", "BASH"}, want: map[string]struct{}{"bash": {}}},
 		{name: "whitespace-only entries skipped", vals: []string{"  ", "bash"}, want: map[string]struct{}{"bash": {}}},
 	}

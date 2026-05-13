@@ -52,7 +52,7 @@ func TestValidateToolOutputConfigRejectsInvalidThresholds(t *testing.T) {
 		ToolOutput: &ToolOutputConfig{
 			DefaultThresholdBytes: -1,
 			PerToolThresholdBytes: map[string]int{
-				"Bash": 0,
+				"bash": 0,
 			},
 		},
 	}
