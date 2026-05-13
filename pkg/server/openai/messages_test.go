@@ -205,6 +205,32 @@ func TestMessagesToRequest_ImageURLBadScheme(t *testing.T) {
 	}
 }
 
+func TestMessagesToRequest_AllowedToolsPropagates(t *testing.T) {
+	msgs := []ChatMessage{{Role: "user", Content: mustJSON(t, "hi")}}
+	extra := ExtraBody{AllowedTools: []string{"bash", "grep"}}
+	got, err := MessagesToRequest(msgs, extra, "")
+	if err != nil {
+		t.Fatalf("unexpected err: %v", err)
+	}
+	if len(got.ToolWhitelist) != 2 {
+		t.Fatalf("ToolWhitelist: got %d want 2", len(got.ToolWhitelist))
+	}
+	if got.ToolWhitelist[0] != "bash" || got.ToolWhitelist[1] != "grep" {
+		t.Errorf("ToolWhitelist = %v, want [bash grep]", got.ToolWhitelist)
+	}
+}
+
+func TestMessagesToRequest_EmptyAllowedToolsNoWhitelist(t *testing.T) {
+	msgs := []ChatMessage{{Role: "user", Content: mustJSON(t, "hi")}}
+	got, err := MessagesToRequest(msgs, ExtraBody{}, "")
+	if err != nil {
+		t.Fatalf("unexpected err: %v", err)
+	}
+	if got.ToolWhitelist != nil {
+		t.Errorf("ToolWhitelist should be nil when no AllowedTools, got %v", got.ToolWhitelist)
+	}
+}
+
 func TestExtractMessageText_StringAndParts(t *testing.T) {
 	s, err := extractMessageText(mustJSON(t, "plain"))
 	if err != nil || s != "plain" {
