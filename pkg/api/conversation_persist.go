@@ -49,8 +49,7 @@ const cliConversationClient = "cli"
 // events under it.
 //
 // Errors are logged and swallowed: persistence is additive and must not
-// break the agent loop. The runhub event ring (P0) still has the
-// canonical wire copy for reconstruction tools (P5).
+// break the agent loop.
 func (rt *Runtime) persistToConversation(sessionID string, history *message.History) {
 	if rt == nil || rt.conversationStore == nil || history == nil {
 		return

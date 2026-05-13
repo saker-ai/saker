@@ -16,22 +16,18 @@ const (
 	convTeeWebClient      = "web"
 	// convTeeOpTimeout caps a single tee write. Generous enough to absorb
 	// SQLite WAL contention spikes but tight enough to prevent a degraded
-	// conversation store from stalling SessionStore mutations (which are
-	// still the Web UI's source of truth until P5 migration).
+	// conversation store from stalling SessionStore mutations.
 	convTeeOpTimeout = 5 * time.Second
 )
 
-// convTee mirrors SessionStore mutations into the unified conversation.Store
-// (P4 Phase C). It is bound at SessionStore construction time to a single
-// projectID — for the legacy single-project Server, "default"; for per-project
-// registries, scope.ProjectID.
+// convTee mirrors SessionStore mutations into the unified conversation.Store.
+// It is bound at SessionStore construction time to a single projectID — for
+// the legacy single-project Server, "default"; for per-project registries,
+// scope.ProjectID.
 //
 // All operations are nil-safe and best-effort: errors are logged and swallowed
 // so a degraded conversation.Store never breaks the Web UI's SessionStore
-// writes. Until P5 migration, SessionStore JSON files remain authoritative;
-// the tee only ensures the unified store ALSO has the data so search/list/
-// reconstruction tooling (P1 messages projection, P5 migration) can work
-// from a single source.
+// writes.
 type convTee struct {
 	store       *conversation.Store
 	projectID   string
@@ -85,8 +81,7 @@ func (t *convTee) recordThreadCreate(threadID, title string) {
 }
 
 // recordThreadDelete soft-deletes the thread. The SessionStore equivalent is
-// a hard delete + JSON unlink; here we keep the events for forensic /
-// migration purposes (P5 reconciliation walks the soft-deleted set too).
+// a hard delete; here we keep the events for forensic purposes.
 func (t *convTee) recordThreadDelete(threadID string) {
 	if t == nil {
 		return

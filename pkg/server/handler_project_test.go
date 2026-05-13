@@ -241,10 +241,10 @@ func TestHandleProjectDelete_RemovesOnDiskDirectory(t *testing.T) {
 	// observe the cleanup. Using the same BuildPaths helper keeps the test
 	// honest about the layout the handler relies on.
 	paths := project.BuildPaths(h.dataDir, p.ID)
-	if err := os.MkdirAll(paths.SessionsDir, 0o755); err != nil {
-		t.Fatalf("mkdir sessions: %v", err)
+	if err := os.MkdirAll(paths.CanvasDir, 0o755); err != nil {
+		t.Fatalf("mkdir canvas: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(paths.SessionsDir, "t.json"), []byte("{}"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(paths.CanvasDir, "t.json"), []byte("{}"), 0o644); err != nil {
 		t.Fatalf("write seed file: %v", err)
 	}
 

@@ -73,13 +73,11 @@ type Runtime struct {
 	recorder         HookRecorder
 	hooks            *corehooks.Executor
 	histories        *historyStore
-	historyPersister *diskHistoryPersister
-	sessionGate      *sessionGate
+	sessionGate *sessionGate
 
-	// conversationStore is the optional event-sourced log (P4 Phase B).
-	// nil = legacy three-layer recording only. When non-nil, persistHistory
-	// also diffs the snapshot vs convCursor and emits new messages as
-	// events. See pkg/api/conversation_persist.go for the semantics.
+	// conversationStore is the optional event-sourced conversation log.
+	// When non-nil, persistHistory diffs the snapshot vs convCursor and
+	// emits new messages as events. See pkg/api/conversation_persist.go.
 	conversationStore *conversation.Store
 	// convCursor tracks per-session "next message index to record" so each
 	// persistHistory call only emits the new tail. Reset on Runtime.Close.
@@ -256,7 +254,6 @@ func New(ctx context.Context, opts Options) (*Runtime, error) {
 	}
 
 	histories := newHistoryStore(opts.MaxSessions)
-	var historyPersister *diskHistoryPersister
 	if opts.ConversationStore != nil {
 		convStore := opts.ConversationStore
 		histories.loader = func(sessionID string) ([]message.Message, error) {
@@ -265,20 +262,6 @@ func New(ctx context.Context, opts Options) (*Runtime, error) {
 				return nil, err
 			}
 			return conversation.ToRuntimeMessages(msgs), nil
-		}
-	} else {
-		retainDays := 0
-		if settings != nil && settings.CleanupPeriodDays != nil {
-			retainDays = *settings.CleanupPeriodDays
-		}
-		if retainDays > 0 {
-			historyPersister = newDiskHistoryPersister(opts.ProjectRoot, opts.ConfigRoot)
-			if historyPersister != nil {
-				histories.loader = historyPersister.Load
-				if err := historyPersister.Cleanup(retainDays); err != nil {
-					logging.From(ctx).Warn("history cleanup warning", "error", err)
-				}
-			}
 		}
 	}
 
@@ -315,9 +298,8 @@ func New(ctx context.Context, opts Options) (*Runtime, error) {
 		executor:           executor,
 		recorder:           recorder,
 		hooks:              hooks,
-		histories:          histories,
-		historyPersister:   historyPersister,
-		cmdExec:            cmdExec,
+		histories: histories,
+		cmdExec:   cmdExec,
 		skReg:              skReg,
 		subMgr:             subMgr,
 		subStore:           subagents.NewMemoryStore(),

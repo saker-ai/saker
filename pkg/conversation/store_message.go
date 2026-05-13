@@ -219,7 +219,7 @@ func nextMessagePos(tx *gorm.DB, threadID string) (int64, error) {
 
 // GetMessages returns the materialized message projection for a thread,
 // in pos-ascending order. AfterPos lets a paginating caller resume from
-// a known cursor (e.g. P4 SSE backfill).
+// a known cursor (e.g. SSE backfill).
 func (s *Store) GetMessages(ctx context.Context, threadID string, opts GetMessagesOpts) ([]Message, error) {
 	if threadID == "" {
 		return nil, errors.New("conversation.GetMessages: threadID required")

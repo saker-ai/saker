@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/message"
 	"github.com/cinience/saker/pkg/model"
 	"github.com/cinience/saker/pkg/runtime/commands"
 	"github.com/cinience/saker/pkg/runtime/tasks"
@@ -605,15 +604,14 @@ func TestACPInprocLoadSessionForExistingSessionEmitsCommandsUpdate(t *testing.T)
 func TestACPInprocLoadSessionReplayHistory(t *testing.T) {
 	root := t.TempDir()
 	sessionID := acpproto.SessionId("sess-replay")
-	if err := api.SavePersistedHistory(root, string(sessionID), []message.Message{
-		{Role: "user", Content: "hello"},
-		{Role: "assistant", Content: "world"},
-	}); err != nil {
-		t.Fatalf("save persisted history: %v", err)
-	}
+	opts := testOptionsForRootWithModel(t, root, stubModel{})
+	seedConversationHistory(t, opts.ConversationStore, string(sessionID), [][2]string{
+		{"user", "hello"},
+		{"assistant", "world"},
+	})
 
 	client := newE2EClient()
-	h := newE2EHarness(t, testOptionsForRootWithModel(t, root, stubModel{}), client)
+	h := newE2EHarness(t, opts, client)
 	initializeACP(t, h.clientConn, acpproto.ClientCapabilities{})
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

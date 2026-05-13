@@ -13,14 +13,10 @@ import (
 type ProjectPaths struct {
 	// Root is `<base>/projects/<projectID>`.
 	Root string
-	// SessionsDir holds per-thread session JSON.
-	SessionsDir string
 	// CanvasDir holds per-thread canvas document JSON.
 	CanvasDir string
 	// MemoryDir is the project-scoped memory directory.
 	MemoryDir string
-	// HistoryDir holds long-term history dumps.
-	HistoryDir string
 	// ConfigRoot is the per-project `.saker`-style config root used by
 	// the profile package.
 	ConfigRoot string
@@ -33,12 +29,10 @@ type ProjectPaths struct {
 func BuildPaths(baseDataDir, projectID string) ProjectPaths {
 	root := filepath.Join(baseDataDir, "projects", projectID)
 	return ProjectPaths{
-		Root:        root,
-		SessionsDir: filepath.Join(root, "sessions"),
-		CanvasDir:   filepath.Join(root, "canvas"),
-		MemoryDir:   filepath.Join(root, "memory"),
-		HistoryDir:  filepath.Join(root, "history"),
-		ConfigRoot:  filepath.Join(root, "config"),
+		Root:       root,
+		CanvasDir:  filepath.Join(root, "canvas"),
+		MemoryDir:  filepath.Join(root, "memory"),
+		ConfigRoot: filepath.Join(root, "config"),
 	}
 }
 

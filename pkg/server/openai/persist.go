@@ -193,9 +193,7 @@ func (p *chatPersister) recordInputMessage(ctx context.Context, m ChatMessage) e
 // hubRun.Publish'd, so a slow DB never gates SSE delivery.
 //
 // Errors are logged and swallowed: dropping an event is bad, but
-// breaking the chat for the user mid-stream is worse. The runhub still
-// has the canonical wire copy; reconstruction tools (P5) can replay
-// from there if persistence is corrupted.
+// breaking the chat for the user mid-stream is worse.
 func (p *chatPersister) recordEvent(ctx context.Context, evt api.StreamEvent) {
 	if p == nil {
 		return

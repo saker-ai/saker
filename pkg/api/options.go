@@ -178,12 +178,10 @@ type Options struct {
 	CacheStore runtimecache.Store
 
 	// ConversationStore persists Run / RunStream traffic into the unified
-	// conversation log (event-sourced thread → events). Optional: when nil
-	// the runtime keeps the legacy two-layer (in-memory + JSON history)
-	// recording unchanged. When set, each persistHistory call
-	// also diffs the snapshot against the per-session cursor and emits the
-	// new messages as conversation events under a new turn — see
-	// pkg/api/conversation_persist.go.
+	// conversation log (event-sourced thread → events). When set, each
+	// persistHistory call diffs the snapshot against the per-session cursor
+	// and emits the new messages as conversation events under a new turn —
+	// see pkg/api/conversation_persist.go.
 	//
 	// Identity defaults: ProjectID = "default", OwnerUserID = "cli", Client
 	// = "cli". Server / gateway code paths bring their own identity via

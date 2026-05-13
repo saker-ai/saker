@@ -217,7 +217,7 @@ func TestConvTee_DeleteThreadSoftDeletes(t *testing.T) {
 
 	// Soft delete: GetThread treats soft-deleted rows as not found, and
 	// ListThreads must hide it. Pre-existing events survive — that's the
-	// whole point of soft delete (P5 migration / forensics still need them).
+	// whole point of soft delete (forensics still need them).
 	if _, err := conv.GetThread(context.Background(), thread.ID); err == nil {
 		t.Error("conv.GetThread after soft delete: want ErrThreadNotFound, got nil")
 	}
