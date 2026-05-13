@@ -116,12 +116,15 @@ type Options struct {
 	// When provided, ownership remains with the caller.
 	TaskStore tasks.Store
 
-	// EnabledBuiltinTools controls which built-in tools are registered when Options.Tools is empty.
-	// - nil (default): register all built-ins to preserve current behavior
+	// ModePreset selects a curated tool set for the runtime mode.
+	// When empty, derived from EntryPoint (cli→PresetCLI, platform→PresetServerWeb, ci→PresetCI).
+	// When set, overrides the EntryPoint-based default.
+	ModePreset ModePreset
+
+	// EnabledBuiltinTools further filters the preset's tool set.
+	// - nil (default): use all tools from the preset
 	// - empty slice: disable all built-in tools
-	// - non-empty: enable only the listed built-ins (case-insensitive).
-	// If Tools is non-empty, this whitelist is ignored in favor of the legacy Tools override.
-	// Available built-in names include: bash, file_read, image_read, file_write, grep, glob.
+	// - non-empty: intersect with the preset (case-insensitive).
 	EnabledBuiltinTools []string
 
 	// DisallowedTools is a blacklist of tool names (case-insensitive) that will not be registered.

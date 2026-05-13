@@ -7,7 +7,7 @@ import "github.com/cinience/saker/pkg/model"
 func EnabledBuiltinToolKeys(opts Options) []string {
 	resolved := opts.withDefaults()
 	entry := effectiveEntryPoint(resolved)
-	return filterBuiltinNames(resolved.EnabledBuiltinTools, builtinOrder(entry))
+	return filterBuiltinNames(resolved.EnabledBuiltinTools, builtinOrder(entry, resolved.ModePreset))
 }
 
 // AvailableTools returns model-facing tool definitions from the runtime registry.

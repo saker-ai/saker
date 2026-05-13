@@ -297,23 +297,23 @@ func TestRuntimeToolsFilterBuiltinNames(t *testing.T) {
 func TestRuntimeToolsBuiltinOrder(t *testing.T) {
 	t.Parallel()
 	// CLI and Platform include "task" tool.
-	cliOrder := builtinOrder(EntryPointCLI)
+	cliOrder := builtinOrder(EntryPointCLI, "")
 	if !rtContainsString(cliOrder, "task") {
 		t.Fatalf("CLI order should include task tool")
 	}
-	platformOrder := builtinOrder(EntryPointPlatform)
+	platformOrder := builtinOrder(EntryPointPlatform, "")
 	if !rtContainsString(platformOrder, "task") {
 		t.Fatalf("Platform order should include task tool")
 	}
 	// CI does not include "task" tool.
-	ciOrder := builtinOrder(EntryPointCI)
+	ciOrder := builtinOrder(EntryPointCI, "")
 	if rtContainsString(ciOrder, "task") {
 		t.Fatalf("CI order should not include task tool")
 	}
 	// Core tools are present in all entrypoints.
 	coreTools := []string{"bash", "file_read", "file_write", "file_edit", "grep", "glob"}
 	for _, entry := range []EntryPoint{EntryPointCLI, EntryPointCI, EntryPointPlatform} {
-		order := builtinOrder(entry)
+		order := builtinOrder(entry, "")
 		for _, name := range coreTools {
 			if !rtContainsString(order, name) {
 				t.Fatalf("builtinOrder(%v) missing core tool %q", entry, name)
@@ -321,8 +321,8 @@ func TestRuntimeToolsBuiltinOrder(t *testing.T) {
 		}
 	}
 	// Verify order is deterministic (same entrypoint yields same result).
-	order1 := builtinOrder(EntryPointCLI)
-	order2 := builtinOrder(EntryPointCLI)
+	order1 := builtinOrder(EntryPointCLI, "")
+	order2 := builtinOrder(EntryPointCLI, "")
 	if len(order1) != len(order2) {
 		t.Fatalf("order lengths differ between repeated calls")
 	}
