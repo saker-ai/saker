@@ -294,7 +294,11 @@ func NewBifrost(cfg BifrostConfig) (Model, error) {
 				keys: []schemas.Key{{
 					ID:     "saker-fallback",
 					Value:  schemas.EnvVar{Val: fbKey},
-					Models: schemas.WhiteList{},
+					// Bifrost v1.5+: WhiteList{} denies every model;
+					// WhiteList{"*"} is the unrestricted/allow-all marker.
+					// Saker fallback keys aren't model-pinned, so they
+					// must opt in to "*" or every request is rejected.
+					Models: schemas.WhiteList{"*"},
 					Weight: 1,
 				}},
 				baseURL:      strings.TrimSpace(fb.BaseURL),
@@ -585,9 +589,14 @@ func coalesceFloat(a, b *float64) *float64 {
 // pre-multi-key behaviour, so existing callers see no functional change.
 func buildPrimaryKeys(apiKey string, cfg BifrostConfig) []schemas.Key {
 	primary := schemas.Key{
-		ID:     "saker-default",
-		Value:  schemas.EnvVar{Val: apiKey},
-		Models: schemas.WhiteList{},
+		ID:    "saker-default",
+		Value: schemas.EnvVar{Val: apiKey},
+		// Bifrost v1.5 model-filter semantics: WhiteList{} (empty) means
+		// "deny every model"; WhiteList{"*"} is the unrestricted marker.
+		// The primary key has to authorize whatever ModelName the caller
+		// passed (claude-sonnet-4-*, glm-5.1, qwen-*, …), so we opt in to
+		// "*" rather than maintaining a static allow-list per vendor.
+		Models: schemas.WhiteList{"*"},
 		Weight: 1,
 	}
 	if cfg.BedrockKeyConfig != nil {
@@ -618,7 +627,11 @@ func buildPrimaryKeys(apiKey string, cfg BifrostConfig) []schemas.Key {
 		if len(extra.Models) > 0 {
 			allowed = schemas.WhiteList(append([]string(nil), extra.Models...))
 		} else {
-			allowed = schemas.WhiteList{}
+			// Empty Models means "no whitelist specified by the caller";
+			// in Bifrost v1.5 this requires the explicit "*" sentinel —
+			// a literal empty slice would cause selectKeyFromProvider to
+			// reject the key for every model.
+			allowed = schemas.WhiteList{"*"}
 		}
 		keys = append(keys, schemas.Key{
 			ID:     fmt.Sprintf("saker-extra-%d", i+1),

@@ -287,11 +287,6 @@ func (rt *Runtime) Close() error {
 				err = errors.Join(err, e)
 			}
 		}
-		if rt.sessionDB != nil {
-			if e := rt.sessionDB.Close(); e != nil {
-				err = errors.Join(err, e)
-			}
-		}
 		if rt.skillTracker != nil {
 			if e := rt.skillTracker.Flush(); e != nil {
 				err = errors.Join(err, e)

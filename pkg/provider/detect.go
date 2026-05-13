@@ -9,22 +9,29 @@ import (
 )
 
 // Detect selects and configures a model provider based on explicit flags and
-// environment variables. Auto-detection order: DASHSCOPE_API_KEY → dashscope,
-// ANTHROPIC_API_KEY → anthropic, OPENAI_API_KEY → openai, fallback → openai.
+// environment variables. The protocol layer recognizes exactly two wire
+// formats:
 //
-// Dashscope wins over the others when present because users running
-// dashscope-backed deployments often also have ANTHROPIC_AUTH_TOKEN set
-// (e.g. via Claude Code's settings.json env injection) for unrelated
-// tooling — without this priority dashscope would never be the default
-// even after explicitly setting DASHSCOPE_API_KEY. Callers can still
-// force a specific provider with --provider.
+//   - "anthropic" — Claude messages API; honors ANTHROPIC_BASE_URL and
+//     ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN. Use this for the official
+//     api.anthropic.com endpoint or any Claude-compatible proxy.
+//   - "openai"    — OpenAI chat completions API; honors OPENAI_BASE_URL and
+//     OPENAI_API_KEY. Use this for the official OpenAI endpoint, Azure
+//     OpenAI, or any OpenAI-compatible vendor (DashScope, Moonshot, Zhipu,
+//     DeepSeek, Together, Groq, vLLM, …) by pointing OPENAI_BASE_URL at
+//     their `/v1` endpoint.
+//
+// Auto-detection picks "anthropic" when ANTHROPIC creds are set, otherwise
+// "openai". Callers can still force a specific provider with --provider.
+//
+// The OpenAI branch detects Chinese-cloud base URLs (e.g. dashscope.aliyuncs.com)
+// and switches the global pricing region so the cost ledger uses
+// china_mainland rates instead of US.
 func Detect(providerFlag, modelFlag, system string) (model.Provider, string) {
 	provider := strings.ToLower(strings.TrimSpace(providerFlag))
 
 	if provider == "" {
 		switch {
-		case os.Getenv("DASHSCOPE_API_KEY") != "":
-			provider = "dashscope"
 		case os.Getenv("ANTHROPIC_API_KEY") != "" || os.Getenv("ANTHROPIC_AUTH_TOKEN") != "":
 			provider = "anthropic"
 		case os.Getenv("OPENAI_API_KEY") != "":
@@ -35,41 +42,16 @@ func Detect(providerFlag, modelFlag, system string) (model.Provider, string) {
 	}
 
 	switch provider {
-	case "dashscope":
-		key := security.ResolveEnv(os.Getenv("DASHSCOPE_API_KEY"))
-		m := strings.TrimSpace(modelFlag)
-		if m == "" {
-			m = "deepseek-v4-pro"
-		}
-		baseURL := strings.TrimSpace(os.Getenv("DASHSCOPE_BASE_URL"))
-		if baseURL == "" {
-			baseURL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-		}
-		model.SetChinaModelRegion(model.DetectChinaRegionFromBaseURL(baseURL))
-		// Dashscope's OpenAI-compatible endpoint accepts `enable_thinking`
-		// as an extension to toggle the reasoning trace. Injected
-		// unconditionally — endpoints that don't recognize it will ignore
-		// the field per their compatibility contract.
-		// Reasoning models like deepseek-v4-pro spend most of their output
-		// budget on the chain-of-thought stream, so the OpenAI default
-		// (4096) is far too small — a single first-turn answer will hit
-		// `stop_reason: length` before producing any tool call. Bump the
-		// per-request cap to 131072, which fits comfortably below
-		// dashscope-served deepseek-v4-pro's documented 393,216 limit
-		// while leaving room for reasoning + final output + tool args.
-		return &model.OpenAIProvider{
-			APIKey:    key,
-			BaseURL:   baseURL,
-			ModelName: m,
-			System:    system,
-			MaxTokens: 131072,
-			ExtraBody: map[string]any{
-				"enable_thinking": false,
-			},
-		}, m
 	case "openai":
 		key := security.ResolveEnv(os.Getenv("OPENAI_API_KEY"))
-		baseURL := os.Getenv("OPENAI_BASE_URL")
+		baseURL := strings.TrimSpace(os.Getenv("OPENAI_BASE_URL"))
+		// When OPENAI_BASE_URL points at a Chinese cloud (e.g. DashScope's
+		// compatible-mode endpoint), the cost ledger needs china_mainland
+		// rates rather than the OpenAI defaults. The detection is a no-op
+		// for non-Chinese base URLs.
+		if baseURL != "" {
+			model.SetChinaModelRegion(model.DetectChinaRegionFromBaseURL(baseURL))
+		}
 		m := strings.TrimSpace(modelFlag)
 		if m == "" {
 			m = "gpt-4o"
@@ -85,8 +67,14 @@ func Detect(providerFlag, modelFlag, system string) (model.Provider, string) {
 		if m == "" {
 			m = "claude-sonnet-4-20250514"
 		}
+		// ANTHROPIC_BASE_URL lets users point at a Claude-compatible proxy
+		// (e.g. third-party gateways serving GLM / Qwen via Anthropic schema).
+		// Without this fallback, the env var that Claude Code itself honors
+		// is silently ignored here.
+		baseURL := strings.TrimSpace(os.Getenv("ANTHROPIC_BASE_URL"))
 		return &model.AnthropicProvider{
 			ModelName: m,
+			BaseURL:   baseURL,
 			System:    system,
 		}, m
 	}

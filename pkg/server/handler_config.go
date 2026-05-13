@@ -7,7 +7,9 @@ import (
 	"strings"
 
 	"github.com/cinience/saker/pkg/config"
+	"github.com/cinience/saker/pkg/conversation"
 	"github.com/cinience/saker/pkg/media/embedding"
+	"github.com/cinience/saker/pkg/project"
 )
 
 func (h *Handler) handleConfigGet(req Request) Response {
@@ -138,30 +140,38 @@ func (h *Handler) handleStatsTotal(req Request) Response {
 	return h.success(req.ID, stats)
 }
 
-func (h *Handler) handleSessionsSearch(req Request) Response {
-	db := h.runtime.SessionDB()
-	if db == nil {
-		return h.internalError(req.ID, "session database not available")
+func (h *Handler) handleSessionsSearch(ctx context.Context, req Request) Response {
+	store := h.runtime.ConversationStore()
+	if store == nil {
+		return h.internalError(req.ID, "conversation store not available")
+	}
+	projectID := "default"
+	if scope, ok := project.FromContext(ctx); ok {
+		projectID = scope.ProjectID
 	}
 	query, _ := req.Params["query"].(string)
 	limit := 20
 	if v, ok := req.Params["limit"].(float64); ok && v > 0 {
 		limit = int(v)
 	}
-	results, err := db.Search(query, limit)
+	hits, err := store.Search(ctx, projectID, query, conversation.SearchOpts{Limit: limit})
 	if err != nil {
 		return h.internalError(req.ID, err.Error())
 	}
-	if results == nil {
+	if hits == nil {
 		return h.success(req.ID, []struct{}{})
 	}
-	return h.success(req.ID, results)
+	return h.success(req.ID, hits)
 }
 
-func (h *Handler) handleSessionsList(req Request) Response {
-	db := h.runtime.SessionDB()
-	if db == nil {
-		return h.internalError(req.ID, "session database not available")
+func (h *Handler) handleSessionsList(ctx context.Context, req Request) Response {
+	store := h.runtime.ConversationStore()
+	if store == nil {
+		return h.internalError(req.ID, "conversation store not available")
+	}
+	projectID := "default"
+	if scope, ok := project.FromContext(ctx); ok {
+		projectID = scope.ProjectID
 	}
 	limit := 50
 	offset := 0
@@ -171,14 +181,14 @@ func (h *Handler) handleSessionsList(req Request) Response {
 	if v, ok := req.Params["offset"].(float64); ok && v >= 0 {
 		offset = int(v)
 	}
-	sessions, err := db.ListSessions(limit, offset)
+	threads, err := store.ListThreads(ctx, projectID, conversation.ListThreadsOpts{Limit: limit, Offset: offset})
 	if err != nil {
 		return h.internalError(req.ID, err.Error())
 	}
-	if sessions == nil {
+	if threads == nil {
 		return h.success(req.ID, []struct{}{})
 	}
-	return h.success(req.ID, sessions)
+	return h.success(req.ID, threads)
 }
 
 func (h *Handler) handleModelSwitch(ctx context.Context, req Request) Response {

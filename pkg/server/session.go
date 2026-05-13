@@ -1,46 +1,99 @@
 package server
 
 import (
-	"encoding/json"
-	"os"
-	"path/filepath"
+	"context"
+	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
+	"github.com/cinience/saker/pkg/conversation"
 	"github.com/google/uuid"
 )
 
-// SessionStore manages thread state and persistence.
+// SessionStore manages thread state as an in-memory cache backed by
+// conversation.Store. Mutations are mirrored to conversation.Store via
+// the attached convTee; startup state is populated via LoadFromConversation.
 type SessionStore struct {
 	mu      sync.RWMutex
 	threads []Thread
 	items   map[string][]ThreadItem // threadID → items
-	dataDir string
+	tee     *convTee
 }
 
-// NewSessionStore creates a store, loading any persisted threads from dataDir.
-func NewSessionStore(dataDir string) (*SessionStore, error) {
-	s := &SessionStore{
+// AttachConvTee wires the dual-write tee into this SessionStore. Safe to
+// call once after construction; subsequent calls overwrite (last wins). Pass
+// nil to detach. The tee is held by reference: callers may share one
+// conversation.Store across many SessionStores by binding distinct projectIDs.
+func (s *SessionStore) AttachConvTee(tee *convTee) {
+	if s == nil {
+		return
+	}
+	s.mu.Lock()
+	s.tee = tee
+	s.mu.Unlock()
+}
+
+// NewSessionStore creates an empty in-memory store. Call LoadFromConversation
+// after construction to populate startup state from conversation.Store.
+func NewSessionStore() (*SessionStore, error) {
+	return &SessionStore{
 		threads: make([]Thread, 0),
 		items:   make(map[string][]ThreadItem),
-		dataDir: dataDir,
+	}, nil
+}
+
+// LoadFromConversation populates in-memory threads and items from the
+// conversation.Store. No-op when store is nil. Called once after construction,
+// before AttachConvTee, so the initial state is visible before dual-write
+// begins.
+func (s *SessionStore) LoadFromConversation(store *conversation.Store, projectID string) error {
+	if s == nil || store == nil {
+		return nil
 	}
-	if dataDir != "" {
-		if err := os.MkdirAll(dataDir, 0o755); err != nil {
-			return nil, err
-		}
-		if err := s.load(); err != nil {
-			return nil, err
-		}
+	ctx := context.Background()
+	threads, err := store.ListThreads(ctx, projectID, conversation.ListThreadsOpts{
+		Limit: conversation.MaxListLimit,
+	})
+	if err != nil {
+		return fmt.Errorf("load threads: %w", err)
 	}
-	return s, nil
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, ct := range threads {
+		t := Thread{
+			ID:        ct.ID,
+			Title:     ct.Title,
+			CreatedAt: ct.CreatedAt,
+			UpdatedAt: ct.UpdatedAt,
+		}
+		s.threads = append(s.threads, t)
+		msgs, err := store.GetMessages(ctx, ct.ID, conversation.GetMessagesOpts{
+			Limit: conversation.MaxListLimit,
+		})
+		if err != nil {
+			s.items[ct.ID] = make([]ThreadItem, 0)
+			continue
+		}
+		items := make([]ThreadItem, 0, len(msgs))
+		for _, m := range msgs {
+			items = append(items, ThreadItem{
+				ID:        strconv.FormatInt(m.ID, 10),
+				ThreadID:  m.ThreadID,
+				TurnID:    m.TurnID,
+				Role:      m.Role,
+				Content:   m.Content,
+				CreatedAt: m.CreatedAt,
+			})
+		}
+		s.items[ct.ID] = items
+	}
+	return nil
 }
 
 // CreateThread creates a new conversation thread.
 func (s *SessionStore) CreateThread(title string) Thread {
 	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	now := time.Now()
 	t := Thread{
 		ID:        uuid.New().String(),
@@ -50,7 +103,9 @@ func (s *SessionStore) CreateThread(title string) Thread {
 	}
 	s.threads = append(s.threads, t)
 	s.items[t.ID] = make([]ThreadItem, 0)
-	s.persist()
+	tee := s.tee
+	s.mu.Unlock()
+	tee.recordThreadCreate(t.ID, title)
 	return t
 }
 
@@ -66,22 +121,23 @@ func (s *SessionStore) ListThreads() []Thread {
 // UpdateThreadTitle updates the title of an existing thread.
 func (s *SessionStore) UpdateThreadTitle(threadID, title string) bool {
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	for i := range s.threads {
 		if s.threads[i].ID == threadID {
 			s.threads[i].Title = title
 			s.threads[i].UpdatedAt = time.Now()
-			s.persist()
+			tee := s.tee
+			s.mu.Unlock()
+			tee.recordThreadTitleUpdate(threadID, title)
 			return true
 		}
 	}
+	s.mu.Unlock()
 	return false
 }
 
-// DeleteThread removes a thread and its items, including the persisted file.
+// DeleteThread removes a thread and its items from the in-memory cache.
 func (s *SessionStore) DeleteThread(threadID string) bool {
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	found := false
 	for i := range s.threads {
 		if s.threads[i].ID == threadID {
@@ -91,12 +147,13 @@ func (s *SessionStore) DeleteThread(threadID string) bool {
 		}
 	}
 	if !found {
+		s.mu.Unlock()
 		return false
 	}
 	delete(s.items, threadID)
-	if s.dataDir != "" {
-		_ = os.Remove(filepath.Join(s.dataDir, threadID+".json"))
-	}
+	tee := s.tee
+	s.mu.Unlock()
+	tee.recordThreadDelete(threadID)
 	return true
 }
 
@@ -115,8 +172,6 @@ func (s *SessionStore) GetThread(threadID string) (Thread, bool) {
 // AppendItem adds a message to a thread and returns the created item.
 func (s *SessionStore) AppendItem(threadID, role, content, turnID string) ThreadItem {
 	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	item := ThreadItem{
 		ID:        uuid.New().String(),
 		ThreadID:  threadID,
@@ -134,18 +189,30 @@ func (s *SessionStore) AppendItem(threadID, role, content, turnID string) Thread
 			break
 		}
 	}
-	s.persist()
+	tee := s.tee
+	s.mu.Unlock()
+	tee.recordItem(threadID, role, content, turnID, nil)
 	return item
 }
 
 // AppendItemWithArtifacts adds a message with media artifacts to a thread.
 func (s *SessionStore) AppendItemWithArtifacts(threadID, role, content, turnID string, artifacts []Artifact) ThreadItem {
-	return s.appendItemFull(threadID, role, "", content, turnID, artifacts)
+	item := s.appendItemFull(threadID, role, "", content, turnID, artifacts)
+	s.mu.RLock()
+	tee := s.tee
+	s.mu.RUnlock()
+	tee.recordItem(threadID, role, content, turnID, artifacts)
+	return item
 }
 
 // AppendToolItem adds a tool result item with an explicit tool name.
 func (s *SessionStore) AppendToolItem(threadID, toolName, content, turnID string, artifacts []Artifact) ThreadItem {
-	return s.appendItemFull(threadID, "tool", toolName, content, turnID, artifacts)
+	item := s.appendItemFull(threadID, "tool", toolName, content, turnID, artifacts)
+	s.mu.RLock()
+	tee := s.tee
+	s.mu.RUnlock()
+	tee.recordToolItem(threadID, toolName, content, turnID, artifacts)
+	return item
 }
 
 func (s *SessionStore) appendItemFull(threadID, role, toolName, content, turnID string, artifacts []Artifact) ThreadItem {
@@ -170,7 +237,6 @@ func (s *SessionStore) appendItemFull(threadID, role, toolName, content, turnID 
 			break
 		}
 	}
-	s.persist()
 	return item
 }
 
@@ -200,7 +266,6 @@ func (s *SessionStore) UpdateItemArtifact(itemID, oldURL, newURL string) bool {
 			for j, a := range item.Artifacts {
 				if a.URL == oldURL {
 					s.items[tid][i].Artifacts[j].URL = newURL
-					s.persistThreadLocked(tid)
 					return true
 				}
 			}
@@ -220,71 +285,3 @@ func (s *SessionStore) GetItems(threadID string) []ThreadItem {
 	return out
 }
 
-// Persistence — one JSON file per thread.
-
-type persistedThread struct {
-	Thread Thread       `json:"thread"`
-	Items  []ThreadItem `json:"items"`
-}
-
-func (s *SessionStore) persist() {
-	if s.dataDir == "" {
-		return
-	}
-	for _, t := range s.threads {
-		s.persistThreadLocked(t.ID)
-	}
-}
-
-// persistThreadLocked writes a single thread to disk. Caller must hold s.mu.
-func (s *SessionStore) persistThreadLocked(threadID string) {
-	if s.dataDir == "" {
-		return
-	}
-	var thread Thread
-	found := false
-	for _, t := range s.threads {
-		if t.ID == threadID {
-			thread = t
-			found = true
-			break
-		}
-	}
-	if !found {
-		return
-	}
-	data, err := json.MarshalIndent(persistedThread{
-		Thread: thread,
-		Items:  s.items[threadID],
-	}, "", "  ")
-	if err != nil {
-		return
-	}
-	_ = os.WriteFile(filepath.Join(s.dataDir, threadID+".json"), data, 0o644)
-}
-
-func (s *SessionStore) load() error {
-	entries, err := os.ReadDir(s.dataDir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		return err
-	}
-	for _, e := range entries {
-		if e.IsDir() || filepath.Ext(e.Name()) != ".json" {
-			continue
-		}
-		raw, err := os.ReadFile(filepath.Join(s.dataDir, e.Name()))
-		if err != nil {
-			continue
-		}
-		var pt persistedThread
-		if err := json.Unmarshal(raw, &pt); err != nil {
-			continue
-		}
-		s.threads = append(s.threads, pt.Thread)
-		s.items[pt.Thread.ID] = pt.Items
-	}
-	return nil
-}

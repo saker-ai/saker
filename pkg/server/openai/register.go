@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"github.com/cinience/saker/pkg/api"
+	"github.com/cinience/saker/pkg/conversation"
 	"github.com/cinience/saker/pkg/project"
 	"github.com/cinience/saker/pkg/runhub"
 	"github.com/cinience/saker/pkg/runhub/store"
@@ -37,6 +38,11 @@ type Deps struct {
 	// middleware to look up Bearer keys and resolve tenant scope. Optional
 	// in dev/bypass mode but required for production.
 	ProjectStore *project.Store
+	// ConversationStore persists /v1/chat/completions traffic into the
+	// unified conversation log. Optional: when nil the gateway runs
+	// unchanged with no persistence (back-compat for tests + opt-in
+	// rollout).
+	ConversationStore *conversation.Store
 	// Logger is the structured logger. Required.
 	Logger *slog.Logger
 	// Options are operator-side gateway options (rate caps, ring size, etc.).
@@ -54,6 +60,7 @@ type Gateway struct {
 	deps        Deps
 	hub         runhub.Hub
 	rateLimiter *rateLimiter
+	pendingAsks *pendingAskRegistry
 }
 
 // Runtime returns the saker agent runtime backing this gateway.
@@ -117,7 +124,7 @@ func RegisterOpenAIGateway(engine *gin.Engine, deps Deps) (*Gateway, error) {
 		return nil, err
 	}
 
-	g := &Gateway{deps: deps, hub: hub}
+	g := &Gateway{deps: deps, hub: hub, pendingAsks: newPendingAskRegistry()}
 
 	// Start hub GC. Caller can stop it via Gateway.Shutdown.
 	hub.StartGC(context.Background())
@@ -140,6 +147,7 @@ func RegisterOpenAIGateway(engine *gin.Engine, deps Deps) (*Gateway, error) {
 		// 204 on success; 404 (existence-leak guard) for unknown id
 		// or cross-tenant access.
 		v1.DELETE("/runs/:id", g.handleRunsCancel)
+		v1.POST("/runs/:id/submit", g.handleRunsSubmit)
 	}
 
 	deps.Logger.Info("openai gateway mounted",

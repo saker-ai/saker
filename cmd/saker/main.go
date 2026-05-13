@@ -31,6 +31,7 @@ import (
 	versionpkg "github.com/cinience/saker/pkg/version"
 	"github.com/godeps/goim"
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 )
 
 var serveACPStdio = acpserver.ServeStdio
@@ -307,6 +308,9 @@ Options:
 		}
 	}
 
+	// Load per-project .env (overrides shell env vars like ANTHROPIC_BASE_URL).
+	_ = godotenv.Overload(filepath.Join(*project, ".env"))
+
 	provider, resolvedModel := buildModelProvider(*providerName, *modelName, *systemPrompt)
 	selectedBackend := strings.ToLower(strings.TrimSpace(*sandboxBackend))
 	resolvedSessionID := strings.TrimSpace(*sessionID)
@@ -421,6 +425,15 @@ Options:
 	imCtrl := goim.NewIMController(channelsPath)
 	imTool := im.NewIMBridgeTool(imCtrl, options)
 	options.CustomTools = append(options.CustomTools, imTool)
+
+	// Open the event-sourced conversation log at <configBase>/conversation.db.
+	// Failure is logged but non-fatal — CLI continues without conversation
+	// search/persistence.
+	convStore := openConversationStoreForCLI(options.ProjectRoot, finalConfigRoot, stderr)
+	if convStore != nil {
+		options.ConversationStore = convStore
+		defer convStore.Close() //nolint:errcheck
+	}
 
 	runtime, err := runtimeFactory(context.Background(), options)
 	if err != nil {

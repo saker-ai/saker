@@ -301,7 +301,7 @@ func resolveConfigBase(projectRoot, configRoot string) string {
 }
 
 func (rt *Runtime) persistHistory(sessionID string, history *message.History) {
-	if rt == nil || rt.historyPersister == nil || history == nil {
+	if rt == nil || history == nil {
 		return
 	}
 	sessionID = strings.TrimSpace(sessionID)
@@ -312,16 +312,12 @@ func (rt *Runtime) persistHistory(sessionID string, history *message.History) {
 	if len(snapshot) == 0 {
 		return
 	}
-	if err := rt.historyPersister.Save(sessionID, snapshot); err != nil {
-		slog.Error("api: persist history failed", "session_id", sessionID, "error", err)
-	}
-	// Async: index into SQLite for cross-session search.
-	if rt.sessionDB != nil {
-		snapshotCopy := message.CloneMessages(snapshot)
-		go func() {
-			if err := rt.sessionDB.Index(sessionID, snapshotCopy); err != nil {
-				slog.Error("api: session db index failed", "session_id", sessionID, "error", err)
-			}
-		}()
+	// Primary: event-sourced conversation log (SQLite/Postgres).
+	rt.persistToConversation(sessionID, history)
+	// Fallback: JSON history file when conversation store is unavailable.
+	if rt.conversationStore == nil && rt.historyPersister != nil {
+		if err := rt.historyPersister.Save(sessionID, snapshot); err != nil {
+			slog.Error("api: persist history failed", "session_id", sessionID, "error", err)
+		}
 	}
 }

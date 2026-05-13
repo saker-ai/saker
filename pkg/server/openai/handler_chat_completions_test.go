@@ -164,7 +164,7 @@ func TestHandleChatCompletions_InvalidExtraBody(t *testing.T) {
 	}
 }
 
-func TestHandleChatCompletions_ToolCallModeRejected(t *testing.T) {
+func TestHandleChatCompletions_ToolCallModeAccepted(t *testing.T) {
 	t.Parallel()
 	_, eng := newTestHandlerGateway(t, newFakeRunnerStream())
 	rec := httptest.NewRecorder()
@@ -177,11 +177,8 @@ func TestHandleChatCompletions_ToolCallModeRejected(t *testing.T) {
 	}))
 	req.Header.Set("Content-Type", "application/json")
 	eng.ServeHTTP(rec, req)
-	if rec.Code != http.StatusBadRequest {
-		t.Fatalf("status = %d, want 400", rec.Code)
-	}
-	if !strings.Contains(rec.Body.String(), "tool_call") {
-		t.Errorf("error body should mention tool_call, got: %s", rec.Body.String())
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200; body=%s", rec.Code, rec.Body.String())
 	}
 }
 

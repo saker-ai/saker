@@ -1,9 +1,6 @@
 package server
 
 import (
-	"encoding/json"
-	"os"
-	"path/filepath"
 	"testing"
 	"time"
 )
@@ -12,7 +9,7 @@ import (
 
 func TestSessionStore_CreateThread(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -46,7 +43,7 @@ func TestSessionStore_CreateThread(t *testing.T) {
 
 func TestSessionStore_CreateThread_EmptyTitle(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -62,7 +59,7 @@ func TestSessionStore_CreateThread_EmptyTitle(t *testing.T) {
 
 func TestSessionStore_ListThreads(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -96,7 +93,7 @@ func TestSessionStore_ListThreads(t *testing.T) {
 
 func TestSessionStore_GetThread(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -123,7 +120,7 @@ func TestSessionStore_GetThread(t *testing.T) {
 
 func TestSessionStore_UpdateThreadTitle(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -153,7 +150,7 @@ func TestSessionStore_UpdateThreadTitle(t *testing.T) {
 
 func TestSessionStore_DeleteThread(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -198,7 +195,7 @@ func TestSessionStore_DeleteThread(t *testing.T) {
 
 func TestSessionStore_DeleteThread_AllThreads(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -219,7 +216,7 @@ func TestSessionStore_DeleteThread_AllThreads(t *testing.T) {
 
 func TestSessionStore_AppendItem(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -268,7 +265,7 @@ func TestSessionStore_AppendItem(t *testing.T) {
 
 func TestSessionStore_AppendItem_Multiple(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -297,7 +294,7 @@ func TestSessionStore_AppendItem_Multiple(t *testing.T) {
 
 func TestSessionStore_GetItem(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -325,7 +322,7 @@ func TestSessionStore_GetItem(t *testing.T) {
 
 func TestSessionStore_GetItem_CrossThread(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -349,7 +346,7 @@ func TestSessionStore_GetItem_CrossThread(t *testing.T) {
 
 func TestSessionStore_GetItems_EmptyThread(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -366,7 +363,7 @@ func TestSessionStore_GetItems_EmptyThread(t *testing.T) {
 
 func TestSessionStore_GetItems_NonexistentThread(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -381,7 +378,7 @@ func TestSessionStore_GetItems_NonexistentThread(t *testing.T) {
 
 func TestSessionStore_AppendItemWithArtifacts(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -422,7 +419,7 @@ func TestSessionStore_AppendItemWithArtifacts(t *testing.T) {
 
 func TestSessionStore_AppendToolItem(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -452,7 +449,7 @@ func TestSessionStore_AppendToolItem(t *testing.T) {
 
 func TestSessionStore_UpdateItemArtifact(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -484,7 +481,7 @@ func TestSessionStore_UpdateItemArtifact(t *testing.T) {
 
 func TestSessionStore_UpdateItemArtifact_WrongURL(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -510,7 +507,7 @@ func TestSessionStore_UpdateItemArtifact_WrongURL(t *testing.T) {
 
 func TestSessionStore_UpdateItemArtifact_NonexistentItem(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -521,213 +518,13 @@ func TestSessionStore_UpdateItemArtifact_NonexistentItem(t *testing.T) {
 	}
 }
 
-// --- Persistence Tests ---
 
-func TestSessionStore_Persistence_RoundTrip(t *testing.T) {
-	dataDir := t.TempDir()
-
-	s, err := NewSessionStore(dataDir)
-	if err != nil {
-		t.Fatalf("NewSessionStore: %v", err)
-	}
-
-	thread := s.CreateThread("Persisted Thread")
-	s.AppendItem(thread.ID, "user", "Hello", "turn-1")
-	s.AppendItem(thread.ID, "assistant", "Hi there", "turn-1")
-	s.AppendItemWithArtifacts(thread.ID, "tool", "image result", "turn-2", []Artifact{
-		{Type: "image", URL: "/api/files/img.png", Name: "render"},
-	})
-
-	// Verify the JSON file was written.
-	path := filepath.Join(dataDir, thread.ID+".json")
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		t.Fatalf("persisted file not found: %s", path)
-	}
-
-	// Load a fresh store from the same dataDir and verify data round-trips.
-	s2, err := NewSessionStore(dataDir)
-	if err != nil {
-		t.Fatalf("NewSessionStore (second load): %v", err)
-	}
-
-	threads := s2.ListThreads()
-	if len(threads) != 1 {
-		t.Fatalf("loaded threads: %d, want 1", len(threads))
-	}
-	if threads[0].ID != thread.ID {
-		t.Errorf("loaded thread ID = %q, want %q", threads[0].ID, thread.ID)
-	}
-	if threads[0].Title != "Persisted Thread" {
-		t.Errorf("loaded thread Title = %q, want %q", threads[0].Title, "Persisted Thread")
-	}
-
-	items := s2.GetItems(thread.ID)
-	if len(items) != 3 {
-		t.Fatalf("loaded items: %d, want 3", len(items))
-	}
-	if items[0].Content != "Hello" {
-		t.Errorf("loaded item[0].Content = %q, want %q", items[0].Content, "Hello")
-	}
-	if items[2].Artifacts[0].URL != "/api/files/img.png" {
-		t.Errorf("loaded artifact URL = %q, want %q", items[2].Artifacts[0].URL, "/api/files/img.png")
-	}
-}
-
-func TestSessionStore_Persistence_UpdateTitle(t *testing.T) {
-	dataDir := t.TempDir()
-
-	s, err := NewSessionStore(dataDir)
-	if err != nil {
-		t.Fatalf("NewSessionStore: %v", err)
-	}
-
-	thread := s.CreateThread("Original")
-	s.UpdateThreadTitle(thread.ID, "Updated")
-
-	s2, err := NewSessionStore(dataDir)
-	if err != nil {
-		t.Fatalf("NewSessionStore (second load): %v", err)
-	}
-	got, _ := s2.GetThread(thread.ID)
-	if got.Title != "Updated" {
-		t.Errorf("persisted title = %q, want %q", got.Title, "Updated")
-	}
-}
-
-func TestSessionStore_Persistence_DeleteThread(t *testing.T) {
-	dataDir := t.TempDir()
-
-	s, err := NewSessionStore(dataDir)
-	if err != nil {
-		t.Fatalf("NewSessionStore: %v", err)
-	}
-
-	thread := s.CreateThread("To Delete")
-	s.AppendItem(thread.ID, "user", "bye", "turn-1")
-
-	path := filepath.Join(dataDir, thread.ID+".json")
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		t.Fatalf("persisted file not found before delete")
-	}
-
-	s.DeleteThread(thread.ID)
-
-	// The JSON file should be removed.
-	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		t.Errorf("persisted file still exists after DeleteThread: %s", path)
-	}
-
-	// Reload — thread should not appear.
-	s2, err := NewSessionStore(dataDir)
-	if err != nil {
-		t.Fatalf("NewSessionStore (second load): %v", err)
-	}
-	if len(s2.ListThreads()) != 0 {
-		t.Error("deleted thread should not appear after reload")
-	}
-}
-
-func TestSessionStore_Persistence_EmptyDataDir(t *testing.T) {
-	dataDir := t.TempDir()
-
-	s, err := NewSessionStore(dataDir)
-	if err != nil {
-		t.Fatalf("NewSessionStore on empty dir: %v", err)
-	}
-	if len(s.ListThreads()) != 0 {
-		t.Error("empty dataDir should yield no threads")
-	}
-}
-
-func TestSessionStore_Persistence_CorruptFileSkipped(t *testing.T) {
-	dataDir := t.TempDir()
-
-	// Write a corrupt JSON file.
-	corruptPath := filepath.Join(dataDir, "corrupt.json")
-	if err := os.WriteFile(corruptPath, []byte("{bad json!!"), 0o644); err != nil {
-		t.Fatalf("write corrupt file: %v", err)
-	}
-
-	// Write a valid thread file alongside it.
-	s, err := NewSessionStore(dataDir)
-	if err != nil {
-		t.Fatalf("NewSessionStore: %v", err)
-	}
-	s.CreateThread("Valid Thread")
-
-	// Reload — only the valid thread should appear; corrupt file is silently skipped.
-	s2, err := NewSessionStore(dataDir)
-	if err != nil {
-		t.Fatalf("NewSessionStore (second load): %v", err)
-	}
-	threads := s2.ListThreads()
-	if len(threads) != 1 {
-		t.Fatalf("expected 1 valid thread, got %d", len(threads))
-	}
-	if threads[0].Title != "Valid Thread" {
-		t.Errorf("thread Title = %q, want %q", threads[0].Title, "Valid Thread")
-	}
-}
-
-func TestSessionStore_Persistence_NonJSONFilesIgnored(t *testing.T) {
-	dataDir := t.TempDir()
-
-	// Write a non-.json file that should be ignored.
-	if err := os.WriteFile(filepath.Join(dataDir, "notes.txt"), []byte("ignore me"), 0o644); err != nil {
-		t.Fatalf("write txt file: %v", err)
-	}
-
-	s, err := NewSessionStore(dataDir)
-	if err != nil {
-		t.Fatalf("NewSessionStore: %v", err)
-	}
-	if len(s.ListThreads()) != 0 {
-		t.Error("non-.json files should be ignored during load")
-	}
-}
-
-func TestSessionStore_Persistence_NonexistentDir(t *testing.T) {
-	// NewSessionStore should create the directory if it does not exist.
-	dataDir := filepath.Join(t.TempDir(), "subdir", "sessions")
-	s, err := NewSessionStore(dataDir)
-	if err != nil {
-		t.Fatalf("NewSessionStore with nested non-existent dir: %v", err)
-	}
-	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
-		t.Errorf("dataDir was not created: %s", dataDir)
-	}
-	s.CreateThread("Works")
-	if len(s.ListThreads()) != 1 {
-		t.Error("store should work with auto-created dataDir")
-	}
-}
-
-func TestSessionStore_NoDataDir(t *testing.T) {
-	t.Parallel()
-	s, err := NewSessionStore("")
-	if err != nil {
-		t.Fatalf("NewSessionStore with empty dataDir: %v", err)
-	}
-
-	thread := s.CreateThread("InMemory")
-	s.AppendItem(thread.ID, "user", "hello", "turn-1")
-
-	// All operations should work without persistence.
-	got, ok := s.GetThread(thread.ID)
-	if !ok || got.Title != "InMemory" {
-		t.Error("GetThread failed on in-memory store")
-	}
-	items := s.GetItems(thread.ID)
-	if len(items) != 1 {
-		t.Errorf("GetItems returned %d, want 1", len(items))
-	}
-}
 
 // --- Timestamp Tests ---
 
 func TestSessionStore_TimestampsAdvance(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}
@@ -751,48 +548,12 @@ func TestSessionStore_TimestampsAdvance(t *testing.T) {
 	}
 }
 
-// --- Persistence file content verification ---
-
-func TestSessionStore_PersistedFileContent(t *testing.T) {
-	dataDir := t.TempDir()
-
-	s, err := NewSessionStore(dataDir)
-	if err != nil {
-		t.Fatalf("NewSessionStore: %v", err)
-	}
-
-	thread := s.CreateThread("File Check")
-	s.AppendItem(thread.ID, "user", "check content", "turn-1")
-
-	path := filepath.Join(dataDir, thread.ID+".json")
-	raw, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("read persisted file: %v", err)
-	}
-
-	var pt persistedThread
-	if err := json.Unmarshal(raw, &pt); err != nil {
-		t.Fatalf("unmarshal persisted file: %v", err)
-	}
-	if pt.Thread.ID != thread.ID {
-		t.Errorf("persisted thread ID = %q, want %q", pt.Thread.ID, thread.ID)
-	}
-	if pt.Thread.Title != "File Check" {
-		t.Errorf("persisted thread Title = %q, want %q", pt.Thread.Title, "File Check")
-	}
-	if len(pt.Items) != 1 {
-		t.Fatalf("persisted items count = %d, want 1", len(pt.Items))
-	}
-	if pt.Items[0].Content != "check content" {
-		t.Errorf("persisted item Content = %q, want %q", pt.Items[0].Content, "check content")
-	}
-}
 
 // --- Concurrent access safety ---
 
 func TestSessionStore_ConcurrentAppend(t *testing.T) {
 	t.Parallel()
-	s, err := NewSessionStore("")
+	s, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("NewSessionStore: %v", err)
 	}

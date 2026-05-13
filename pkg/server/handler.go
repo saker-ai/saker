@@ -294,8 +294,8 @@ func (h *Handler) initDispatch() map[string]rpcHandler {
 		// Stats & sessions
 		"stats/session":   h.adaptNone(h.handleStatsSession),
 		"stats/total":     h.adaptNone(h.handleStatsTotal),
-		"sessions/search": h.adaptNone(h.handleSessionsSearch),
-		"sessions/list":   h.adaptNone(h.handleSessionsList),
+		"sessions/search": h.adaptCtx(h.handleSessionsSearch),
+		"sessions/list":   h.adaptCtx(h.handleSessionsList),
 
 		// Model
 		"model/switch": h.adaptCtx(h.handleModelSwitch),

@@ -13,7 +13,7 @@ import (
 // registry returns the legacy h.sessions when there is no scope in ctx.
 func TestSessionsFor_LegacyFallback(t *testing.T) {
 	t.Parallel()
-	legacy, err := NewSessionStore(t.TempDir())
+	legacy, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("legacy session store: %v", err)
 	}
