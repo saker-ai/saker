@@ -623,7 +623,7 @@ func TestMediaCacheArtifactMediaHTTPViaProjectRoot(t *testing.T) {
 func TestMediaCacheArtifactAsyncCooldownSkips(t *testing.T) {
 	t.Parallel()
 
-	store, err := NewSessionStore("")
+	store, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("new session store: %v", err)
 	}
@@ -673,7 +673,7 @@ func TestMediaCacheArtifactAsyncExpiredCooldownProceeds(t *testing.T) {
 
 	h, _ := newMediaTestHandler(t)
 
-	store, err := NewSessionStore("")
+	store, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("new session store: %v", err)
 	}
@@ -710,7 +710,7 @@ func TestMediaCacheArtifactAsyncExpiredCooldownProceeds(t *testing.T) {
 func TestMediaCacheArtifactAsyncDedupSkips(t *testing.T) {
 	t.Parallel()
 
-	store, err := NewSessionStore("")
+	store, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("new session store: %v", err)
 	}
@@ -748,7 +748,7 @@ func TestMediaCacheArtifactAsyncDedupSkips(t *testing.T) {
 func TestMediaCacheArtifactAsyncFailureStoresCooldown(t *testing.T) {
 	h, _ := newMediaTestHandler(t)
 
-	store, err := NewSessionStore("")
+	store, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("new session store: %v", err)
 	}
@@ -784,7 +784,7 @@ func TestMediaCacheArtifactAsyncFailureStoresCooldown(t *testing.T) {
 func TestMediaMigrateRemoteArtifactsDedup(t *testing.T) {
 	t.Parallel()
 
-	store, err := NewSessionStore("")
+	store, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("new session store: %v", err)
 	}
@@ -843,7 +843,7 @@ func TestMediaMigrateRemoteArtifactsCachesRemote(t *testing.T) {
 
 	h, _ := newMediaTestHandler(t)
 
-	store, err := NewSessionStore("")
+	store, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("new session store: %v", err)
 	}

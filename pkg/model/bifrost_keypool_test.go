@@ -26,8 +26,13 @@ func TestBuildPrimaryKeys_SingleKeyDefault(t *testing.T) {
 	if keys[0].ID != "saker-default" {
 		t.Errorf("expected ID saker-default, got %q", keys[0].ID)
 	}
-	if len(keys[0].Models) != 0 {
-		t.Errorf("expected empty WhiteList for primary, got %v", keys[0].Models)
+	// Bifrost v1.5 model-filter semantics: WhiteList{} denies every
+	// model; the only "allow all" marker is the literal "*" sentinel.
+	// The primary key is not model-pinned by saker, so it must
+	// serialize as ["*"] or selectKeyFromProviderForModelWithPool will
+	// reject the key for every request.
+	if got := []string(keys[0].Models); len(got) != 1 || got[0] != "*" {
+		t.Errorf("expected unrestricted WhiteList[\"*\"] for primary, got %v", got)
 	}
 }
 

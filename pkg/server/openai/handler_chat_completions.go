@@ -11,8 +11,10 @@ import (
 	"time"
 
 	"github.com/cinience/saker/pkg/api"
+	"github.com/cinience/saker/pkg/conversation"
 	"github.com/cinience/saker/pkg/runhub"
 	"github.com/cinience/saker/pkg/server"
+	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -69,17 +71,6 @@ func (g *Gateway) handleChatCompletions(c *gin.Context) {
 		return
 	}
 
-	// P0 limitation: ask_user_question_mode=tool_call requires the
-	// pending-tool-call registry + second-POST resume protocol from §10. That
-	// lands in P1; reject the value loudly so clients don't silently fall
-	// back to "ask in text" behavior they didn't ask for.
-	if extra.AskUserQuestionMode == AskQuestionToolCall {
-		InvalidRequestField(c, "extra_body.ask_user_question_mode",
-			"value 'tool_call' is not implemented in this build (P0). "+
-				"Use 'fallback' or 'disabled', or omit the field.")
-		return
-	}
-
 	tier := ResolveModelTier(req.Model)
 	sakerReq, err := MessagesToRequest(req.Messages, extra, tier)
 	if err != nil {
@@ -100,6 +91,48 @@ func (g *Gateway) handleChatCompletions(c *gin.Context) {
 	tenantID := identity.APIKeyID
 	if tenantID == "" {
 		tenantID = identity.Username
+	}
+
+	// Resume path: if session has a pending ask_user_question and the client
+	// is submitting a tool response, resume the paused run instead of starting
+	// a new one.
+	if extra.SessionID != "" && g.pendingAsks != nil {
+		if pa := g.pendingAsks.LookupBySession(extra.SessionID, tenantID); pa != nil {
+			lastMsg := req.Messages[len(req.Messages)-1]
+			if lastMsg.Role == "tool" {
+				g.handleResumeToolCall(c, pa, req, extra)
+				return
+			}
+			c.JSON(http.StatusConflict, gin.H{"error": gin.H{
+				"message":              "session has a pending tool_call awaiting response",
+				"type":                 "invalid_request_error",
+				"code":                 "session_awaiting_tool_response",
+				"param":                "extra_body.session_id",
+				"pending_run_id":       pa.RunID,
+				"pending_tool_call_id": pa.ToolCallID,
+			}})
+			return
+		}
+	}
+
+	// Persistence is opened BEFORE hub.Create so a misconfigured tenant
+	// (cross-project session_id probe) is rejected before any hub state
+	// is allocated. Returns (nil, nil) when ConversationStore is unset
+	// — back-compat for tests + opt-in rollout.
+	persister, err := g.openChatPersister(c.Request.Context(), req, extra, identity)
+	if err != nil {
+		InvalidRequest(c, err.Error())
+		return
+	}
+	if persister != nil {
+		if err := persister.recordInputs(c.Request.Context(), req.Messages); err != nil {
+			// Failing to log inputs orphans the turn — bail out loudly
+			// rather than silently dropping the user's prompt downstream.
+			persister.close(nil, conversation.TurnStatusFailed)
+			ServerError(c, "failed to persist inputs: "+err.Error())
+			return
+		}
+		c.Writer.Header().Set("X-Saker-Thread-Id", persister.threadID)
 	}
 
 	expiresAfter := g.deps.Options.ExpiresAfter()
@@ -157,13 +190,19 @@ func (g *Gateway) handleChatCompletions(c *gin.Context) {
 		c.Writer.Header().Set("X-Saker-Trace-Id", traceID.String())
 	}
 
-	// P0 policy: never inject toolbuiltin.AskQuestionFunc into producerCtx.
-	// All three human_input_modes resolve to the AskUserQuestion fallback
-	// path (askuserquestion.go:82-91), which surfaces a graceful
-	// "ask in your reply text instead" message to the LLM. The pause /
-	// resume tool_call path lands in P1 along with the pending-tool-call
-	// registry. PermissionRequestHandler stays whatever the runtime was
-	// started with — the gateway doesn't override it per-request.
+	chunkID := makeChatChunkID(hubRun.ID)
+
+	// Inject AskQuestionFunc when tool_call mode is active. The askFn
+	// publishes tool_calls chunks, pauses the run, and blocks until the
+	// client submits an answer via a second POST or the submit endpoint.
+	var pauseCh chan struct{}
+	if extra.EffectiveAskUserQuestionMode() == AskQuestionToolCall {
+		pauseCh = make(chan struct{})
+		askBuilder := newChatChunkBuilder(chunkID, hubRun.ID, req.Model, g.deps.Options.ErrorDetailMode)
+		askFn := g.makeAskQuestionFunc(hubRun, askBuilder, pauseCh)
+		producerCtx = toolbuiltin.WithAskQuestionFunc(producerCtx, askFn)
+	}
+
 	g.deps.Logger.Info("openai gateway run starting",
 		"run_id", hubRun.ID,
 		"tenant", tenantID,
@@ -177,17 +216,17 @@ func (g *Gateway) handleChatCompletions(c *gin.Context) {
 	if err != nil {
 		producerCancel()
 		g.hub.Finish(hubRun.ID, runhub.RunStatusFailed)
+		persister.close(nil, conversation.TurnStatusFailed)
 		InvalidRequest(c, err.Error())
 		return
 	}
 
-	chunkID := makeChatChunkID(hubRun.ID)
 	includeUsage := req.Stream && parseIncludeUsage(req.StreamOptions)
 
-	go g.runChatProducer(eventCh, hubRun, producerCancel, chunkID, req.Model, extra.ExposeToolCalls, includeUsage)
+	go g.runChatProducer(eventCh, hubRun, producerCancel, persister, chunkID, req.Model, extra.ExposeToolCalls, includeUsage)
 
 	if req.Stream {
-		g.streamChatSSE(c, hubRun, extra, includeUsage)
+		g.streamChatSSE(c, hubRun, extra, includeUsage, pauseCh)
 	} else {
 		g.streamChatSync(c, hubRun, extra, req.Model, chunkID)
 	}
@@ -218,10 +257,17 @@ func parseIncludeUsage(opts map[string]any) bool {
 // the producer defers it so the timer goroutine is reclaimed promptly when
 // the saker stream finishes naturally instead of waiting out the 45-min
 // turn timeout.
-func (g *Gateway) runChatProducer(eventCh <-chan api.StreamEvent, hubRun *runhub.Run, producerCancel context.CancelFunc, chunkID, model string, exposeTools, includeUsage bool) {
+func (g *Gateway) runChatProducer(eventCh <-chan api.StreamEvent, hubRun *runhub.Run, producerCancel context.CancelFunc, persister *chatPersister, chunkID, model string, exposeTools, includeUsage bool) {
 	defer producerCancel()
 	builder := newChatChunkBuilder(chunkID, hubRun.ID, model, g.deps.Options.ErrorDetailMode)
 	filter := server.NewStreamArtifactFilter()
+
+	// Use a dedicated ctx for persistence writes that stays alive past
+	// any client disconnect — see chatPersister docs for the rationale.
+	// The producer-detached ctx already exists for the runtime call; we
+	// piggyback on context.Background() here too so a slow disconnecting
+	// client can't drop trailing assistant chunks from the log.
+	persistCtx := context.Background()
 
 	finalStatus := runhub.RunStatusCompleted
 	for evt := range eventCh {
@@ -236,6 +282,10 @@ func (g *Gateway) runChatProducer(eventCh <-chan api.StreamEvent, hubRun *runhub
 			}
 			hubRun.Publish("chunk", data)
 		}
+		// Persist AFTER Publish so a slow DB never gates SSE delivery.
+		// recordEvent is a no-op for irrelevant event types and on a nil
+		// persister.
+		persister.recordEvent(persistCtx, evt)
 	}
 
 	// If the saker stream closed without ever firing a finish-bearing
@@ -263,7 +313,34 @@ func (g *Gateway) runChatProducer(eventCh <-chan api.StreamEvent, hubRun *runhub
 		}
 	}
 
+	// Clean up any pending ask that was never answered (e.g. context cancelled).
+	if g.pendingAsks != nil {
+		if pa := g.pendingAsks.Lookup(hubRun.ID); pa != nil {
+			select {
+			case pa.AnswerCh <- askAnswer{Action: "cancel"}:
+			default:
+			}
+			g.pendingAsks.Remove(hubRun.ID)
+		}
+	}
+
 	g.hub.Finish(hubRun.ID, finalStatus)
+	persister.close(builder.snapshotUsage(), runStatusToTurnStatus(finalStatus))
+}
+
+// runStatusToTurnStatus maps the hub's run-lifecycle status to the
+// conversation log's turn-lifecycle status. Both vocabularies overlap
+// but are owned by different layers, so the mapping is explicit rather
+// than a direct cast.
+func runStatusToTurnStatus(s runhub.RunStatus) conversation.TurnStatus {
+	switch s {
+	case runhub.RunStatusFailed:
+		return conversation.TurnStatusFailed
+	case runhub.RunStatusCancelled:
+		return conversation.TurnStatusCancelled
+	default:
+		return conversation.TurnStatusCompleted
+	}
 }
 
 // streamChatSSE writes the per-run event stream to the client as SSE.
@@ -276,7 +353,7 @@ func (g *Gateway) runChatProducer(eventCh <-chan api.StreamEvent, hubRun *runhub
 // stream_options.include_usage; old SDKs that don't ask for it would be
 // confused by an empty-choices chunk and we'd break their final-message
 // detection.
-func (g *Gateway) streamChatSSE(c *gin.Context, hubRun *runhub.Run, extra ExtraBody, includeUsage bool) {
+func (g *Gateway) streamChatSSE(c *gin.Context, hubRun *runhub.Run, extra ExtraBody, includeUsage bool, pauseCh <-chan struct{}) {
 	flusher := PrepareSSE(c)
 	if flusher == nil {
 		ServerError(c, "stream not supported by underlying writer")
@@ -323,6 +400,12 @@ func (g *Gateway) streamChatSSE(c *gin.Context, hubRun *runhub.Run, extra ExtraB
 				return
 			}
 			flusher.Flush()
+		case <-pauseCh:
+			// Agent called ask_user_question — terminate this SSE stream.
+			// The client will submit an answer and get a new stream.
+			_ = WriteDone(c.Writer)
+			flusher.Flush()
+			return
 		case <-keepalive.C:
 			if err := WriteComment(c.Writer, "keepalive"); err != nil {
 				return
@@ -455,4 +538,51 @@ loop:
 // SDKs that prefix-match (e.g. for telemetry) keep working.
 func makeChatChunkID(runID string) string {
 	return "chatcmpl-" + strings.TrimPrefix(runID, "run_")
+}
+
+// handleResumeToolCall resumes a paused run by delivering the client's tool
+// response to the blocked askFn, then streaming the continued output.
+func (g *Gateway) handleResumeToolCall(c *gin.Context, pa *pendingAsk, req ChatRequest, extra ExtraBody) {
+	lastMsg := req.Messages[len(req.Messages)-1]
+	if lastMsg.ToolCallID != pa.ToolCallID {
+		c.JSON(http.StatusBadRequest, gin.H{"error": gin.H{
+			"message": fmt.Sprintf("tool_call_id mismatch: got %q, expected %q", lastMsg.ToolCallID, pa.ToolCallID),
+			"type":    "invalid_request_error",
+			"code":    "tool_call_id_mismatch",
+		}})
+		return
+	}
+
+	answers, action, err := parseToolResponse(lastMsg.Content)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": gin.H{
+			"message": "invalid_tool_response_format: " + err.Error(),
+			"type":    "invalid_request_error",
+			"code":    "invalid_tool_response_format",
+		}})
+		return
+	}
+
+	hubRun, err := g.hub.Get(pa.RunID)
+	if err != nil {
+		ServerError(c, "failed to retrieve paused run: "+err.Error())
+		return
+	}
+
+	c.Writer.Header().Set("X-Saker-Run-Id", hubRun.ID)
+
+	// Create new pauseCh for potential follow-up questions in the same turn.
+	newPauseCh := make(chan struct{})
+	pa.PauseCh = newPauseCh
+
+	// Deliver answer — this unblocks the askFn goroutine.
+	pa.AnswerCh <- askAnswer{Answers: answers, Action: action}
+
+	includeUsage := req.Stream && parseIncludeUsage(req.StreamOptions)
+
+	if req.Stream {
+		g.streamChatSSE(c, hubRun, extra, includeUsage, newPauseCh)
+	} else {
+		g.streamChatSync(c, hubRun, extra, req.Model, makeChatChunkID(hubRun.ID))
+	}
 }

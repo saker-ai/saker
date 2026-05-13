@@ -123,7 +123,7 @@ func TestCollectMediaReferences_Union(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	store, err := NewSessionStore(dir)
+	store, err := NewSessionStore()
 	if err != nil {
 		t.Fatalf("new session store: %v", err)
 	}

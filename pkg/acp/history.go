@@ -1,15 +1,23 @@
 package acp
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/cinience/saker/pkg/api"
+	"github.com/cinience/saker/pkg/conversation"
 	"github.com/cinience/saker/pkg/message"
 	acpproto "github.com/coder/acp-go-sdk"
 )
 
-func loadPersistedHistory(projectRoot string, sessionID acpproto.SessionId) ([]message.Message, bool, error) {
+func loadPersistedHistory(store *conversation.Store, projectRoot string, sessionID acpproto.SessionId) ([]message.Message, bool, error) {
+	if store != nil {
+		msgs, err := store.GetMessages(context.Background(), string(sessionID), conversation.GetMessagesOpts{Limit: conversation.MaxListLimit})
+		if err == nil && len(msgs) > 0 {
+			return conversation.ToRuntimeMessages(msgs), true, nil
+		}
+	}
 	return api.LoadPersistedHistory(projectRoot, string(sessionID))
 }
 

@@ -145,7 +145,7 @@ func (a *Adapter) LoadSession(ctx context.Context, params acpproto.LoadSessionRe
 		}, nil
 	}
 
-	history, found, err := loadPersistedHistory(cwd, params.SessionId)
+	history, found, err := loadPersistedHistory(a.opts.ConversationStore, cwd, params.SessionId)
 	if err != nil {
 		return acpproto.LoadSessionResponse{}, acpproto.NewInternalError(map[string]any{
 			"sessionId": string(params.SessionId),

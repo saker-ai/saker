@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/cinience/saker/pkg/config"
+	"github.com/cinience/saker/pkg/conversation"
 	coremw "github.com/cinience/saker/pkg/core/eventmw"
 	corehooks "github.com/cinience/saker/pkg/core/hooks"
 	"github.com/cinience/saker/pkg/middleware"
@@ -175,6 +176,19 @@ type Options struct {
 	CheckpointStore checkpoint.Store
 	// CacheStore persists step-level cached results for pipeline-backed runs.
 	CacheStore runtimecache.Store
+
+	// ConversationStore persists Run / RunStream traffic into the unified
+	// conversation log (event-sourced thread → events). Optional: when nil
+	// the runtime keeps the legacy two-layer (in-memory + JSON history)
+	// recording unchanged. When set, each persistHistory call
+	// also diffs the snapshot against the per-session cursor and emits the
+	// new messages as conversation events under a new turn — see
+	// pkg/api/conversation_persist.go.
+	//
+	// Identity defaults: ProjectID = "default", OwnerUserID = "cli", Client
+	// = "cli". Server / gateway code paths bring their own identity via
+	// pkg/server/openai's chatPersister.
+	ConversationStore *conversation.Store
 
 	// MemoryDir is the directory for session memory persistence.
 	// When non-empty, enables memory_save/memory_read tools and system prompt injection.

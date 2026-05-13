@@ -8,11 +8,11 @@ import (
 	"strings"
 
 	"github.com/cinience/saker/pkg/config"
+	"github.com/cinience/saker/pkg/conversation"
 	"github.com/cinience/saker/pkg/memory"
 	"github.com/cinience/saker/pkg/model"
 	"github.com/cinience/saker/pkg/persona"
 	"github.com/cinience/saker/pkg/sandbox"
-	"github.com/cinience/saker/pkg/sessiondb"
 	"github.com/cinience/saker/pkg/tool"
 	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
 	aigotools "github.com/cinience/saker/pkg/tool/builtin/aigo"
@@ -163,8 +163,16 @@ func (rt *Runtime) ProjectRoot() string { return rt.opts.ProjectRoot }
 
 func (rt *Runtime) ConfigRoot() string { return rt.opts.ConfigRoot }
 
-// SessionDB returns the SQLite session index store (may be nil).
-func (rt *Runtime) SessionDB() *sessiondb.Store { return rt.sessionDB }
+// ConversationStore returns the event-sourced conversation log (may be nil).
+// Exposed so adjacent surfaces (server.SessionStore tee, gateway persister)
+// can share the same handle rather than opening a second connection to the
+// same SQLite file.
+func (rt *Runtime) ConversationStore() *conversation.Store {
+	if rt == nil {
+		return nil
+	}
+	return rt.conversationStore
+}
 
 // ModelName returns the name of the currently active model.
 func (rt *Runtime) ModelName() string {

@@ -9,9 +9,11 @@ import (
 
 	acpclient "github.com/cinience/saker/pkg/acp/client"
 	"github.com/cinience/saker/pkg/config"
+	"github.com/cinience/saker/pkg/conversation"
 	corehooks "github.com/cinience/saker/pkg/core/hooks"
 	"github.com/cinience/saker/pkg/logging"
 	"github.com/cinience/saker/pkg/memory"
+	"github.com/cinience/saker/pkg/message"
 	"github.com/cinience/saker/pkg/persona"
 	runtimecache "github.com/cinience/saker/pkg/runtime/cache"
 	"github.com/cinience/saker/pkg/runtime/checkpoint"
@@ -21,7 +23,6 @@ import (
 	"github.com/cinience/saker/pkg/runtime/tasks"
 	"github.com/cinience/saker/pkg/sandbox"
 	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/sessiondb"
 	"github.com/cinience/saker/pkg/tool"
 	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
 )
@@ -75,6 +76,17 @@ type Runtime struct {
 	historyPersister *diskHistoryPersister
 	sessionGate      *sessionGate
 
+	// conversationStore is the optional event-sourced log (P4 Phase B).
+	// nil = legacy three-layer recording only. When non-nil, persistHistory
+	// also diffs the snapshot vs convCursor and emits new messages as
+	// events. See pkg/api/conversation_persist.go for the semantics.
+	conversationStore *conversation.Store
+	// convCursor tracks per-session "next message index to record" so each
+	// persistHistory call only emits the new tail. Reset on Runtime.Close.
+	// Bounded by the active session count (≤ MaxSessions).
+	convCursor   map[string]int
+	convCursorMu sync.Mutex
+
 	cmdExec            *commands.Executor
 	skReg              *skills.Registry
 	subMgr             *subagents.Manager
@@ -89,8 +101,7 @@ type Runtime struct {
 	memoryStore        *memory.Store
 	personaRegistry    *persona.Registry
 	personaRouter      *persona.Router
-	sessionDB          *sessiondb.Store
-	skillLearner       *skills.Learner
+	skillLearner *skills.Learner
 	skillTracker       *skills.SkillTracker
 	systemPromptBlocks []string // cache-optimized prompt blocks (nil = use single System string)
 	tracer             Tracer
@@ -246,28 +257,28 @@ func New(ctx context.Context, opts Options) (*Runtime, error) {
 
 	histories := newHistoryStore(opts.MaxSessions)
 	var historyPersister *diskHistoryPersister
-	retainDays := 0
-	if settings != nil && settings.CleanupPeriodDays != nil {
-		retainDays = *settings.CleanupPeriodDays
-	}
-	if retainDays > 0 {
-		historyPersister = newDiskHistoryPersister(opts.ProjectRoot, opts.ConfigRoot)
-		if historyPersister != nil {
-			histories.loader = historyPersister.Load
-			if err := historyPersister.Cleanup(retainDays); err != nil {
-				logging.From(ctx).Warn("history cleanup warning", "error", err)
+	if opts.ConversationStore != nil {
+		convStore := opts.ConversationStore
+		histories.loader = func(sessionID string) ([]message.Message, error) {
+			msgs, err := convStore.GetMessages(context.Background(), sessionID, conversation.GetMessagesOpts{Limit: conversation.MaxListLimit})
+			if err != nil {
+				return nil, err
 			}
+			return conversation.ToRuntimeMessages(msgs), nil
 		}
-	}
-
-	// Initialize SQLite session index (additive alongside JSON history files).
-	var sessDB *sessiondb.Store
-	if base := resolveConfigBase(opts.ProjectRoot, opts.ConfigRoot); base != "" {
-		dbPath := filepath.Join(base, "sessions.db")
-		if db, dbErr := sessiondb.Open(dbPath); dbErr != nil {
-			logging.From(ctx).Warn("session db warning", "error", dbErr)
-		} else {
-			sessDB = db
+	} else {
+		retainDays := 0
+		if settings != nil && settings.CleanupPeriodDays != nil {
+			retainDays = *settings.CleanupPeriodDays
+		}
+		if retainDays > 0 {
+			historyPersister = newDiskHistoryPersister(opts.ProjectRoot, opts.ConfigRoot)
+			if historyPersister != nil {
+				histories.loader = historyPersister.Load
+				if err := historyPersister.Cleanup(retainDays); err != nil {
+					logging.From(ctx).Warn("history cleanup warning", "error", err)
+				}
+			}
 		}
 	}
 
@@ -319,10 +330,11 @@ func New(ctx context.Context, opts Options) (*Runtime, error) {
 		memoryStore:        memoryStore,
 		personaRegistry:    personaRegistry,
 		personaRouter:      personaRouter,
-		sessionDB:          sessDB,
 		systemPromptBlocks: promptBlocks,
 		tracer:             tracer,
 		ownsTaskStore:      ownsTaskStore,
+		conversationStore:  opts.ConversationStore,
+		convCursor:         map[string]int{},
 	}
 	if base := resolveConfigBase(opts.ProjectRoot, opts.ConfigRoot); base != "" {
 		rt.skillLearner = skills.NewLearner(filepath.Join(base, "learned-skills"), skReg)

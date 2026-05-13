@@ -29,7 +29,17 @@ func (h *Handler) initPerProjectRegistries() {
 	if h.sessionRegistry == nil {
 		h.sessionRegistry = project.NewComponentRegistry(
 			func(scope project.Scope) (*SessionStore, error) {
-				return NewSessionStore(scope.Paths.SessionsDir)
+				store, err := NewSessionStore()
+				if err != nil {
+					return nil, err
+				}
+				if h.runtime != nil {
+					if cs := h.runtime.ConversationStore(); cs != nil {
+						_ = store.LoadFromConversation(cs, scope.ProjectID)
+					}
+					store.AttachConvTee(newConvTee(h.runtime.ConversationStore(), scope.ProjectID, h.logger))
+				}
+				return store, nil
 			},
 			project.WithCloser[*SessionStore](func(s *SessionStore) {
 				// SessionStore has no explicit Close; persist is synchronous so

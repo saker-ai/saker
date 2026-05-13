@@ -97,10 +97,14 @@ func (s *Server) ProjectStore() *project.Store { return s.projects }
 // New creates a Server wrapping the given Runtime.
 func New(runtime *api.Runtime, opts Options) (*Server, error) {
 	opts.defaults()
-	sessions, err := NewSessionStore(opts.DataDir)
+	sessions, err := NewSessionStore()
 	if err != nil {
 		return nil, err
 	}
+	if cs := runtime.ConversationStore(); cs != nil {
+		_ = sessions.LoadFromConversation(cs, "default")
+	}
+	sessions.AttachConvTee(newConvTee(runtime.ConversationStore(), "default", opts.Logger))
 	h := newHandler(runtime, sessions, opts.DataDir, opts.Logger)
 
 	// Initialize active turn tracker.

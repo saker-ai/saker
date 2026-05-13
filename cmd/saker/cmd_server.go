@@ -12,6 +12,7 @@ import (
 
 	"github.com/cinience/saker/pkg/api"
 	"github.com/cinience/saker/pkg/config"
+	"github.com/cinience/saker/pkg/conversation"
 	"github.com/cinience/saker/pkg/logging"
 	"github.com/cinience/saker/pkg/middleware"
 	"github.com/cinience/saker/pkg/project"
@@ -176,6 +177,26 @@ func runServerMode(stdout, stderr io.Writer, opts api.Options, addr, dataDir, st
 		}
 	}
 
+	// Open the unified conversation store BEFORE the runtime so the runtime
+	// can own it (api.New consumes opts.ConversationStore) and the server's
+	// SessionStore tee — wired in server.New / per_project_components.go via
+	// runtime.ConversationStore() — sees a non-nil store. Without this, the
+	// CLI path persists into conversation.db but the Web UI / OpenAI gateway
+	// paths silently degrade to legacy-only writes.
+	//
+	// SAKER_CONVERSATION_DSN keeps the file independent of the project store
+	// so an operator can park conversation traffic on a separate disk / pg
+	// instance for retention / size-budget reasons.
+	conversationStore, err := conversation.Open(conversation.Config{
+		DSN:          os.Getenv("SAKER_CONVERSATION_DSN"),
+		FallbackPath: filepath.Join(dataDir, "conversation.db"),
+	})
+	if err != nil {
+		return fmt.Errorf("open conversation store: %w", err)
+	}
+	defer conversationStore.Close()
+	opts.ConversationStore = conversationStore
+
 	rt, err := runtimeFactory(ctx, opts)
 	if err != nil {
 		return fmt.Errorf("create runtime: %w", err)
@@ -233,10 +254,11 @@ func runServerMode(stdout, stderr io.Writer, opts api.Options, addr, dataDir, st
 	if gwFlags.Enabled {
 		srvOpts.EngineHook = func(engine *gin.Engine) error {
 			deps := openaigw.Deps{
-				Runtime:      apiRuntime,
-				ProjectStore: projectStore,
-				Logger:       logger,
-				Options:      gwFlags.toOptions(),
+				Runtime:           apiRuntime,
+				ProjectStore:      projectStore,
+				ConversationStore: conversationStore,
+				Logger:            logger,
+				Options:           gwFlags.toOptions(),
 			}
 			g, err := openaigw.RegisterOpenAIGateway(engine, deps)
 			if err != nil {

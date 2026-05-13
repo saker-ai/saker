@@ -14,7 +14,7 @@ RUN corepack enable && corepack prepare pnpm@10 --activate
 WORKDIR /src
 
 # Copy workspace config and shared packages first for dependency resolution
-COPY pnpm-workspace.yaml package.json ./
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY packages/editor-protocol/package.json ./packages/editor-protocol/
 COPY web/package.json ./web/
 COPY web-editor-next/package.json ./web-editor-next/
@@ -34,6 +34,7 @@ FROM golang:${GO_VERSION}-alpine AS builder
 RUN apk add --no-cache ca-certificates git
 WORKDIR /src
 
+ENV GOPROXY=https://goproxy.cn,direct
 COPY go.mod go.sum ./
 RUN go mod download
 
