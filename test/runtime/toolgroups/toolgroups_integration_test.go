@@ -208,8 +208,8 @@ func TestModePresetOverride(t *testing.T) {
 	tools := rt.AvailableTools()
 	names := toolNames(tools)
 
-	if !names["canvas_get_node"] {
-		t.Error("server_api preset should include canvas_get_node")
+	if names["canvas_get_node"] {
+		t.Error("server_api preset should NOT include canvas_get_node")
 	}
 	if !names["web_fetch"] {
 		t.Error("server_api preset should include web_fetch")
