@@ -237,7 +237,7 @@ func TestRegisterToolsUsesDefaultImplementations(t *testing.T) {
 	tools := registry.List()
 	// Core built-in tools that must always be registered.
 	// Exact count varies by env (aigo tools) and settings (disallow lists).
-	coreExpected := []string{"read", "write", "edit", "web_fetch", "web_search", "task_create", "task_list", "task_get", "task_update", "ask_user_question", "skill", "slash_command", "grep", "glob", "task", "video_sampler", "stream_capture", "stream_monitor", "webhook", "browser", "media_index", "media_search"}
+	coreExpected := []string{"read", "write", "edit", "web_fetch", "web_search", "task_create", "task_list", "task_get", "task_update", "ask_user_question", "skill", "slash_command", "grep", "glob", "task", "video_sampler", "stream_capture", "stream_monitor", "media_index", "media_search"}
 	if len(tools) < len(coreExpected) {
 		t.Fatalf("expected at least %d default tools, got %d", len(coreExpected), len(tools))
 	}
@@ -422,8 +422,8 @@ func TestRegisterToolsTaskNotAddedForCI(t *testing.T) {
 	if _, ok := seen["task"]; ok {
 		t.Fatal("Task tool should be absent in CI mode")
 	}
-	if len(seen) < 24 { // all built-ins except Task (includes browser); aigo tools env-dependent
-		t.Fatalf("expected at least 24 built-ins without Task, got %d", len(seen))
+	if len(seen) < 9 { // CI preset: core_io (6) + bash_mgmt (3)
+		t.Fatalf("expected at least 9 built-ins for CI, got %d", len(seen))
 	}
 }
 

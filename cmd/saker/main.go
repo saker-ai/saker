@@ -160,6 +160,7 @@ Options:
 	serverDataDir := flags.String("server-data-dir", "", "Web server data directory (default: ~/.saker/server)")
 	serverStatic := flags.String("server-static", "", "Serve frontend from disk directory instead of embedded")
 	serverLogDir := flags.String("server-log-dir", "", "Server log directory (default: <data-dir>/logs)")
+	serverAPIOnly := flags.Bool("api-only", false, "Server mode without web UI — disables web/browser tools")
 	debugFlag := flags.Bool("debug", false, "Enable /debug/pprof endpoints (use in trusted environments only)")
 	authUser := flags.String("auth-user", "", "Set web auth username and save to settings.local.json")
 	authPass := flags.String("auth-pass", "", "Set web auth password and save to settings.local.json")
@@ -401,6 +402,9 @@ Options:
 			RunHubSinkBreakerThreshold:  *openaiGwRunHubSinkBreakerThreshold,
 			RunHubSinkBreakerCooldown:   *openaiGwRunHubSinkBreakerCooldown,
 			RunHubPGCopyThreshold:       *openaiGwRunHubPGCopyThreshold,
+		}
+		if *serverAPIOnly {
+			options.ModePreset = api.PresetServerAPI
 		}
 		return runServerMode(stdout, stderr, options, *serverAddr, *serverDataDir, *serverStatic, *serverLogDir, *debugFlag, gw)
 	}

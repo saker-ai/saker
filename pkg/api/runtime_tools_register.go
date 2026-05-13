@@ -65,7 +65,7 @@ func registerTools(registry *tool.Registry, opts Options, settings *config.Setti
 		}()
 
 		factories := builtinToolFactories(opts.ProjectRoot, sandboxDisabled, entry, settings, skReg, cmdExec, opts.TaskStore, opts.Model, opts.ContextWindowTokens, aigoCfg, opts.CanvasDir, execEnv)
-		names := builtinOrder(entry)
+		names := builtinOrder(entry, opts.ModePreset)
 		selectedNames := filterBuiltinNames(opts.EnabledBuiltinTools, names)
 		for _, name := range selectedNames {
 			ctor := factories[name]
@@ -180,45 +180,11 @@ func registerTools(registry *tool.Registry, opts Options, settings *config.Setti
 	return refs, nil
 }
 
-func builtinOrder(entry EntryPoint) []string {
-	order := []string{
-		"bash",
-		"file_read",
-		"image_read",
-		"canvas_get_node",
-		"canvas_list_nodes",
-		"canvas_table_write",
-		"file_write",
-		"file_edit",
-		"web_fetch",
-		"web_search",
-		"bash_output",
-		"bash_status",
-		"kill_task",
-		"task_create",
-		"task_list",
-		"task_get",
-		"task_update",
-		"ask_user_question",
-		"skill",
-		"slash_command",
-		"grep",
-		"glob",
-		"video_sampler",
-		"stream_capture",
-		"browser",
-		"stream_monitor",
-		"webhook",
-		"media_index",
-		"media_search",
-		"frame_analyzer",
-		"video_summarizer",
-		"analyze_video",
+func builtinOrder(entry EntryPoint, preset ModePreset) []string {
+	if preset == "" {
+		preset = presetForEntry(entry)
 	}
-	if shouldRegisterTaskTool(entry) {
-		order = append(order, "task")
-	}
-	return order
+	return PresetTools(preset)
 }
 
 func filterBuiltinNames(enabled []string, order []string) []string {
@@ -246,7 +212,7 @@ func filterBuiltinNames(enabled []string, order []string) []string {
 	return filtered
 }
 
-func shouldRegisterTaskTool(entry EntryPoint) bool {
+func shouldRegisterTaskTool(entry EntryPoint) bool { //nolint:unused // kept for backward compat reference
 	switch entry {
 	case EntryPointCLI, EntryPointPlatform:
 		return true
