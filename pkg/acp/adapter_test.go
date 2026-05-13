@@ -3,12 +3,13 @@ package acp
 import (
 	"context"
 	"errors"
+	"path/filepath"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/message"
+	"github.com/cinience/saker/pkg/conversation"
 	"github.com/cinience/saker/pkg/model"
 	acpproto "github.com/coder/acp-go-sdk"
 )
@@ -98,11 +99,53 @@ func testOptionsForRoot(t *testing.T, root string) api.Options {
 
 func testOptionsForRootWithModel(t *testing.T, root string, mdl model.Model) api.Options {
 	t.Helper()
+	cs := openTestConversationStore(t, root)
 	return api.Options{
-		ProjectRoot: root,
+		ProjectRoot:       root,
+		ConversationStore: cs,
 		ModelFactory: api.ModelFactoryFunc(func(context.Context) (model.Model, error) {
 			return mdl, nil
 		}),
+	}
+}
+
+func openTestConversationStore(t *testing.T, root string) *conversation.Store {
+	t.Helper()
+	cs, err := conversation.Open(conversation.Config{FallbackPath: filepath.Join(root, ".saker", "conversation.db")})
+	if err != nil {
+		t.Fatalf("open conversation store: %v", err)
+	}
+	t.Cleanup(func() { _ = cs.Close() })
+	return cs
+}
+
+func seedConversationHistory(t *testing.T, cs *conversation.Store, sessionID string, msgs [][2]string) {
+	t.Helper()
+	ctx := context.Background()
+	th, err := cs.CreateThreadWithID(ctx, sessionID, "test", "cli", "test", "test")
+	if err != nil {
+		t.Fatalf("create thread: %v", err)
+	}
+	turnID, err := cs.OpenTurn(ctx, th.ID, "")
+	if err != nil {
+		t.Fatalf("open turn: %v", err)
+	}
+	for _, m := range msgs {
+		role, content := m[0], m[1]
+		kind := conversation.EventKindUserMessage
+		if role == "assistant" {
+			kind = conversation.EventKindAssistantText
+		}
+		if _, err := cs.AppendEvent(ctx, conversation.AppendEventInput{
+			ThreadID:    th.ID,
+			ProjectID:   "test",
+			TurnID:      turnID,
+			Kind:        kind,
+			Role:        role,
+			ContentText: content,
+		}); err != nil {
+			t.Fatalf("append event: %v", err)
+		}
 	}
 }
 
@@ -356,14 +399,13 @@ func TestLoadSessionFromPersistedHistory(t *testing.T) {
 
 	root := t.TempDir()
 	sessionID := acpproto.SessionId("persisted-session")
-	if err := api.SavePersistedHistory(root, string(sessionID), []message.Message{
-		{Role: "user", Content: "hello"},
-		{Role: "assistant", Content: "world"},
-	}); err != nil {
-		t.Fatalf("save persisted history: %v", err)
-	}
+	opts := testOptionsForRoot(t, root)
+	seedConversationHistory(t, opts.ConversationStore, string(sessionID), [][2]string{
+		{"user", "hello"},
+		{"assistant", "world"},
+	})
 
-	adapter := NewAdapter(testOptionsForRoot(t, root))
+	adapter := NewAdapter(opts)
 	resp, err := adapter.LoadSession(context.Background(), acpproto.LoadSessionRequest{
 		SessionId:  sessionID,
 		Cwd:        root,

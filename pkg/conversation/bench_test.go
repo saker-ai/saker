@@ -12,7 +12,7 @@ import (
 // External benchmark package (`conversation_test`) so the import cycle
 // with pkg/server can never happen even if conversation later grows
 // internal helpers that pull saker types — pkg/server already imports
-// conversation in P4, so this benchmark file deliberately stays at the
+// conversation, so this benchmark file deliberately stays at the
 // outer test scope.
 //
 // Each benchmark prepares a fresh data dir and reports allocs/op so the

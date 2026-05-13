@@ -38,7 +38,7 @@ func (Thread) TableName() string { return "threads" }
 // inserts don't need a network round-trip for ID assignment. Seq is a
 // thread-scoped monotonic counter assigned inside the same transaction
 // as the insert (see store_event.go appendEventTx). UNIQUE(thread_id,
-// seq) is the canonical ordering key for SSE backfill in P4.
+// seq) is the canonical ordering key for SSE backfill.
 //
 // content_text holds streaming text chunks (assistant_text events) so
 // the messages projection in P1 can concatenate without re-deserializing
@@ -82,7 +82,7 @@ func (SchemaMigration) TableName() string { return "schema_migrations" }
 //     single per-(thread,turn,'assistant','') row
 //
 // Pos is a thread-scoped monotonic counter (analogous to Event.Seq but
-// independent of it) so the SSE backfill in P4 can use a single cursor
+// independent of it) so the SSE backfill can use a single cursor
 // over the projected log. UNIQUE(thread_id, pos) is enforced.
 //
 // idx_messages_proj_lookup is a NON-unique composite index used by

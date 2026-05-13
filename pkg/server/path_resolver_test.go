@@ -14,10 +14,8 @@ func TestPathsFor_LegacyFallback(t *testing.T) {
 	paths := h.pathsFor(context.Background())
 
 	require.Equal(t, "/tmp/legacy", paths.Root)
-	require.Equal(t, filepath.Join("/tmp/legacy", "sessions"), paths.SessionsDir)
 	require.Equal(t, filepath.Join("/tmp/legacy", "canvas"), paths.CanvasDir)
 	require.Equal(t, filepath.Join("/tmp/legacy", "memory"), paths.MemoryDir)
-	require.Equal(t, filepath.Join("/tmp/legacy", "history"), paths.HistoryDir)
 	require.Equal(t, "/tmp/legacy", paths.ConfigRoot)
 }
 
@@ -27,12 +25,10 @@ func TestPathsFor_FromScope(t *testing.T) {
 		UserID:    "u1",
 		ProjectID: "p1",
 		Paths: project.ProjectPaths{
-			Root:        "/data/projects/p1",
-			SessionsDir: "/data/projects/p1/sessions",
-			CanvasDir:   "/data/projects/p1/canvas",
-			MemoryDir:   "/data/projects/p1/memory",
-			HistoryDir:  "/data/projects/p1/history",
-			ConfigRoot:  "/data/projects/p1/config",
+			Root:       "/data/projects/p1",
+			CanvasDir:  "/data/projects/p1/canvas",
+			MemoryDir:  "/data/projects/p1/memory",
+			ConfigRoot: "/data/projects/p1/config",
 		},
 	}
 	ctx := project.WithScope(context.Background(), scope)

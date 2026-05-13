@@ -17,12 +17,10 @@ func (h *Handler) pathsFor(ctx context.Context) project.ProjectPaths {
 		return scope.Paths
 	}
 	return project.ProjectPaths{
-		Root:        h.dataDir,
-		SessionsDir: filepath.Join(h.dataDir, "sessions"),
-		CanvasDir:   filepath.Join(h.dataDir, "canvas"),
-		MemoryDir:   filepath.Join(h.dataDir, "memory"),
-		HistoryDir:  filepath.Join(h.dataDir, "history"),
-		ConfigRoot:  h.dataDir,
+		Root:       h.dataDir,
+		CanvasDir:  filepath.Join(h.dataDir, "canvas"),
+		MemoryDir:  filepath.Join(h.dataDir, "memory"),
+		ConfigRoot: h.dataDir,
 	}
 }
 
