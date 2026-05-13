@@ -114,19 +114,30 @@ make web-editor-dev               # 剪辑器开发服务器
 <details>
 <summary>展开查看注册的内置工具</summary>
 
-| 类别 | 工具 |
+| 分组 | 工具 |
 |---|---|
-| 文件 | `file_read`、`file_write`、`file_edit`、`glob`、`grep`、`image_read` |
-| Shell | `bash`、`bash_output`、`bash_status`、`kill_task` |
-| Web | `web_fetch`、`web_search`、`webhook`（带 SSRF 防护）、`browser`（chromedp）|
-| 交互 | `ask_user_question`、`skill`、`slash_command` |
-| 记忆 | `memory_save`、`memory_read` |
-| Canvas | `canvas_get_node`、`canvas_list_nodes`、`canvas_table_write` |
-| 任务 | `task_create`、`task_get`、`task_list`、`task_update`、`task`（spawn subagent）|
-| 视频 / 媒体 | `analyze_video`、`video_sampler`、`video_summarizer`、`frame_analyzer`、`media_index`、`media_search` |
-| Stream | `stream_capture`、`stream_monitor` |
+| `core_io` | `bash`、`file_read`、`file_write`、`file_edit`、`grep`、`glob` |
+| `bash_mgmt` | `bash_output`、`bash_status`、`kill_task` |
+| `task_mgmt` | `task`（spawn subagent）、`task_create`、`task_list`、`task_get`、`task_update` |
+| `web` | `web_fetch`、`web_search` |
+| `media` | `image_read`、`video_sampler`、`stream_capture`、`stream_monitor`、`frame_analyzer`、`video_summarizer`、`analyze_video`、`media_index`、`media_search` |
+| `interaction` | `ask_user_question`、`skill`、`slash_command` |
+| `canvas` | `canvas_get_node`、`canvas_list_nodes`、`canvas_table_write` |
+| `browser` | `browser`（chromedp）、`webhook`（带 SSRF 防护）|
+| （自动） | `memory_save`、`memory_read`（设置 `MemoryDir` 时启用）|
 
-权威清单：`pkg/api/runtime_tools_register.go`。MCP 与远程工具会在内置工具之上注册。
+每种运行模式通过**模式预设**选择合适的工具子集：
+
+| 预设 | 包含分组 | 适用场景 |
+|---|---|---|
+| `cli` | core_io、bash_mgmt、task_mgmt、web、media、interaction | 交互式终端 / TUI |
+| `server_web` | core_io、bash_mgmt、task_mgmt、web、media、canvas、browser | 带 Web UI 的工作台 |
+| `server_api` | core_io、bash_mgmt、task_mgmt、media、canvas | 纯 API 后台（无 web/browser）|
+| `ci` | core_io、bash_mgmt | CI 流水线（最小集）|
+
+可通过 `Options.ModePreset` 或 `--api-only` 标志覆盖。用 `Options.EnabledBuiltinTools`（白名单）或 `Options.DisallowedTools`（黑名单）进一步过滤。MCP 与远程工具会在预设之上注册。
+
+权威清单：`pkg/api/tool_groups.go`、`pkg/api/runtime_tools_register.go`。
 
 </details>
 

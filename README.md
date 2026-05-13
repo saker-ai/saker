@@ -114,19 +114,30 @@ Backed by [Bifrost](https://github.com/maximhq/bifrost) (`pkg/model/bifrost_adap
 <details>
 <summary>Expand to see the registered builtin tools</summary>
 
-| Category | Tools |
+| Group | Tools |
 |---|---|
-| Files | `file_read`, `file_write`, `file_edit`, `glob`, `grep`, `image_read` |
-| Shell | `bash`, `bash_output`, `bash_status`, `kill_task` |
-| Web | `web_fetch`, `web_search`, `webhook` (SSRF-safe), `browser` (chromedp) |
-| Interaction | `ask_user_question`, `skill`, `slash_command` |
-| Memory | `memory_save`, `memory_read` |
-| Canvas | `canvas_get_node`, `canvas_list_nodes`, `canvas_table_write` |
-| Tasks | `task_create`, `task_get`, `task_list`, `task_update`, `task` (subagent spawn) |
-| Video & media | `analyze_video`, `video_sampler`, `video_summarizer`, `frame_analyzer`, `media_index`, `media_search` |
-| Stream | `stream_capture`, `stream_monitor` |
+| `core_io` | `bash`, `file_read`, `file_write`, `file_edit`, `grep`, `glob` |
+| `bash_mgmt` | `bash_output`, `bash_status`, `kill_task` |
+| `task_mgmt` | `task` (subagent spawn), `task_create`, `task_list`, `task_get`, `task_update` |
+| `web` | `web_fetch`, `web_search` |
+| `media` | `image_read`, `video_sampler`, `stream_capture`, `stream_monitor`, `frame_analyzer`, `video_summarizer`, `analyze_video`, `media_index`, `media_search` |
+| `interaction` | `ask_user_question`, `skill`, `slash_command` |
+| `canvas` | `canvas_get_node`, `canvas_list_nodes`, `canvas_table_write` |
+| `browser` | `browser` (chromedp), `webhook` (SSRF-safe) |
+| (auto) | `memory_save`, `memory_read` (enabled when `MemoryDir` is set) |
 
-Source of truth: `pkg/api/runtime_tools_register.go`. MCP and remote tools register on top of the builtin set.
+Each runtime mode selects a curated subset via **mode presets**:
+
+| Preset | Groups | Use case |
+|---|---|---|
+| `cli` | core_io, bash_mgmt, task_mgmt, web, media, interaction | Interactive terminal / TUI |
+| `server_web` | core_io, bash_mgmt, task_mgmt, web, media, canvas, browser | Web workspace with UI |
+| `server_api` | core_io, bash_mgmt, task_mgmt, media, canvas | API-only backend (no web/browser) |
+| `ci` | core_io, bash_mgmt | CI pipelines (minimal) |
+
+Override with `Options.ModePreset` or `--api-only` flag. Further filter with `Options.EnabledBuiltinTools` (whitelist) or `Options.DisallowedTools` (blacklist). MCP and remote tools register on top of the preset.
+
+Source of truth: `pkg/api/tool_groups.go`, `pkg/api/runtime_tools_register.go`.
 
 </details>
 
