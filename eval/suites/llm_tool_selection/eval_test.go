@@ -27,7 +27,7 @@ func cases() []ToolSelectionCase {
 		{
 			Name:         "list_directory",
 			Prompt:       "列出当前目录的所有文件",
-			ExpectedTool: "Bash",
+			ExpectedTool: "bash",
 			ExpectedParams: map[string]string{
 				"command": "ls",
 			},
@@ -35,8 +35,8 @@ func cases() []ToolSelectionCase {
 		{
 			Name:          "run_tests",
 			Prompt:        "运行 Go 测试",
-			ExpectedTool:  "Bash",
-			AcceptedTools: []string{"Glob"}, // model may search for test files first
+			ExpectedTool:  "bash",
+			AcceptedTools: []string{"glob"}, // model may search for test files first
 			ExpectedParams: map[string]string{
 				"command": "go test",
 			},
@@ -44,7 +44,7 @@ func cases() []ToolSelectionCase {
 		{
 			Name:         "read_file",
 			Prompt:       "读取 main.go 文件内容",
-			ExpectedTool: "Read",
+			ExpectedTool: "read",
 			ExpectedParams: map[string]string{
 				"file_path": "main.go",
 			},
@@ -52,7 +52,7 @@ func cases() []ToolSelectionCase {
 		{
 			Name:         "search_pattern",
 			Prompt:       "在代码中搜索所有包含 TODO 的地方",
-			ExpectedTool: "Grep",
+			ExpectedTool: "grep",
 			ExpectedParams: map[string]string{
 				"pattern": "TODO",
 			},
@@ -60,7 +60,7 @@ func cases() []ToolSelectionCase {
 		{
 			Name:         "find_go_files",
 			Prompt:       "找到所有 .go 结尾的文件",
-			ExpectedTool: "Glob",
+			ExpectedTool: "glob",
 			ExpectedParams: map[string]string{
 				"pattern": ".go",
 			},
@@ -68,18 +68,18 @@ func cases() []ToolSelectionCase {
 		{
 			Name:         "write_file",
 			Prompt:       "创建一个 hello.txt 文件，内容写 Hello World",
-			ExpectedTool: "Write",
+			ExpectedTool: "write",
 		},
 		{
 			Name:          "edit_file",
 			Prompt:        "把 main.go 中的 fmt.Println 替换为 log.Println",
-			ExpectedTool:  "Edit",
-			AcceptedTools: []string{"Read"}, // model may read the file first
+			ExpectedTool:  "edit",
+			AcceptedTools: []string{"read"}, // model may read the file first
 		},
 		{
 			Name:         "git_status",
 			Prompt:       "查看当前 git 状态",
-			ExpectedTool: "Bash",
+			ExpectedTool: "bash",
 			ExpectedParams: map[string]string{
 				"command": "git",
 			},
@@ -92,7 +92,7 @@ func cases() []ToolSelectionCase {
 func toolDefinitions() []model.ToolDefinition {
 	return []model.ToolDefinition{
 		{
-			Name:        "Bash",
+			Name:        "bash",
 			Description: "Execute a shell command",
 			Parameters: map[string]any{
 				"type": "object",
@@ -103,7 +103,7 @@ func toolDefinitions() []model.ToolDefinition {
 			},
 		},
 		{
-			Name:        "Read",
+			Name:        "read",
 			Description: "Read a file from the filesystem",
 			Parameters: map[string]any{
 				"type": "object",
@@ -114,7 +114,7 @@ func toolDefinitions() []model.ToolDefinition {
 			},
 		},
 		{
-			Name:        "Write",
+			Name:        "write",
 			Description: "Write content to a file",
 			Parameters: map[string]any{
 				"type": "object",
@@ -126,7 +126,7 @@ func toolDefinitions() []model.ToolDefinition {
 			},
 		},
 		{
-			Name:        "Edit",
+			Name:        "edit",
 			Description: "Edit an existing file by replacing text",
 			Parameters: map[string]any{
 				"type": "object",
@@ -139,7 +139,7 @@ func toolDefinitions() []model.ToolDefinition {
 			},
 		},
 		{
-			Name:        "Grep",
+			Name:        "grep",
 			Description: "Search file contents using regex patterns",
 			Parameters: map[string]any{
 				"type": "object",
@@ -150,7 +150,7 @@ func toolDefinitions() []model.ToolDefinition {
 			},
 		},
 		{
-			Name:        "Glob",
+			Name:        "glob",
 			Description: "Find files matching a glob pattern",
 			Parameters: map[string]any{
 				"type": "object",

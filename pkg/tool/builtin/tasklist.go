@@ -41,7 +41,7 @@ func NewTaskListTool(store tasks.Store) *TaskListTool {
 	return &TaskListTool{store: store}
 }
 
-func (t *TaskListTool) Name() string { return "TaskList" }
+func (t *TaskListTool) Name() string { return "task_list" }
 
 func (t *TaskListTool) Description() string { return taskListDescription }
 

@@ -23,7 +23,7 @@ func TestSandboxLoadPermissions(t *testing.T) {
 	if err := s.LoadPermissions(root); err != nil {
 		t.Fatalf("load permissions failed: %v", err)
 	}
-	decision, err := s.CheckToolPermission("Bash", map[string]any{"command": "ls"})
+	decision, err := s.CheckToolPermission("bash", map[string]any{"command": "ls"})
 	if err != nil {
 		t.Fatalf("check permission failed: %v", err)
 	}

@@ -67,7 +67,7 @@ func NewEditToolWithSandbox(root string, sandbox *security.Sandbox) *EditTool {
 	return &EditTool{base: newFileSandboxWithSandbox(root, sandbox)}
 }
 
-func (e *EditTool) Name() string { return "Edit" }
+func (e *EditTool) Name() string { return "edit" }
 
 func (e *EditTool) Description() string { return editDescription }
 

@@ -136,7 +136,7 @@ func TestPermissionRequestDecisionMapping(t *testing.T) {
 				Command: script,
 			})
 			adapter := &runtimeHookAdapter{executor: exec}
-			got, err := adapter.PermissionRequest(context.Background(), coreevents.PermissionRequestPayload{ToolName: "Bash"})
+			got, err := adapter.PermissionRequest(context.Background(), coreevents.PermissionRequestPayload{ToolName: "bash"})
 			if err != nil {
 				t.Fatalf("permission request: %v", err)
 			}

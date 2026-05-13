@@ -34,7 +34,7 @@ func TestExecuteSerializesPayloadAndParsesOutput(t *testing.T) {
 		Type:      events.PreToolUse,
 		SessionID: "sess-42",
 		Payload: events.ToolUsePayload{
-			Name:   "Write",
+			Name:   "write",
 			Params: map[string]any{"path": "/tmp/demo"},
 		},
 	}
@@ -63,7 +63,7 @@ func TestExecuteSerializesPayloadAndParsesOutput(t *testing.T) {
 		t.Fatalf("missing session id: %v", got["session_id"])
 	}
 	// Flat format: tool_name and tool_input at top level
-	if got["tool_name"] != "Write" {
+	if got["tool_name"] != "write" {
 		t.Fatalf("tool_name mismatch: %v", got["tool_name"])
 	}
 	toolInput, ok := got["tool_input"].(map[string]any)
@@ -202,7 +202,7 @@ func TestSelectorFiltersMatcherTarget(t *testing.T) {
 		"@exit /b 0\r\n",
 	))
 
-	sel, err := NewSelector("^Write$", "")
+	sel, err := NewSelector("^write$", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -212,7 +212,7 @@ func TestSelectorFiltersMatcherTarget(t *testing.T) {
 	// Should match Write
 	results, err := exec.Execute(context.Background(), events.Event{
 		Type:    events.PreToolUse,
-		Payload: events.ToolUsePayload{Name: "Write", Params: map[string]any{}},
+		Payload: events.ToolUsePayload{Name: "write", Params: map[string]any{}},
 	})
 	if err != nil || len(results) != 1 {
 		t.Fatalf("expected match for Write, got %d results, err=%v", len(results), err)
@@ -221,7 +221,7 @@ func TestSelectorFiltersMatcherTarget(t *testing.T) {
 	// Should NOT match Read
 	results, err = exec.Execute(context.Background(), events.Event{
 		Type:    events.PreToolUse,
-		Payload: events.ToolUsePayload{Name: "Read", Params: map[string]any{}},
+		Payload: events.ToolUsePayload{Name: "read", Params: map[string]any{}},
 	})
 	if err != nil || len(results) != 0 {
 		t.Fatalf("expected no match for Read, got %d results", len(results))
@@ -343,17 +343,17 @@ func TestBuildPayloadFlatFormat(t *testing.T) {
 			name: "ToolUsePayload",
 			evt: events.Event{
 				Type: events.PreToolUse, SessionID: "s1",
-				Payload: events.ToolUsePayload{Name: "Bash", Params: map[string]any{"command": "ls"}, ToolUseID: "tu1"},
+				Payload: events.ToolUsePayload{Name: "bash", Params: map[string]any{"command": "ls"}, ToolUseID: "tu1"},
 			},
-			checks: map[string]any{"tool_name": "Bash", "tool_use_id": "tu1", "hook_event_name": "PreToolUse"},
+			checks: map[string]any{"tool_name": "bash", "tool_use_id": "tu1", "hook_event_name": "PreToolUse"},
 		},
 		{
 			name: "ToolResultPayload",
 			evt: events.Event{
 				Type:    events.PostToolUse,
-				Payload: events.ToolResultPayload{Name: "Bash", Result: "ok", ToolUseID: "tu2"},
+				Payload: events.ToolResultPayload{Name: "bash", Result: "ok", ToolUseID: "tu2"},
 			},
-			checks: map[string]any{"tool_name": "Bash", "tool_use_id": "tu2"},
+			checks: map[string]any{"tool_name": "bash", "tool_use_id": "tu2"},
 		},
 		{
 			name: "NotificationPayload",
@@ -424,10 +424,10 @@ func TestExtractMatcherTargetAllTypes(t *testing.T) {
 		payload   any
 		want      string
 	}{
-		{events.PreToolUse, events.ToolUsePayload{Name: "Bash"}, "Bash"},
-		{events.PostToolUse, events.ToolResultPayload{Name: "Read"}, "Read"},
-		{events.PostToolUseFailure, events.ToolResultPayload{Name: "Write"}, "Write"},
-		{events.PermissionRequest, events.PermissionRequestPayload{ToolName: "Glob"}, "Glob"},
+		{events.PreToolUse, events.ToolUsePayload{Name: "bash"}, "bash"},
+		{events.PostToolUse, events.ToolResultPayload{Name: "read"}, "read"},
+		{events.PostToolUseFailure, events.ToolResultPayload{Name: "write"}, "write"},
+		{events.PermissionRequest, events.PermissionRequestPayload{ToolName: "glob"}, "glob"},
 		{events.SessionStart, events.SessionStartPayload{Source: "cli"}, "cli"},
 		{events.SessionEnd, events.SessionEndPayload{Reason: "user_exit"}, "user_exit"},
 		{events.Notification, events.NotificationPayload{NotificationType: "info"}, "info"},
@@ -510,7 +510,7 @@ func TestNewExecutorZeroTimeout(t *testing.T) {
 
 func TestSelectorMatchNoToolName(t *testing.T) {
 	t.Parallel()
-	sel, err := NewSelector("^Bash$", "")
+	sel, err := NewSelector("^bash$", "")
 	require.NoError(t, err)
 	// Notification has no tool name — matcher target is NotificationType
 	evt := events.Event{Type: events.Notification, Payload: events.NotificationPayload{Message: "hi"}}
@@ -525,14 +525,14 @@ func TestSelectorPayloadPattern(t *testing.T) {
 	require.NoError(t, err)
 	evt := events.Event{
 		Type:    events.PreToolUse,
-		Payload: events.ToolUsePayload{Name: "Bash", Params: map[string]any{"command": "ls"}},
+		Payload: events.ToolUsePayload{Name: "bash", Params: map[string]any{"command": "ls"}},
 	}
 	if !sel.Match(evt) {
 		t.Fatal("expected payload pattern to match")
 	}
 	evt2 := events.Event{
 		Type:    events.PreToolUse,
-		Payload: events.ToolUsePayload{Name: "Bash", Params: map[string]any{"command": "rm"}},
+		Payload: events.ToolUsePayload{Name: "bash", Params: map[string]any{"command": "rm"}},
 	}
 	if sel.Match(evt2) {
 		t.Fatal("expected payload pattern NOT to match")

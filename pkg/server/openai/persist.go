@@ -237,6 +237,35 @@ func (p *chatPersister) recordEvent(ctx context.Context, evt api.StreamEvent) {
 				"thread_id", p.threadID, "turn_id", p.turnID,
 				"tool_use_id", evt.ToolUseID, "err", err)
 		}
+	case api.EventToolExecutionOutput:
+		// Intermediate output — skip persistence. The authoritative final
+		// state (with metadata/error flags) arrives via EventToolExecutionResult.
+	case api.EventToolExecutionResult:
+		text := stringifyOutput(evt.Output)
+		payload := map[string]any{
+			"tool_use_id": evt.ToolUseID,
+			"name":        evt.Name,
+			"result":      json.RawMessage(coerceJSONOrString(text)),
+		}
+		if evt.IsError != nil && *evt.IsError {
+			payload["is_error"] = true
+		}
+		_, err := p.store.AppendEvent(ctx, conversation.AppendEventInput{
+			ThreadID:     p.threadID,
+			ProjectID:    p.projectID,
+			TurnID:       p.turnID,
+			Kind:         conversation.EventKindToolResult,
+			Role:         "tool",
+			ContentText:  text,
+			ContentJSON:  payload,
+			ToolCallID:   evt.ToolUseID,
+			ToolCallName: evt.Name,
+		})
+		if err != nil {
+			p.logger.Warn("conversation persister: tool_result append failed",
+				"thread_id", p.threadID, "turn_id", p.turnID,
+				"tool_use_id", evt.ToolUseID, "err", err)
+		}
 	case api.EventError:
 		msg := stringifyOutput(evt.Output)
 		_, err := p.store.AppendEvent(ctx, conversation.AppendEventInput{

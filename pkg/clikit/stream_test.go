@@ -275,14 +275,14 @@ func TestIsThinLLMText(t *testing.T) {
 }
 
 func TestBuildLLMToolHint(t *testing.T) {
-	hint := buildLLMToolHint(".", "Bash", `description="Generate image" command="python run.py"`)
-	if !strings.Contains(hint, "switching to tool call: Bash") {
+	hint := buildLLMToolHint(".", "bash", `description="Generate image" command="python run.py"`)
+	if !strings.Contains(hint, "switching to tool call: bash") {
 		t.Fatalf("unexpected hint: %q", hint)
 	}
 	if !strings.Contains(hint, "description=") {
 		t.Fatalf("hint should include input summary: %q", hint)
 	}
-	if got := buildLLMToolHint("我先说明步骤", "Bash", "x"); got != "" {
+	if got := buildLLMToolHint("我先说明步骤", "bash", "x"); got != "" {
 		t.Fatalf("non-thin llm text should not emit hint: %q", got)
 	}
 }

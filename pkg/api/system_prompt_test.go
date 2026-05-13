@@ -77,7 +77,7 @@ func TestSectionActions(t *testing.T) {
 
 func TestSectionUsingTools(t *testing.T) {
 	t.Run("with known tools", func(t *testing.T) {
-		s := sectionUsingTools([]string{"Read", "Edit", "Write", "Grep", "Glob", "TaskCreate", "AskUserQuestion"})
+		s := sectionUsingTools([]string{"read", "edit", "write", "grep", "glob", "task_create", "ask_user_question"})
 		if !strings.Contains(s, "Read instead of cat") {
 			t.Error("should mention Read tool")
 		}
@@ -93,7 +93,7 @@ func TestSectionUsingTools(t *testing.T) {
 		if !strings.Contains(s, "Task tools") {
 			t.Error("should mention Task tools")
 		}
-		if !strings.Contains(s, "AskUserQuestion") {
+		if !strings.Contains(s, "ask_user_question") {
 			t.Error("should mention AskUserQuestion")
 		}
 	})
@@ -135,7 +135,7 @@ func TestSectionOutputEfficiency(t *testing.T) {
 
 func TestSectionAgentTool(t *testing.T) {
 	t.Run("with task tool", func(t *testing.T) {
-		s := sectionAgentTool([]string{"TaskCreate", "Bash"})
+		s := sectionAgentTool([]string{"task_create", "bash"})
 		if s == "" {
 			t.Error("should return content when task tools present")
 		}
@@ -145,7 +145,7 @@ func TestSectionAgentTool(t *testing.T) {
 	})
 
 	t.Run("without task tool", func(t *testing.T) {
-		s := sectionAgentTool([]string{"Bash", "Read"})
+		s := sectionAgentTool([]string{"bash", "read"})
 		if s != "" {
 			t.Error("should return empty when no task tools")
 		}
@@ -200,7 +200,7 @@ func TestSectionLanguage(t *testing.T) {
 
 func TestSectionSessionGuidance(t *testing.T) {
 	t.Run("CLI with skills", func(t *testing.T) {
-		s := sectionSessionGuidance([]string{"Skill", "Bash"}, EntryPointCLI)
+		s := sectionSessionGuidance([]string{"skill", "bash"}, EntryPointCLI)
 		if !strings.Contains(s, "/skill-name") {
 			t.Error("should mention skill syntax")
 		}
@@ -210,7 +210,7 @@ func TestSectionSessionGuidance(t *testing.T) {
 	})
 
 	t.Run("CI mode", func(t *testing.T) {
-		s := sectionSessionGuidance([]string{"Bash"}, EntryPointCI)
+		s := sectionSessionGuidance([]string{"bash"}, EntryPointCI)
 		if strings.Contains(s, "! <command>") {
 			t.Error("should not mention interactive commands for CI")
 		}
@@ -219,33 +219,33 @@ func TestSectionSessionGuidance(t *testing.T) {
 
 func TestSectionMultimodal(t *testing.T) {
 	t.Run("with all multimodal tools", func(t *testing.T) {
-		s := sectionMultimodal([]string{"ImageRead", "analyze_video", "video_sampler", "WebFetch", "WebSearch"})
+		s := sectionMultimodal([]string{"image_read", "analyze_video", "video_sampler", "web_fetch", "web_search"})
 		if !strings.Contains(s, "multimodal agent") {
 			t.Error("should declare multimodal capability")
 		}
-		if !strings.Contains(s, "ImageRead") {
+		if !strings.Contains(s, "image_read") {
 			t.Error("should mention ImageRead")
 		}
 		if !strings.Contains(s, "analyze_video") {
 			t.Error("should mention analyze_video")
 		}
-		if !strings.Contains(s, "WebSearch") {
+		if !strings.Contains(s, "web_search") {
 			t.Error("should mention WebSearch")
 		}
-		if !strings.Contains(s, "WebFetch") {
+		if !strings.Contains(s, "web_fetch") {
 			t.Error("should mention WebFetch")
 		}
 	})
 
 	t.Run("without multimodal tools", func(t *testing.T) {
-		s := sectionMultimodal([]string{"Bash", "Read"})
+		s := sectionMultimodal([]string{"bash", "read"})
 		if s != "" {
 			t.Error("should return empty when no multimodal tools")
 		}
 	})
 
 	t.Run("image only", func(t *testing.T) {
-		s := sectionMultimodal([]string{"ImageRead"})
+		s := sectionMultimodal([]string{"image_read"})
 		if !strings.Contains(s, "PNG") {
 			t.Error("should mention supported formats")
 		}
@@ -267,7 +267,7 @@ func TestBuildDefaultSystemPrompt(t *testing.T) {
 		Shell:     "zsh",
 		OSVersion: "Darwin 23.0",
 	}
-	tools := []string{"Bash", "Read", "Edit", "Grep", "Glob", "TaskCreate"}
+	tools := []string{"bash", "read", "edit", "grep", "glob", "task_create"}
 
 	prompt := buildDefaultSystemPrompt(opts, env, tools)
 
@@ -315,7 +315,7 @@ func TestBuildSystemPromptBlocks(t *testing.T) {
 		Shell:     "bash",
 		OSVersion: "Linux 6.1",
 	}
-	tools := []string{"Bash", "Read", "TaskCreate"}
+	tools := []string{"bash", "read", "task_create"}
 
 	blocks := buildSystemPromptBlocks(opts, env, tools)
 
@@ -368,7 +368,7 @@ func TestSystemPromptBuilder(t *testing.T) {
 }
 
 func TestToolNameSet(t *testing.T) {
-	set := toolNameSet([]string{"Bash", "Read", "GREP"})
+	set := toolNameSet([]string{"bash", "read", "GREP"})
 	if !set["bash"] {
 		t.Error("should lowercase tool names")
 	}

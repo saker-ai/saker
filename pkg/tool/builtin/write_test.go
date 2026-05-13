@@ -94,7 +94,7 @@ func TestWriteToolSizeLimitAndCancellation(t *testing.T) {
 
 func TestWriteToolMetadata(t *testing.T) {
 	tool := NewWriteTool()
-	if tool.Name() != "Write" {
+	if tool.Name() != "write" {
 		t.Fatalf("unexpected tool name %q", tool.Name())
 	}
 	if tool.Description() == "" || tool.Schema() == nil {

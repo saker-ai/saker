@@ -34,10 +34,11 @@ func (h *Handler) initPerProjectRegistries() {
 					return nil, err
 				}
 				if h.runtime != nil {
-					if cs := h.runtime.ConversationStore(); cs != nil {
+					cs := h.runtime.ConversationStore()
+					store.AttachConvTee(newConvTee(cs, scope.ProjectID, h.logger))
+					if cs != nil {
 						_ = store.LoadFromConversation(cs, scope.ProjectID)
 					}
-					store.AttachConvTee(newConvTee(h.runtime.ConversationStore(), scope.ProjectID, h.logger))
 				}
 				return store, nil
 			},

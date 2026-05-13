@@ -27,7 +27,7 @@ func TestBuildPermissionResolverHandlerAndApprovals(t *testing.T) {
 		t.Fatalf("expected resolver")
 	}
 
-	decision, err := resolver(context.Background(), tool.Call{Name: "Bash", SessionID: "sess"}, security.PermissionDecision{
+	decision, err := resolver(context.Background(), tool.Call{Name: "bash", SessionID: "sess"}, security.PermissionDecision{
 		Action: security.PermissionAsk,
 		Rule:   "rule",
 		Target: "target",
@@ -39,7 +39,7 @@ func TestBuildPermissionResolverHandlerAndApprovals(t *testing.T) {
 		t.Fatalf("expected session to be whitelisted")
 	}
 
-	allowed, err := resolver(context.Background(), tool.Call{Name: "Bash"}, security.PermissionDecision{Action: security.PermissionAllow})
+	allowed, err := resolver(context.Background(), tool.Call{Name: "bash"}, security.PermissionDecision{Action: security.PermissionAllow})
 	if err != nil || allowed.Action != security.PermissionAllow {
 		t.Fatalf("unexpected non-ask decision %+v err=%v", allowed, err)
 	}
@@ -50,7 +50,7 @@ func TestBuildPermissionResolverHandlerUnknown(t *testing.T) {
 		return coreevents.PermissionAsk, nil
 	}, nil, "", 0, false)
 	decision := security.PermissionDecision{Action: security.PermissionAsk, Rule: "rule", Target: "target"}
-	res, err := resolver(context.Background(), tool.Call{Name: "Bash"}, decision)
+	res, err := resolver(context.Background(), tool.Call{Name: "bash"}, decision)
 	if err != nil {
 		t.Fatalf("resolver error: %v", err)
 	}
@@ -76,7 +76,7 @@ func TestBuildPermissionResolverWaitsForApproval(t *testing.T) {
 	resultCh := make(chan security.PermissionDecision, 1)
 	errCh := make(chan error, 1)
 	go func() {
-		res, err := resolver(ctx, tool.Call{Name: "Bash", SessionID: "sess"}, security.PermissionDecision{
+		res, err := resolver(ctx, tool.Call{Name: "bash", SessionID: "sess"}, security.PermissionDecision{
 			Action: security.PermissionAsk,
 			Rule:   "rule",
 			Target: "target",

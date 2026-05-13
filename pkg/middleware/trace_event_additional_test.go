@@ -62,8 +62,8 @@ func TestTracePayloadBuilders(t *testing.T) {
 		t.Fatalf("expected byte response payload")
 	}
 
-	call := tool.Call{Name: "Bash", Params: map[string]any{"command": "ls"}}
-	if payload := toolCallPayload(call); payload == nil || payload["name"] != "Bash" {
+	call := tool.Call{Name: "bash", Params: map[string]any{"command": "ls"}}
+	if payload := toolCallPayload(call); payload == nil || payload["name"] != "bash" {
 		t.Fatalf("expected tool call payload")
 	}
 	if payload := toolCallPayload(map[string]any{"name": "x"}); payload == nil {

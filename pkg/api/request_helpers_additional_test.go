@@ -47,7 +47,7 @@ func TestRequestHelperUtilities(t *testing.T) {
 
 	applyCommandMetadata(req, map[string]any{
 		"api.target_subagent": "explore",
-		"api.tool_whitelist":  []any{"Bash", "Read"},
+		"api.tool_whitelist":  []any{"bash", "read"},
 	})
 	if req.TargetSubagent != "explore" || len(req.ToolWhitelist) != 2 {
 		t.Fatalf("expected metadata applied, got %+v", req)

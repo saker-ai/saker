@@ -63,7 +63,7 @@ type acpReadTool struct {
 	conn      func() *acpproto.AgentSideConnection
 }
 
-func (t *acpReadTool) Name() string { return "Read" }
+func (t *acpReadTool) Name() string { return "read" }
 
 func (t *acpReadTool) Description() string {
 	return "Read a text file via ACP client capability fs/read_text_file."
@@ -129,7 +129,7 @@ type acpWriteTool struct {
 	conn      func() *acpproto.AgentSideConnection
 }
 
-func (t *acpWriteTool) Name() string { return "Write" }
+func (t *acpWriteTool) Name() string { return "write" }
 
 func (t *acpWriteTool) Description() string {
 	return "Write a text file via ACP client capability fs/write_text_file."
@@ -198,7 +198,7 @@ type acpEditTool struct {
 	conn      func() *acpproto.AgentSideConnection
 }
 
-func (t *acpEditTool) Name() string { return "Edit" }
+func (t *acpEditTool) Name() string { return "edit" }
 
 func (t *acpEditTool) Description() string {
 	return "Perform exact string replacements via ACP fs/read_text_file and fs/write_text_file."
@@ -291,7 +291,7 @@ type acpBashTool struct {
 	conn      func() *acpproto.AgentSideConnection
 }
 
-func (t *acpBashTool) Name() string { return "Bash" }
+func (t *acpBashTool) Name() string { return "bash" }
 
 func (t *acpBashTool) Description() string {
 	return "Execute shell commands via ACP client terminal/create and terminal/* methods."

@@ -58,7 +58,7 @@ func NewSlashCommandTool(exec *commands.Executor) *SlashCommandTool {
 	}
 }
 
-func (s *SlashCommandTool) Name() string { return "SlashCommand" }
+func (s *SlashCommandTool) Name() string { return "slash_command" }
 
 func (s *SlashCommandTool) Description() string {
 	var defs []commands.Definition

@@ -279,7 +279,7 @@ func taskToolCall(id string, args map[string]any) *model.Response {
 			Role: "assistant",
 			ToolCalls: []model.ToolCall{{
 				ID:        id,
-				Name:      "Task",
+				Name:      "task",
 				Arguments: args,
 			}},
 		},

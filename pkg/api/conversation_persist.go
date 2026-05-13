@@ -65,7 +65,7 @@ func (rt *Runtime) persistToConversation(sessionID string, history *message.Hist
 	}
 
 	rt.convCursorMu.Lock()
-	cursor := rt.convCursor[sessionID]
+	cursor, threadKnown := rt.convCursor[sessionID]
 	rt.convCursorMu.Unlock()
 
 	// History.Replace (compaction / restore) can shrink the snapshot. When
@@ -85,10 +85,12 @@ func (rt *Runtime) persistToConversation(sessionID string, history *message.Hist
 	ctx, cancel := context.WithTimeout(context.Background(), conversationPersistTimeout)
 	defer cancel()
 
-	if err := rt.ensureConversationThread(ctx, sessionID, tail); err != nil {
-		logger.Error("api: ensure conversation thread failed",
-			"session_id", sessionID, "error", err)
-		return
+	if !threadKnown {
+		if err := rt.ensureConversationThread(ctx, sessionID, tail); err != nil {
+			logger.Error("api: ensure conversation thread failed",
+				"session_id", sessionID, "error", err)
+			return
+		}
 	}
 
 	turnID, err := rt.conversationStore.OpenTurn(ctx, sessionID, "")

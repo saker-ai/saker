@@ -85,12 +85,12 @@ func TestActiveTurnTracker_SetStatusAndToolName(t *testing.T) {
 	tr.Register("t1", "thread", "Title", "p", "user")
 
 	tr.SetStatus("t1", "waiting")
-	tr.SetToolName("t1", "Bash")
+	tr.SetToolName("t1", "bash")
 
 	turns := tr.List()
 	require.Len(t, turns, 1)
 	require.Equal(t, "waiting", turns[0].Status)
-	require.Equal(t, "Bash", turns[0].ToolName)
+	require.Equal(t, "bash", turns[0].ToolName)
 
 	// Unknown id no-ops.
 	tr.SetStatus("missing", "nope")
@@ -110,13 +110,13 @@ func TestActiveTurnTracker_UpdateFromEvent(t *testing.T) {
 	})
 	tr.UpdateFromEvent("t1", api.StreamEvent{
 		Type: "tool_execution_start",
-		Name: "Edit",
+		Name: "edit",
 	})
 
 	turns := tr.List()
 	require.Len(t, turns, 1)
 	require.Equal(t, "chunk-1 chunk-2", turns[0].StreamText)
-	require.Equal(t, "Edit", turns[0].ToolName)
+	require.Equal(t, "edit", turns[0].ToolName)
 
 	tr.UpdateFromEvent("t1", api.StreamEvent{Type: "tool_execution_result"})
 	turns = tr.List()

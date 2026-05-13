@@ -92,7 +92,7 @@ func TestHooksConfig_UnmarshalJSON_ClaudeCodeFormat(t *testing.T) {
 				],
 				"PostToolUse": [
 					{
-						"matcher": "Write",
+						"matcher": "write",
 						"hooks": [
 							{"type": "command", "command": "echo post-write"}
 						]
@@ -105,7 +105,7 @@ func TestHooksConfig_UnmarshalJSON_ClaudeCodeFormat(t *testing.T) {
 					{Matcher: "", Hooks: []HookDefinition{{Type: "command", Command: "echo pre-all"}}},
 				},
 				PostToolUse: []HookMatcherEntry{
-					{Matcher: "Write", Hooks: []HookDefinition{{Type: "command", Command: "echo post-write"}}},
+					{Matcher: "write", Hooks: []HookDefinition{{Type: "command", Command: "echo post-write"}}},
 				},
 			},
 		},
@@ -249,7 +249,7 @@ func TestHooksConfig_UnmarshalJSON_MixedFormat(t *testing.T) {
 			}
 		],
 		"PostToolUse": {
-			"Write": "echo sdk-format"
+			"write": "echo sdk-format"
 		}
 	}`
 
@@ -260,7 +260,7 @@ func TestHooksConfig_UnmarshalJSON_MixedFormat(t *testing.T) {
 	require.Equal(t, []HookMatcherEntry{
 		{Matcher: "bash", Hooks: []HookDefinition{{Type: "command", Command: "echo claude-format"}}},
 	}, got.PreToolUse)
-	require.Equal(t, mkEntries("Write", "echo sdk-format"), got.PostToolUse)
+	require.Equal(t, mkEntries("write", "echo sdk-format"), got.PostToolUse)
 }
 
 func TestHooksConfig_UnmarshalJSON_EdgeCases(t *testing.T) {

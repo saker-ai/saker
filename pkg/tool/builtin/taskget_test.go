@@ -11,7 +11,7 @@ import (
 
 func TestTaskGetToolMetadata(t *testing.T) {
 	tool := NewTaskGetTool(tasks.NewTaskStore())
-	if tool.Name() != "TaskGet" {
+	if tool.Name() != "task_get" {
 		t.Fatalf("unexpected name %q", tool.Name())
 	}
 	if strings.TrimSpace(tool.Description()) == "" {

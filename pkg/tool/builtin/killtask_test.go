@@ -43,7 +43,7 @@ func TestKillTaskToolErrorsOnMissingTask(t *testing.T) {
 
 func TestKillTaskToolMetadata(t *testing.T) {
 	tool := NewKillTaskTool()
-	if tool.Name() != "KillTask" {
+	if tool.Name() != "kill_task" {
 		t.Fatalf("unexpected name %q", tool.Name())
 	}
 	if strings.TrimSpace(tool.Description()) == "" {

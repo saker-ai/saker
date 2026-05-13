@@ -194,7 +194,7 @@ func TestEditToolSandboxAndContext(t *testing.T) {
 
 func TestEditToolMetadataAndBoolParser(t *testing.T) {
 	tool := NewEditTool()
-	if tool.Name() != "Edit" {
+	if tool.Name() != "edit" {
 		t.Fatalf("unexpected tool name %q", tool.Name())
 	}
 	if tool.Description() == "" || tool.Schema() == nil {

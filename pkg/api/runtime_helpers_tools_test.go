@@ -62,7 +62,7 @@ func TestRuntimeAvailableToolsFromRegistry(t *testing.T) {
 	for _, def := range defs {
 		seen[def.Name] = struct{}{}
 	}
-	for _, want := range []string{"TaskCreate", "TaskList", "TaskGet", "TaskUpdate", "Bash"} {
+	for _, want := range []string{"task_create", "task_list", "task_get", "task_update", "bash"} {
 		if _, ok := seen[want]; !ok {
 			t.Fatalf("missing tool %q in %+v", want, defs)
 		}
@@ -84,8 +84,8 @@ func TestRuntimeAvailableToolsForWhitelist(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = rt.Close() })
 
-	defs := rt.AvailableToolsForWhitelist([]string{"TaskCreate"})
-	if len(defs) != 1 || defs[0].Name != "TaskCreate" {
+	defs := rt.AvailableToolsForWhitelist([]string{"task_create"})
+	if len(defs) != 1 || defs[0].Name != "task_create" {
 		t.Fatalf("unexpected whitelisted defs: %+v", defs)
 	}
 }

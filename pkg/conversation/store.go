@@ -8,12 +8,23 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
+	"time"
 
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
 
 	"github.com/cinience/saker/pkg/project/dialect"
 )
+
+// seqMuSweepInterval controls how often the background goroutine sweeps
+// idle per-thread mutexes. 10 minutes keeps long-running multi-tenant
+// servers tidy without spending measurable CPU.
+const seqMuSweepInterval = 10 * time.Minute
+
+// seqMuMaxIdle is the idle threshold beyond which a per-thread mutex is
+// eligible for eviction. Threads active within this window keep their lock.
+const seqMuMaxIdle = 30 * time.Minute
 
 // Config controls how Store is opened. DSN follows the rules in
 // dialect.ParseDSN; a bare path is treated as a SQLite file. The fallback
@@ -41,14 +52,21 @@ type Store struct {
 	driver string
 	dsn    string
 
-	// seqMu is a per-thread mutex map. Lazily populated; entries live for
-	// the lifetime of the store. ThreadIDs are bounded by user activity
-	// so unbounded growth is not a concern in practice (a sweep loop
-	// could be added in P1+ if needed — pkg/project has the pattern).
-	seqMu sync.Map // map[string]*sync.Mutex
+	// seqMu is a per-thread mutex map keyed by threadID. Lazily populated
+	// by threadLock; idle entries are swept by a background goroutine to
+	// prevent unbounded growth on long-running multi-tenant servers.
+	seqMu    sync.Map // map[string]*threadMu
+	stopSweep chan struct{}
 
 	closeOnce sync.Once
 	closeErr  error
+}
+
+// threadMu pairs a per-thread serialization mutex with a last-used
+// timestamp so the sweep goroutine can evict idle entries.
+type threadMu struct {
+	mu       sync.Mutex
+	lastUsed atomic.Int64 // UnixNano
 }
 
 // Open creates a Store using cfg, runs migrations, and returns it ready
@@ -121,7 +139,9 @@ func Open(cfg Config) (*Store, error) {
 		return nil, fmt.Errorf("conversation.Open: migrate: %w", err)
 	}
 
-	return &Store{db: db, driver: scheme, dsn: dsn}, nil
+	st := &Store{db: db, driver: scheme, dsn: dsn, stopSweep: make(chan struct{})}
+	go st.sweepLoop()
+	return st, nil
 }
 
 // applySQLitePragmas sets WAL + busy_timeout on the open SQLite handle.
@@ -154,6 +174,7 @@ func (s *Store) Driver() string { return s.driver }
 // times; subsequent calls are no-ops.
 func (s *Store) Close() error {
 	s.closeOnce.Do(func() {
+		close(s.stopSweep)
 		s.closeErr = closeUnderlying(s.db)
 	})
 	return s.closeErr
@@ -170,10 +191,45 @@ func closeUnderlying(db *gorm.DB) error {
 // threadLock acquires the per-thread mutex used to serialize seq
 // assignment. Callers MUST call the returned release func.
 func (s *Store) threadLock(threadID string) func() {
-	v, _ := s.seqMu.LoadOrStore(threadID, &sync.Mutex{})
-	mu := v.(*sync.Mutex)
-	mu.Lock()
-	return mu.Unlock
+	v, _ := s.seqMu.LoadOrStore(threadID, &threadMu{})
+	tm := v.(*threadMu)
+	tm.lastUsed.Store(time.Now().UnixNano())
+	tm.mu.Lock()
+	return tm.mu.Unlock
+}
+
+// sweepLoop periodically evicts idle per-thread mutexes to prevent
+// unbounded growth on long-running servers. Stops when stopSweep is closed.
+func (s *Store) sweepLoop() {
+	ticker := time.NewTicker(seqMuSweepInterval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-s.stopSweep:
+			return
+		case <-ticker.C:
+			s.sweepIdleLocks(seqMuMaxIdle)
+		}
+	}
+}
+
+// sweepIdleLocks removes per-thread mutexes that haven't been used within
+// maxIdle. TryLock ensures we never evict a mutex that's currently held.
+func (s *Store) sweepIdleLocks(maxIdle time.Duration) int {
+	cutoff := time.Now().Add(-maxIdle).UnixNano()
+	swept := 0
+	s.seqMu.Range(func(key, val any) bool {
+		tm := val.(*threadMu)
+		if tm.lastUsed.Load() < cutoff {
+			if tm.mu.TryLock() {
+				s.seqMu.Delete(key)
+				tm.mu.Unlock()
+				swept++
+			}
+		}
+		return true
+	})
+	return swept
 }
 
 // withCtx is a tiny helper that returns a *gorm.DB scoped to the caller

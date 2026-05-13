@@ -35,7 +35,7 @@ func TestBuildClientCapabilityTools(t *testing.T) {
 	for _, tl := range tools {
 		gotNames[tl.Name()] = struct{}{}
 	}
-	for _, name := range []string{"Read", "Write", "Edit", "Bash"} {
+	for _, name := range []string{"read", "write", "edit", "bash"} {
 		if _, ok := gotNames[name]; !ok {
 			t.Fatalf("missing tool %q in %#v", name, gotNames)
 		}
@@ -49,7 +49,7 @@ func TestBuildClientCapabilityTools(t *testing.T) {
 	writeOnlyCaps := acpproto.ClientCapabilities{}
 	writeOnlyCaps.Fs.WriteTextFile = true
 	writeOnlyTools, writeOnlyShadowed := buildClientCapabilityTools("sess-3", nil, writeOnlyCaps)
-	if len(writeOnlyTools) != 1 || writeOnlyTools[0].Name() != "Write" {
+	if len(writeOnlyTools) != 1 || writeOnlyTools[0].Name() != "write" {
 		t.Fatalf("write-only tools=%v, want [Write]", toolNames(writeOnlyTools))
 	}
 	if !containsString(writeOnlyShadowed, "file_write") || !containsString(writeOnlyShadowed, "file_edit") {

@@ -1,4 +1,4 @@
-.PHONY: test test-unit test-race test-integration test-short coverage lint lint-new bench fuzz docs-sync notices oss-check build saker saker-full install clean test-pipeline test-pipeline-race test-pipeline-bench test-pipeline-stress test-all test-eval test-eval-bench test-eval-llm test-eval-all test-eval-tb2 test-eval-tb2-smoke eval-tb2 eval-tb2-smoke demo-pipeline server web-deps web-dev web-clean web-build web-editor-deps web-editor-dev web-editor-build web-editor-clean desktop run e2e-build e2e-run e2e-clean test-pg-up test-pg-integration test-pg-down changelog swagger check-no-binaries diagrams
+.PHONY: test test-unit test-race test-integration test-short coverage lint lint-new bench fuzz docs-sync notices oss-check build saker saker-full install clean test-pipeline test-pipeline-race test-pipeline-bench test-pipeline-stress test-all test-eval test-eval-bench test-eval-llm test-eval-all test-eval-tb2 test-eval-tb2-smoke eval-tb2 eval-tb2-smoke demo-pipeline server web-deps web-dev web-clean web-build web-editor-deps web-editor-dev web-editor-build web-editor-clean desktop run e2e-build e2e-run e2e-clean test-pg-up test-pg-integration test-pg-down changelog swagger check-no-binaries diagrams docker
 
 GO ?= go
 PKG ?= ./...
@@ -84,6 +84,12 @@ notices:
 
 oss-check: notices
 	scripts/check-open-source-readiness.sh
+
+IMAGE_NAME ?= saker
+IMAGE_TAG  ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+
+docker:
+	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) -t $(IMAGE_NAME):latest .
 
 build: web-build web-editor-build saker
 
@@ -191,7 +197,7 @@ desktop: web-build
 # Build and run server (frontend + backend + start)
 run: server
 	@lsof -ti :10112 | xargs -r kill 2>/dev/null && echo "Killed process on port 10112" || true
-	$(BINARY) --server
+	@if [ -f .env ]; then set -a && . ./.env && set +a; fi; $(BINARY) --server
 
 # Eval suites (offline — no API key needed)
 test-eval:

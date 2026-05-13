@@ -12,7 +12,7 @@ import (
 
 func TestTaskCreateToolMetadataAndSchema(t *testing.T) {
 	tool := NewTaskCreateTool(tasks.NewTaskStore())
-	if tool.Name() != "TaskCreate" {
+	if tool.Name() != "task_create" {
 		t.Fatalf("unexpected name %q", tool.Name())
 	}
 	if strings.TrimSpace(tool.Description()) == "" {

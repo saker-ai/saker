@@ -236,3 +236,29 @@ func (s *Store) GetMessages(ctx context.Context, threadID string, opts GetMessag
 	}
 	return out, nil
 }
+
+// GetMessagesByThreadIDs returns the materialized message projection for
+// multiple threads in a single query, grouped by thread ID. Each thread's
+// messages are in pos-ascending order and capped at opts.Limit per thread.
+func (s *Store) GetMessagesByThreadIDs(ctx context.Context, threadIDs []string, opts GetMessagesOpts) (map[string][]Message, error) {
+	if len(threadIDs) == 0 {
+		return nil, nil
+	}
+	limit := clampLimit(opts.Limit)
+	q := s.withCtx(ctx).Model(&Message{}).
+		Where("thread_id IN ?", threadIDs).
+		Order("thread_id ASC, pos ASC")
+	if limit > 0 {
+		q = q.Limit(limit * len(threadIDs))
+	}
+
+	var all []Message
+	if err := q.Find(&all).Error; err != nil {
+		return nil, fmt.Errorf("conversation.GetMessagesByThreadIDs: %w", err)
+	}
+	result := make(map[string][]Message, len(threadIDs))
+	for i := range all {
+		result[all[i].ThreadID] = append(result[all[i].ThreadID], all[i])
+	}
+	return result, nil
+}

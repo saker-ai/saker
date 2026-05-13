@@ -26,7 +26,7 @@ func TestRuntimeHookAdapterNilExecutorNoops(t *testing.T) {
 	if err := adapter.Stop(context.Background(), "done"); err != nil {
 		t.Fatalf("unexpected stop error: %v", err)
 	}
-	if got, err := adapter.PermissionRequest(context.Background(), coreevents.PermissionRequestPayload{ToolName: "Bash"}); err != nil || got != coreevents.PermissionAsk {
+	if got, err := adapter.PermissionRequest(context.Background(), coreevents.PermissionRequestPayload{ToolName: "bash"}); err != nil || got != coreevents.PermissionAsk {
 		t.Fatalf("unexpected permission request result %v err=%v", got, err)
 	}
 	if err := adapter.SessionStart(context.Background(), coreevents.SessionPayload{}); err != nil {
@@ -74,7 +74,7 @@ func TestRuntimeHookAdapterErrorPaths(t *testing.T) {
 	permExec := corehooks.NewExecutor()
 	permExec.Register(corehooks.ShellHook{Event: coreevents.PermissionRequest, Command: shCmd("echo perm-fail >&2; exit 2", "echo perm-fail >&2 & exit /b 2")})
 	permAdapter := &runtimeHookAdapter{executor: permExec}
-	if _, err := permAdapter.PermissionRequest(context.Background(), coreevents.PermissionRequestPayload{ToolName: "Bash"}); err == nil {
+	if _, err := permAdapter.PermissionRequest(context.Background(), coreevents.PermissionRequestPayload{ToolName: "bash"}); err == nil {
 		t.Fatalf("expected permission request error")
 	}
 

@@ -85,7 +85,7 @@ func NewReadToolWithSandbox(root string, sandbox *security.Sandbox) *ReadTool {
 	}
 }
 
-func (r *ReadTool) Name() string { return "Read" }
+func (r *ReadTool) Name() string { return "read" }
 
 func (r *ReadTool) Description() string { return readDescription }
 

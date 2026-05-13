@@ -22,7 +22,7 @@ func TestPromptStreamMapperEmitsToolLifecycleUpdates(t *testing.T) {
 			ContentBlock: &api.ContentBlock{
 				Type: "tool_use",
 				ID:   "call_1",
-				Name: "Read",
+				Name: "read",
 			},
 		},
 		{
@@ -40,18 +40,18 @@ func TestPromptStreamMapperEmitsToolLifecycleUpdates(t *testing.T) {
 		{
 			Type:      api.EventToolExecutionStart,
 			ToolUseID: "call_1",
-			Name:      "Read",
+			Name:      "read",
 		},
 		{
 			Type:      api.EventToolExecutionOutput,
 			ToolUseID: "call_1",
-			Name:      "Read",
+			Name:      "read",
 			Output:    "reading...",
 		},
 		{
 			Type:      api.EventToolExecutionResult,
 			ToolUseID: "call_1",
-			Name:      "Read",
+			Name:      "read",
 			Output: map[string]any{
 				"output": "done",
 				"metadata": map[string]any{
@@ -124,7 +124,7 @@ func TestPromptStreamMapperEmitsTerminalAndOutputRefContent(t *testing.T) {
 	updates := mapper.updatesForEvent(api.StreamEvent{
 		Type:      api.EventToolExecutionResult,
 		ToolUseID: "call_term",
-		Name:      "Bash",
+		Name:      "bash",
 		Output: map[string]any{
 			"output": "command failed",
 			"metadata": map[string]any{
@@ -179,7 +179,7 @@ func TestPromptStreamMapperEmitsPlanUpdatesForTaskTools(t *testing.T) {
 	updates := mapper.updatesForEvent(api.StreamEvent{
 		Type:      api.EventToolExecutionResult,
 		ToolUseID: "call_task_list",
-		Name:      "TaskList",
+		Name:      "task_list",
 		Output: map[string]any{
 			"output": "listed",
 			"metadata": map[string]any{
@@ -273,7 +273,7 @@ func TestPromptStreamMapperDoesNotEmitPlanUpdateOnTaskFailure(t *testing.T) {
 	updates := mapper.updatesForEvent(api.StreamEvent{
 		Type:      api.EventToolExecutionResult,
 		ToolUseID: "call_task_update",
-		Name:      "TaskUpdate",
+		Name:      "task_update",
 		Output: map[string]any{
 			"output": "failed",
 			"metadata": map[string]any{

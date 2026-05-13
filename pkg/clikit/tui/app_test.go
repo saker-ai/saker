@@ -92,73 +92,73 @@ func TestExtractToolParamsFromJSON(t *testing.T) {
 		},
 		{
 			name:      "read tool extracts file_path base",
-			toolName:  "Read",
+			toolName:  "read",
 			inputJSON: `{"file_path":"/home/user/src/main.go"}`,
 			want:      "main.go",
 		},
 		{
 			name:      "write tool extracts file_path base",
-			toolName:  "Write",
+			toolName:  "write",
 			inputJSON: `{"file_path":"/tmp/output/result.txt"}`,
 			want:      "result.txt",
 		},
 		{
 			name:      "edit tool extracts file_path base",
-			toolName:  "Edit",
+			toolName:  "edit",
 			inputJSON: `{"file_path":"/app/config.yaml"}`,
 			want:      "config.yaml",
 		},
 		{
 			name:      "read tool without file_path returns empty",
-			toolName:  "Read",
+			toolName:  "read",
 			inputJSON: `{"content":"hello"}`,
 			want:      "",
 		},
 		{
 			name:      "bash tool short command",
-			toolName:  "Bash",
+			toolName:  "bash",
 			inputJSON: `{"command":"ls -la"}`,
 			want:      "ls -la",
 		},
 		{
 			name:      "bash tool long command truncated",
-			toolName:  "Bash",
+			toolName:  "bash",
 			inputJSON: fmt.Sprintf(`{"command":"%s"}`, strings.Repeat("a", 90)),
 			want:      strings.Repeat("a", 77) + "…",
 		},
 		{
 			name:      "bash tool multiline joins first two lines",
-			toolName:  "Bash",
+			toolName:  "bash",
 			inputJSON: `{"command":"echo hello\necho world"}`,
 			want:      "echo hello echo world",
 		},
 		{
 			name:      "bash tool without command returns empty",
-			toolName:  "Bash",
+			toolName:  "bash",
 			inputJSON: `{"timeout":30}`,
 			want:      "",
 		},
 		{
 			name:      "grep tool short pattern",
-			toolName:  "Grep",
+			toolName:  "grep",
 			inputJSON: `{"pattern":"TODO"}`,
 			want:      "TODO",
 		},
 		{
 			name:      "grep tool long pattern truncated",
-			toolName:  "Grep",
+			toolName:  "grep",
 			inputJSON: fmt.Sprintf(`{"pattern":"%s"}`, strings.Repeat("x", 65)),
 			want:      strings.Repeat("x", 57) + "…",
 		},
 		{
 			name:      "glob tool pattern",
-			toolName:  "Glob",
+			toolName:  "glob",
 			inputJSON: `{"pattern":"**/*.go"}`,
 			want:      "**/*.go",
 		},
 		{
 			name:      "glob tool without pattern returns empty",
-			toolName:  "Glob",
+			toolName:  "glob",
 			inputJSON: `{"path":"/src"}`,
 			want:      "",
 		},
@@ -200,49 +200,49 @@ func TestSummarizeOutput(t *testing.T) {
 	}{
 		{
 			name:     "empty output returns empty",
-			toolName: "Bash",
+			toolName: "bash",
 			output:   "",
 			want:     "",
 		},
 		{
 			name:     "whitespace only returns empty",
-			toolName: "Bash",
+			toolName: "bash",
 			output:   "   \n  \t  ",
 			want:     "",
 		},
 		{
 			name:     "bash single line",
-			toolName: "Bash",
+			toolName: "bash",
 			output:   "hello world",
 			want:     "hello world",
 		},
 		{
 			name:     "bash two lines shown fully",
-			toolName: "Bash",
+			toolName: "bash",
 			output:   "line1\nline2",
 			want:     "line1\nline2",
 		},
 		{
 			name:     "bash multi-line shows last line and count",
-			toolName: "Bash",
+			toolName: "bash",
 			output:   "a\nb\nc\nlast",
 			want:     "… last (4 lines)",
 		},
 		{
 			name:     "bash multi-line last line empty uses previous",
-			toolName: "Bash",
+			toolName: "bash",
 			output:   "a\nb\nresult\n",
 			want:     "… result (3 lines)",
 		},
 		{
 			name:     "non-bash short output shown fully",
-			toolName: "Read",
+			toolName: "read",
 			output:   "ok",
 			want:     "ok",
 		},
 		{
 			name:     "non-bash multi-line shows line count",
-			toolName: "Glob",
+			toolName: "glob",
 			output:   "f1\nf2\nf3\nf4\nf5",
 			want:     "5 lines",
 		},
@@ -272,73 +272,73 @@ func TestSummarizeToolResult(t *testing.T) {
 	}{
 		{
 			name:     "empty output returns empty",
-			toolName: "Read",
+			toolName: "read",
 			output:   "",
 			want:     "",
 		},
 		{
 			name:     "read tool reports line count singular",
-			toolName: "Read",
+			toolName: "read",
 			output:   "single line",
 			want:     "Read 1 line",
 		},
 		{
 			name:     "read tool reports line count plural",
-			toolName: "Read",
+			toolName: "read",
 			output:   "a\nb\nc",
 			want:     "Read 3 lines",
 		},
 		{
 			name:     "write tool reports line count",
-			toolName: "Write",
+			toolName: "write",
 			output:   "a\nb",
 			want:     "Wrote 2 lines",
 		},
 		{
 			name:     "edit tool always says Applied changes",
-			toolName: "Edit",
+			toolName: "edit",
 			output:   "some diff output",
 			want:     "Applied changes",
 		},
 		{
 			name:     "grep tool counts matches singular",
-			toolName: "Grep",
+			toolName: "grep",
 			output:   "match1",
 			want:     "1 match",
 		},
 		{
 			name:     "grep tool counts matches plural",
-			toolName: "Grep",
+			toolName: "grep",
 			output:   "m1\nm2\nm3",
 			want:     "3 matches",
 		},
 		{
 			name:     "grep skips blank lines",
-			toolName: "Grep",
+			toolName: "grep",
 			output:   "m1\n\nm2\n  \n",
 			want:     "2 matches",
 		},
 		{
 			name:     "glob tool counts files singular",
-			toolName: "Glob",
+			toolName: "glob",
 			output:   "a.go",
 			want:     "1 file",
 		},
 		{
 			name:     "glob tool counts files plural",
-			toolName: "Glob",
+			toolName: "glob",
 			output:   "a.go\nb.go\nc.go",
 			want:     "3 files",
 		},
 		{
 			name:     "bash tool short output shown fully",
-			toolName: "Bash",
+			toolName: "bash",
 			output:   "done",
 			want:     "done",
 		},
 		{
 			name:     "bash tool multi-line shows last and count",
-			toolName: "Bash",
+			toolName: "bash",
 			output:   "a\nb\nc\nresult",
 			want:     "… result (4 lines)",
 		},
@@ -565,17 +565,17 @@ func TestFormatToolOutput(t *testing.T) {
 	}{
 		{
 			name: "nil output returns empty",
-			evt:  api.StreamEvent{Name: "Bash", Output: nil},
+			evt:  api.StreamEvent{Name: "bash", Output: nil},
 			want: "",
 		},
 		{
 			name: "bash output summarized",
-			evt:  api.StreamEvent{Name: "Bash", Output: "a\nb\nc\nresult"},
+			evt:  api.StreamEvent{Name: "bash", Output: "a\nb\nc\nresult"},
 			want: "… result (4 lines)",
 		},
 		{
 			name: "read output summarized",
-			evt:  api.StreamEvent{Name: "Read", Output: "a\nb\nc\n\nd\n"},
+			evt:  api.StreamEvent{Name: "read", Output: "a\nb\nc\n\nd\n"},
 			want: "5 lines",
 		},
 		{
@@ -609,20 +609,20 @@ func TestFormatToolResult(t *testing.T) {
 	}{
 		{
 			name:    "nil output returns empty no error",
-			evt:     api.StreamEvent{Name: "Bash", Output: nil},
+			evt:     api.StreamEvent{Name: "bash", Output: nil},
 			want:    "",
 			wantErr: false,
 		},
 		{
 			name:    "non-map output returns empty no error",
-			evt:     api.StreamEvent{Name: "Bash", Output: "string not map"},
+			evt:     api.StreamEvent{Name: "bash", Output: "string not map"},
 			want:    "",
 			wantErr: false,
 		},
 		{
 			name: "map output without metadata",
 			evt: api.StreamEvent{
-				Name:   "Read",
+				Name:   "read",
 				Output: map[string]any{"output": "a\nb\nc"},
 			},
 			want:    "Read 3 lines",
@@ -631,7 +631,7 @@ func TestFormatToolResult(t *testing.T) {
 		{
 			name: "map output with is_error metadata",
 			evt: api.StreamEvent{
-				Name: "Bash",
+				Name: "bash",
 				Output: map[string]any{
 					"output":   "exit code 1",
 					"metadata": map[string]any{"is_error": true},
@@ -643,7 +643,7 @@ func TestFormatToolResult(t *testing.T) {
 		{
 			name: "map output without is_error flag",
 			evt: api.StreamEvent{
-				Name: "Bash",
+				Name: "bash",
 				Output: map[string]any{
 					"output":   "success",
 					"metadata": map[string]any{},
@@ -655,7 +655,7 @@ func TestFormatToolResult(t *testing.T) {
 		{
 			name: "empty output string returns empty",
 			evt: api.StreamEvent{
-				Name:   "Read",
+				Name:   "read",
 				Output: map[string]any{"output": ""},
 			},
 			want:    "",

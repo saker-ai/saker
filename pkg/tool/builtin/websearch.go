@@ -107,7 +107,7 @@ func NewWebSearchTool(opts *WebSearchOptions) *WebSearchTool {
 	}
 }
 
-func (w *WebSearchTool) Name() string { return "WebSearch" }
+func (w *WebSearchTool) Name() string { return "web_search" }
 
 func (w *WebSearchTool) Description() string { return webSearchDescription }
 

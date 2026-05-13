@@ -55,7 +55,7 @@ func NewImageReadToolWithSandbox(root string, sandbox *security.Sandbox) *ImageR
 	return t
 }
 
-func (i *ImageReadTool) Name() string { return "ImageRead" }
+func (i *ImageReadTool) Name() string { return "image_read" }
 
 func (i *ImageReadTool) Description() string { return imageReadDescription }
 
@@ -68,9 +68,22 @@ func (i *ImageReadTool) Execute(ctx context.Context, params map[string]interface
 	if i == nil || i.base == nil || i.base.sandbox == nil {
 		return nil, errors.New("image_read tool is not initialised")
 	}
-	path, err := i.base.resolvePath(params["file_path"])
+	rawPath, _ := params["file_path"].(string)
+	// Resolve HTTP URLs to local temp files before sandbox path resolution.
+	localPath, err := resolveMediaPath(ctx, rawPath)
 	if err != nil {
 		return nil, err
+	}
+
+	var path string
+	if localPath != rawPath {
+		// URL was downloaded — use the temp path directly.
+		path = localPath
+	} else {
+		path, err = i.base.resolvePath(params["file_path"])
+		if err != nil {
+			return nil, err
+		}
 	}
 	if err := ctx.Err(); err != nil {
 		return nil, err

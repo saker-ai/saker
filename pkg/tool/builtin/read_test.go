@@ -171,7 +171,7 @@ func TestReadToolRejectsBinaryFiles(t *testing.T) {
 
 func TestReadToolMetadataAndHelpers(t *testing.T) {
 	tool := NewReadTool()
-	if tool.Name() != "Read" {
+	if tool.Name() != "read" {
 		t.Fatalf("unexpected name %q", tool.Name())
 	}
 	if tool.Description() == "" || tool.Schema() == nil {

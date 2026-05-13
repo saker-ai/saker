@@ -219,6 +219,73 @@ func TestPersist_ErrorEventLandsInLog(t *testing.T) {
 	require.Contains(t, errEvt.ContentText, "upstream blew up")
 }
 
+func TestPersist_ToolExecutionOutputNotPersisted(t *testing.T) {
+	t.Parallel()
+	isStderr := true
+	runner := newFakeRunnerStream(
+		api.StreamEvent{Type: api.EventToolExecutionStart, ToolUseID: "tool-1", Name: "bash", Input: `{"cmd":"ls"}`},
+		api.StreamEvent{Type: api.EventToolExecutionOutput, ToolUseID: "tool-1", Output: "file.txt", IsStderr: &isStderr},
+	)
+	_, eng, store := newPersistTestGateway(t, runner)
+
+	body, _ := json.Marshal(map[string]any{
+		"model":    "gpt-4",
+		"messages": []map[string]any{{"role": "user", "content": "list files"}},
+	})
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	eng.ServeHTTP(rec, req)
+	require.Equal(t, http.StatusOK, rec.Code)
+
+	threadID := rec.Header().Get("X-Saker-Thread-Id")
+	require.NotEmpty(t, threadID)
+
+	// Intermediate output events are no longer persisted; only the final
+	// EventToolExecutionResult is recorded. Verify no tool_result event exists.
+	time.Sleep(200 * time.Millisecond)
+	ctx := context.Background()
+	events, err := store.GetEvents(ctx, threadID, conversation.GetEventsOpts{})
+	require.NoError(t, err)
+	for _, e := range events {
+		if conversation.EventKind(e.Kind) == conversation.EventKindToolResult {
+			t.Fatalf("unexpected tool_result event persisted for intermediate output")
+		}
+	}
+}
+
+func TestPersist_ToolExecutionResultLandsInLog(t *testing.T) {
+	t.Parallel()
+	isErr := false
+	runner := newFakeRunnerStream(
+		api.StreamEvent{Type: api.EventToolExecutionStart, ToolUseID: "tool-2", Name: "search", Input: `{"q":"test"}`},
+		api.StreamEvent{Type: api.EventToolExecutionResult, ToolUseID: "tool-2", Name: "search", Output: `{"hits":3}`, IsError: &isErr},
+	)
+	_, eng, store := newPersistTestGateway(t, runner)
+
+	body, _ := json.Marshal(map[string]any{
+		"model":    "gpt-4",
+		"messages": []map[string]any{{"role": "user", "content": "search"}},
+	})
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/v1/chat/completions", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	eng.ServeHTTP(rec, req)
+	require.Equal(t, http.StatusOK, rec.Code)
+
+	threadID := rec.Header().Get("X-Saker-Thread-Id")
+	require.NotEmpty(t, threadID)
+
+	ctx := context.Background()
+	evt := waitForKind(t, ctx, store, threadID, conversation.EventKindToolResult)
+	require.Equal(t, "tool", evt.Role)
+
+	var payload map[string]any
+	require.NoError(t, json.Unmarshal(evt.ContentJSON, &payload))
+	require.Equal(t, "tool-2", payload["tool_use_id"])
+	require.Equal(t, "search", payload["name"])
+}
+
 func TestPersist_NilStore_Bypass(t *testing.T) {
 	t.Parallel()
 	// Validates back-compat: when ConversationStore is nil the gateway

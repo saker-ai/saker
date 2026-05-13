@@ -37,6 +37,7 @@ Thumbs.db
 .docs/
 .other/
 
+godeps/
 # Build output
 bin/
 /cli

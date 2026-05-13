@@ -772,7 +772,7 @@ func TestACPInprocPermissionRoundTrip(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	decision, handled, err := h.adapter.requestPermissionFromClient(ctx, acpproto.SessionId("sess-perm"), api.PermissionRequest{
-		ToolName:   "Read",
+		ToolName:   "read",
 		ToolParams: map[string]any{"file_path": filepath.Join(root, "a.txt")},
 		Target:     filepath.Join(root, "a.txt"),
 	})
@@ -811,7 +811,7 @@ func TestACPInprocModePermissionPolicies(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	decision, err := bridge(ctx, api.PermissionRequest{ToolName: "Read"})
+	decision, err := bridge(ctx, api.PermissionRequest{ToolName: "read"})
 	if err != nil {
 		t.Fatalf("ask mode permission bridge failed: %v", err)
 	}
@@ -828,7 +828,7 @@ func TestACPInprocModePermissionPolicies(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("set mode code failed: %v", err)
 	}
-	decision, err = bridge(ctx, api.PermissionRequest{ToolName: "Write"})
+	decision, err = bridge(ctx, api.PermissionRequest{ToolName: "write"})
 	if err != nil {
 		t.Fatalf("code mode permission bridge failed: %v", err)
 	}
@@ -845,14 +845,14 @@ func TestACPInprocModePermissionPolicies(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("set mode architect failed: %v", err)
 	}
-	decision, err = bridge(ctx, api.PermissionRequest{ToolName: "Write"})
+	decision, err = bridge(ctx, api.PermissionRequest{ToolName: "write"})
 	if err != nil {
 		t.Fatalf("architect mode write check failed: %v", err)
 	}
 	if decision != "deny" {
 		t.Fatalf("architect mode write decision=%q, want deny", decision)
 	}
-	decision, err = bridge(ctx, api.PermissionRequest{ToolName: "Read"})
+	decision, err = bridge(ctx, api.PermissionRequest{ToolName: "read"})
 	if err != nil {
 		t.Fatalf("architect mode read check failed: %v", err)
 	}
@@ -878,20 +878,20 @@ func TestACPInprocCapabilityBridgeReadWriteBash(t *testing.T) {
 
 	model := newToolPlanModel([]toolPlanStep{
 		{
-			ToolName: "Read",
+			ToolName: "read",
 			Args: map[string]any{
 				"file_path": filepath.Join(root, "in.txt"),
 			},
 		},
 		{
-			ToolName: "Write",
+			ToolName: "write",
 			Args: map[string]any{
 				"file_path": filepath.Join(root, "out.txt"),
 				"content":   "payload",
 			},
 		},
 		{
-			ToolName: "Bash",
+			ToolName: "bash",
 			Args: map[string]any{
 				"command": "echo hi",
 				"workdir": root,
@@ -1002,7 +1002,7 @@ func TestACPInprocCapabilityBridgeEditUsesClientFs(t *testing.T) {
 
 	model := newToolPlanModel([]toolPlanStep{
 		{
-			ToolName: "Edit",
+			ToolName: "edit",
 			Args: map[string]any{
 				"file_path":   filepath.Join(root, "edit.txt"),
 				"old_string":  "beta",
@@ -1056,27 +1056,27 @@ func TestACPInprocTaskToolsEmitPlanUpdates(t *testing.T) {
 
 	model := newToolPlanModel([]toolPlanStep{
 		{
-			ToolName: "TaskCreate",
+			ToolName: "task_create",
 			Args: map[string]any{
 				"subject":    "Generated task",
 				"activeForm": "generated-form",
 			},
 		},
 		{
-			ToolName: "TaskUpdate",
+			ToolName: "task_update",
 			Args: map[string]any{
 				"taskId": seedTask.ID,
 				"status": "in_progress",
 			},
 		},
 		{
-			ToolName: "TaskGet",
+			ToolName: "task_get",
 			Args: map[string]any{
 				"taskId": seedTask.ID,
 			},
 		},
 		{
-			ToolName: "TaskList",
+			ToolName: "task_list",
 			Args: map[string]any{
 				"status": "in_progress",
 			},
@@ -1141,14 +1141,14 @@ func TestACPInprocArchitectModeBlocksMutatingCapabilityTools(t *testing.T) {
 
 	model := newToolPlanModel([]toolPlanStep{
 		{
-			ToolName: "Write",
+			ToolName: "write",
 			Args: map[string]any{
 				"file_path": filepath.Join(root, "out.txt"),
 				"content":   "blocked",
 			},
 		},
 		{
-			ToolName: "Bash",
+			ToolName: "bash",
 			Args: map[string]any{
 				"command": "echo should-not-run",
 				"workdir": root,

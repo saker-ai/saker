@@ -95,13 +95,13 @@ func TestResolveFileOpsAndWalkDir(t *testing.T) {
 
 func TestBuildMetadataMapAndReadFrontMatter(t *testing.T) {
 	meta := CommandMetadata{
-		AllowedTools:           "Bash",
+		AllowedTools:           "bash",
 		ArgumentHint:           "hint",
 		Model:                  "model",
 		DisableModelInvocation: true,
 	}
 	out := buildMetadataMap(meta, "/tmp/cmd.md")
-	if out["allowed-tools"] != "Bash" || out["argument-hint"] != "hint" || out["model"] != "model" || out["disable-model-invocation"] != true || out["source"] != "/tmp/cmd.md" {
+	if out["allowed-tools"] != "bash" || out["argument-hint"] != "hint" || out["model"] != "model" || out["disable-model-invocation"] != true || out["source"] != "/tmp/cmd.md" {
 		t.Fatalf("unexpected metadata map %v", out)
 	}
 	if buildMetadataMap(CommandMetadata{}, "") != nil {
@@ -110,9 +110,9 @@ func TestBuildMetadataMapAndReadFrontMatter(t *testing.T) {
 
 	dir := t.TempDir()
 	path := filepath.Join(dir, "cmd.md")
-	mustWrite(t, path, "---\nname: demo\ndescription: desc\nallowed-tools: Bash\n---\nbody")
+	mustWrite(t, path, "---\nname: demo\ndescription: desc\nallowed-tools: bash\n---\nbody")
 	got, err := readFrontMatterMetadata(path, resolveFileOps(LoaderOptions{}))
-	if err != nil || got.Name != "demo" || got.Description != "desc" || got.AllowedTools != "Bash" {
+	if err != nil || got.Name != "demo" || got.Description != "desc" || got.AllowedTools != "bash" {
 		t.Fatalf("unexpected frontmatter %v err=%v", got, err)
 	}
 }

@@ -54,7 +54,7 @@ func TestSkillToolValidatesInput(t *testing.T) {
 func TestSkillToolMetadataAndContextHelpers(t *testing.T) {
 	reg := skills.NewRegistry()
 	tool := NewSkillTool(reg, nil)
-	if tool.Name() != "Skill" {
+	if tool.Name() != "skill" {
 		t.Fatalf("unexpected name %q", tool.Name())
 	}
 	if tool.Description() == "" || tool.Schema() == nil {

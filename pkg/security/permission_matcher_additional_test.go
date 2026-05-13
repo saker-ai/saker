@@ -47,11 +47,11 @@ func TestDeriveTargetCoverage(t *testing.T) {
 		params map[string]any
 		want   string
 	}{
-		{name: "bash with args", tool: "Bash", params: map[string]any{"command": "ls -la"}, want: "ls:-la"},
+		{name: "bash with args", tool: "bash", params: map[string]any{"command": "ls -la"}, want: "ls:-la"},
 		{name: "bash no args", tool: "bash", params: map[string]any{"command": "ls"}, want: "ls:"},
 		{name: "bash empty", tool: "bash", params: map[string]any{"command": "   "}, want: ""},
-		{name: "read path", tool: "Read", params: map[string]any{"file_path": tmp}, want: filepath.Clean(tmp)},
-		{name: "taskget prefers id", tool: "TaskGet", params: map[string]any{"task_id": "task-123", "path": "/tmp/ignored"}, want: "task-123"},
+		{name: "read path", tool: "read", params: map[string]any{"file_path": tmp}, want: filepath.Clean(tmp)},
+		{name: "taskget prefers id", tool: "task_get", params: map[string]any{"task_id": "task-123", "path": "/tmp/ignored"}, want: "task-123"},
 		{name: "generic target key", tool: "Custom", params: map[string]any{"target": "/foo/bar"}, want: filepath.Clean("/foo/bar")},
 		{name: "first string fallback", tool: "Other", params: map[string]any{"misc": []byte(" hi ")}, want: "hi"},
 	}
@@ -102,8 +102,8 @@ func TestPermissionMatcherNilAndUnknown(t *testing.T) {
 	if err != nil {
 		t.Fatalf("matcher: %v", err)
 	}
-	unknown := matcher.Match("Write", map[string]any{"path": "/tmp/file.txt"})
-	if unknown.Action != PermissionUnknown || unknown.Tool != "Write" {
+	unknown := matcher.Match("write", map[string]any{"path": "/tmp/file.txt"})
+	if unknown.Action != PermissionUnknown || unknown.Tool != "write" {
 		t.Fatalf("expected unknown decision, got %+v", unknown)
 	}
 
@@ -126,7 +126,7 @@ func TestPermissionMatcherPriorityRespectsCase(t *testing.T) {
 	if decision.Action != PermissionDeny {
 		t.Fatalf("expected deny despite case differences, got %+v", decision)
 	}
-	allow := matcher.Match("Bash", map[string]any{"command": "ls"})
+	allow := matcher.Match("bash", map[string]any{"command": "ls"})
 	if allow.Action != PermissionAllow {
 		t.Fatalf("expected allow, got %+v", allow)
 	}
@@ -135,10 +135,10 @@ func TestPermissionMatcherPriorityRespectsCase(t *testing.T) {
 func TestPermissionMatcherTaskTools(t *testing.T) {
 	cfg := &config.PermissionsConfig{
 		Deny: []string{
-			"TaskCreate(task-create)",
-			"TaskGet(task-get)",
-			"TaskUpdate(task-update)",
-			"TaskList(task-list)",
+			"task_create(task-create)",
+			"task_get(task-get)",
+			"task_update(task-update)",
+			"task_list(task-list)",
 		},
 	}
 	matcher, err := NewPermissionMatcher(cfg)
@@ -151,10 +151,10 @@ func TestPermissionMatcherTaskTools(t *testing.T) {
 		id   string
 		rule string
 	}{
-		{tool: "TaskCreate", id: "task-create", rule: "TaskCreate(task-create)"},
-		{tool: "TaskGet", id: "task-get", rule: "TaskGet(task-get)"},
-		{tool: "TaskUpdate", id: "task-update", rule: "TaskUpdate(task-update)"},
-		{tool: "TaskList", id: "task-list", rule: "TaskList(task-list)"},
+		{tool: "task_create", id: "task-create", rule: "task_create(task-create)"},
+		{tool: "task_get", id: "task-get", rule: "task_get(task-get)"},
+		{tool: "task_update", id: "task-update", rule: "task_update(task-update)"},
+		{tool: "task_list", id: "task-list", rule: "task_list(task-list)"},
 	}
 
 	for _, tt := range tests {

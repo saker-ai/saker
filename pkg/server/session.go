@@ -15,10 +15,11 @@ import (
 // conversation.Store. Mutations are mirrored to conversation.Store via
 // the attached convTee; startup state is populated via LoadFromConversation.
 type SessionStore struct {
-	mu      sync.RWMutex
-	threads []Thread
-	items   map[string][]ThreadItem // threadID → items
-	tee     *convTee
+	mu        sync.RWMutex
+	threads   []Thread
+	threadIdx map[string]int         // threadID → index in threads slice
+	items     map[string][]ThreadItem // threadID → items
+	tee       *convTee
 }
 
 // AttachConvTee wires the dual-write tee into this SessionStore. Safe to
@@ -38,8 +39,9 @@ func (s *SessionStore) AttachConvTee(tee *convTee) {
 // after construction to populate startup state from conversation.Store.
 func NewSessionStore() (*SessionStore, error) {
 	return &SessionStore{
-		threads: make([]Thread, 0),
-		items:   make(map[string][]ThreadItem),
+		threads:   make([]Thread, 0),
+		threadIdx: make(map[string]int),
+		items:     make(map[string][]ThreadItem),
 	}, nil
 }
 
@@ -58,6 +60,17 @@ func (s *SessionStore) LoadFromConversation(store *conversation.Store, projectID
 	if err != nil {
 		return fmt.Errorf("load threads: %w", err)
 	}
+	threadIDs := make([]string, len(threads))
+	for i := range threads {
+		threadIDs[i] = threads[i].ID
+	}
+	allMsgs, err := store.GetMessagesByThreadIDs(ctx, threadIDs, conversation.GetMessagesOpts{
+		Limit: conversation.MaxListLimit,
+	})
+	if err != nil {
+		return fmt.Errorf("load messages: %w", err)
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, ct := range threads {
@@ -67,14 +80,9 @@ func (s *SessionStore) LoadFromConversation(store *conversation.Store, projectID
 			CreatedAt: ct.CreatedAt,
 			UpdatedAt: ct.UpdatedAt,
 		}
+		s.threadIdx[t.ID] = len(s.threads)
 		s.threads = append(s.threads, t)
-		msgs, err := store.GetMessages(ctx, ct.ID, conversation.GetMessagesOpts{
-			Limit: conversation.MaxListLimit,
-		})
-		if err != nil {
-			s.items[ct.ID] = make([]ThreadItem, 0)
-			continue
-		}
+		msgs := allMsgs[ct.ID]
 		items := make([]ThreadItem, 0, len(msgs))
 		for _, m := range msgs {
 			items = append(items, ThreadItem{
@@ -101,6 +109,7 @@ func (s *SessionStore) CreateThread(title string) Thread {
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
+	s.threadIdx[t.ID] = len(s.threads)
 	s.threads = append(s.threads, t)
 	s.items[t.ID] = make([]ThreadItem, 0)
 	tee := s.tee
@@ -121,35 +130,34 @@ func (s *SessionStore) ListThreads() []Thread {
 // UpdateThreadTitle updates the title of an existing thread.
 func (s *SessionStore) UpdateThreadTitle(threadID, title string) bool {
 	s.mu.Lock()
-	for i := range s.threads {
-		if s.threads[i].ID == threadID {
-			s.threads[i].Title = title
-			s.threads[i].UpdatedAt = time.Now()
-			tee := s.tee
-			s.mu.Unlock()
-			tee.recordThreadTitleUpdate(threadID, title)
-			return true
-		}
+	idx, ok := s.threadIdx[threadID]
+	if !ok {
+		s.mu.Unlock()
+		return false
 	}
+	s.threads[idx].Title = title
+	s.threads[idx].UpdatedAt = time.Now()
+	tee := s.tee
 	s.mu.Unlock()
-	return false
+	tee.recordThreadTitleUpdate(threadID, title)
+	return true
 }
 
 // DeleteThread removes a thread and its items from the in-memory cache.
 func (s *SessionStore) DeleteThread(threadID string) bool {
 	s.mu.Lock()
-	found := false
-	for i := range s.threads {
-		if s.threads[i].ID == threadID {
-			s.threads = append(s.threads[:i], s.threads[i+1:]...)
-			found = true
-			break
-		}
-	}
-	if !found {
+	idx, ok := s.threadIdx[threadID]
+	if !ok {
 		s.mu.Unlock()
 		return false
 	}
+	last := len(s.threads) - 1
+	if idx != last {
+		s.threads[idx] = s.threads[last]
+		s.threadIdx[s.threads[idx].ID] = idx
+	}
+	s.threads = s.threads[:last]
+	delete(s.threadIdx, threadID)
 	delete(s.items, threadID)
 	tee := s.tee
 	s.mu.Unlock()
@@ -161,10 +169,8 @@ func (s *SessionStore) DeleteThread(threadID string) bool {
 func (s *SessionStore) GetThread(threadID string) (Thread, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	for _, t := range s.threads {
-		if t.ID == threadID {
-			return t, true
-		}
+	if idx, ok := s.threadIdx[threadID]; ok {
+		return s.threads[idx], true
 	}
 	return Thread{}, false
 }
@@ -181,13 +187,8 @@ func (s *SessionStore) AppendItem(threadID, role, content, turnID string) Thread
 		CreatedAt: time.Now(),
 	}
 	s.items[threadID] = append(s.items[threadID], item)
-
-	// Update thread timestamp.
-	for i := range s.threads {
-		if s.threads[i].ID == threadID {
-			s.threads[i].UpdatedAt = item.CreatedAt
-			break
-		}
+	if idx, ok := s.threadIdx[threadID]; ok {
+		s.threads[idx].UpdatedAt = item.CreatedAt
 	}
 	tee := s.tee
 	s.mu.Unlock()
@@ -230,12 +231,8 @@ func (s *SessionStore) appendItemFull(threadID, role, toolName, content, turnID 
 		CreatedAt: time.Now(),
 	}
 	s.items[threadID] = append(s.items[threadID], item)
-
-	for i := range s.threads {
-		if s.threads[i].ID == threadID {
-			s.threads[i].UpdatedAt = item.CreatedAt
-			break
-		}
+	if idx, ok := s.threadIdx[threadID]; ok {
+		s.threads[idx].UpdatedAt = item.CreatedAt
 	}
 	return item
 }

@@ -23,7 +23,7 @@ func TestPermissionHelpers(t *testing.T) {
 	if got := formatApprovalCommand("", ""); got != "tool" {
 		t.Fatalf("unexpected command %q", got)
 	}
-	if got := formatApprovalCommand("Bash", "ls"); got != "Bash(ls)" {
+	if got := formatApprovalCommand("bash", "ls"); got != "bash(ls)" {
 		t.Fatalf("unexpected command %q", got)
 	}
 	if approvalActor(" ") != "host" {
@@ -44,7 +44,7 @@ func TestBuildPermissionResolverAllowDeny(t *testing.T) {
 		return coreevents.PermissionAllow, nil
 	}, queue, "tester", time.Hour, false)
 
-	call := tool.Call{Name: "Bash", Params: map[string]any{"command": "ls"}, SessionID: "sess"}
+	call := tool.Call{Name: "bash", Params: map[string]any{"command": "ls"}, SessionID: "sess"}
 	decision := security.PermissionDecision{Action: security.PermissionAsk, Rule: "rule", Target: "ls"}
 	allowed, err := allowResolver(context.Background(), call, decision)
 	if err != nil {

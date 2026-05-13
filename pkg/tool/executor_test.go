@@ -462,13 +462,13 @@ func TestExecutorDeniesByPermissions(t *testing.T) {
 	}
 
 	reg := NewRegistry()
-	tool := &stubTool{name: "Bash"}
+	tool := &stubTool{name: "bash"}
 	if err := reg.Register(tool); err != nil {
 		t.Fatalf("register: %v", err)
 	}
 
 	exec := NewExecutor(reg, sandbox.NewManager(sandbox.NewFileSystemAllowList(root), nil, nil))
-	_, err := exec.Execute(context.Background(), Call{Name: "Bash", Params: map[string]any{"command": "ls -la"}, Path: root})
+	_, err := exec.Execute(context.Background(), Call{Name: "bash", Params: map[string]any{"command": "ls -la"}, Path: root})
 	if err == nil || !strings.Contains(err.Error(), "denied") {
 		t.Fatalf("expected deny error, got %v", err)
 	}
@@ -489,13 +489,13 @@ func TestExecutorAsksWhenConfigured(t *testing.T) {
 	}
 
 	reg := NewRegistry()
-	tool := &stubTool{name: "Bash"}
+	tool := &stubTool{name: "bash"}
 	if err := reg.Register(tool); err != nil {
 		t.Fatalf("register: %v", err)
 	}
 
 	exec := NewExecutor(reg, sandbox.NewManager(sandbox.NewFileSystemAllowList(root), nil, nil))
-	_, err := exec.Execute(context.Background(), Call{Name: "Bash", Params: map[string]any{"command": "ls -la"}, Path: root})
+	_, err := exec.Execute(context.Background(), Call{Name: "bash", Params: map[string]any{"command": "ls -la"}, Path: root})
 	if err == nil || !strings.Contains(strings.ToLower(err.Error()), "requires approval") {
 		t.Fatalf("expected approval error, got %v", err)
 	}
@@ -516,7 +516,7 @@ func TestExecutorApprovalResolverAllows(t *testing.T) {
 	}
 
 	reg := NewRegistry()
-	tool := &stubTool{name: "Bash"}
+	tool := &stubTool{name: "bash"}
 	if err := reg.Register(tool); err != nil {
 		t.Fatalf("register: %v", err)
 	}
@@ -526,7 +526,7 @@ func TestExecutorApprovalResolverAllows(t *testing.T) {
 			return security.PermissionDecision{Action: security.PermissionAllow}, nil
 		})
 
-	_, err := exec.Execute(context.Background(), Call{Name: "Bash", Params: map[string]any{"command": "ls -la"}, Path: root})
+	_, err := exec.Execute(context.Background(), Call{Name: "bash", Params: map[string]any{"command": "ls -la"}, Path: root})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -547,7 +547,7 @@ func TestExecutorApprovalResolverDenies(t *testing.T) {
 	}
 
 	reg := NewRegistry()
-	tool := &stubTool{name: "Bash"}
+	tool := &stubTool{name: "bash"}
 	if err := reg.Register(tool); err != nil {
 		t.Fatalf("register: %v", err)
 	}
@@ -557,7 +557,7 @@ func TestExecutorApprovalResolverDenies(t *testing.T) {
 			return security.PermissionDecision{Action: security.PermissionDeny}, nil
 		})
 
-	_, err := exec.Execute(context.Background(), Call{Name: "Bash", Params: map[string]any{"command": "ls -la"}, Path: root})
+	_, err := exec.Execute(context.Background(), Call{Name: "bash", Params: map[string]any{"command": "ls -la"}, Path: root})
 	if err == nil || !strings.Contains(err.Error(), "denied") {
 		t.Fatalf("expected deny error, got %v", err)
 	}
@@ -578,13 +578,13 @@ func TestExecutorAllowsWhenPermissionMatches(t *testing.T) {
 	}
 
 	reg := NewRegistry()
-	tool := &stubTool{name: "Bash"}
+	tool := &stubTool{name: "bash"}
 	if err := reg.Register(tool); err != nil {
 		t.Fatalf("register: %v", err)
 	}
 
 	exec := NewExecutor(reg, sandbox.NewManager(sandbox.NewFileSystemAllowList(root), nil, nil))
-	_, err := exec.Execute(context.Background(), Call{Name: "Bash", Params: map[string]any{"command": "ls"}, Path: root})
+	_, err := exec.Execute(context.Background(), Call{Name: "bash", Params: map[string]any{"command": "ls"}, Path: root})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

@@ -57,7 +57,7 @@ func TestPermissionReasonHelpers(t *testing.T) {
 	if cmd := formatApprovalCommand("", ""); cmd != "tool" {
 		t.Fatalf("expected default tool name, got %q", cmd)
 	}
-	if cmd := formatApprovalCommand("Bash", "ls"); cmd != "Bash(ls)" {
+	if cmd := formatApprovalCommand("bash", "ls"); cmd != "bash(ls)" {
 		t.Fatalf("unexpected approval command %q", cmd)
 	}
 	if actor := approvalActor(" "); actor != "host" {
@@ -72,9 +72,9 @@ func TestRegisterToolsDisallowedAndDuplicates(t *testing.T) {
 	reg := tool.NewRegistry()
 	opts := Options{
 		Tools: []tool.Tool{
-			agentHelperStubTool{name: "Bash"},
-			agentHelperStubTool{name: "Bash"},
-			agentHelperStubTool{name: "Read"},
+			agentHelperStubTool{name: "bash"},
+			agentHelperStubTool{name: "bash"},
+			agentHelperStubTool{name: "read"},
 			toolbuiltin.NewTaskTool(),
 		},
 	}
@@ -86,10 +86,10 @@ func TestRegisterToolsDisallowedAndDuplicates(t *testing.T) {
 	if taskTool == nil {
 		t.Fatalf("expected task tool")
 	}
-	if _, err := reg.Get("Read"); err != nil {
+	if _, err := reg.Get("read"); err != nil {
 		t.Fatalf("expected Read tool registered: %v", err)
 	}
-	if _, err := reg.Get("Bash"); err == nil {
+	if _, err := reg.Get("bash"); err == nil {
 		t.Fatalf("expected Bash to be disallowed")
 	}
 }

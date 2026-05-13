@@ -159,7 +159,7 @@ func (g *GrepTool) SetRespectGitignore(respect bool) {
 	}
 }
 
-func (g *GrepTool) Name() string { return "Grep" }
+func (g *GrepTool) Name() string { return "grep" }
 
 func (g *GrepTool) Description() string { return grepToolDesc }
 
