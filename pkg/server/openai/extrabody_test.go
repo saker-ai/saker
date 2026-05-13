@@ -165,6 +165,70 @@ func TestEffectiveCancelOnDisconnect(t *testing.T) {
 	}
 }
 
+func TestParseExtraBody_AllowedTools(t *testing.T) {
+	raw := map[string]any{
+		"allowed_tools": []any{"bash", "file_read", "grep"},
+	}
+	got, err := ParseExtraBody(raw)
+	if err != nil {
+		t.Fatalf("unexpected err: %v", err)
+	}
+	if len(got.AllowedTools) != 3 {
+		t.Fatalf("AllowedTools: got %d want 3", len(got.AllowedTools))
+	}
+	if got.AllowedTools[0] != "bash" || got.AllowedTools[1] != "file_read" || got.AllowedTools[2] != "grep" {
+		t.Errorf("AllowedTools = %v, want [bash file_read grep]", got.AllowedTools)
+	}
+}
+
+func TestParseExtraBody_AllowedToolsEmpty(t *testing.T) {
+	raw := map[string]any{
+		"allowed_tools": []any{},
+	}
+	got, err := ParseExtraBody(raw)
+	if err != nil {
+		t.Fatalf("unexpected err: %v", err)
+	}
+	if len(got.AllowedTools) != 0 {
+		t.Errorf("AllowedTools should be empty, got %v", got.AllowedTools)
+	}
+}
+
+func TestParseExtraBody_AllowedToolsTypeErrors(t *testing.T) {
+	cases := []struct {
+		name string
+		raw  map[string]any
+		want string
+	}{
+		{"not array", map[string]any{"allowed_tools": "bash"}, "expected array"},
+		{"element not string", map[string]any{"allowed_tools": []any{"bash", 42}}, "element [1]"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			_, err := ParseExtraBody(c.raw)
+			if err == nil {
+				t.Fatal("want error, got nil")
+			}
+			if !strings.Contains(err.Error(), c.want) {
+				t.Errorf("err = %q, want substring %q", err.Error(), c.want)
+			}
+		})
+	}
+}
+
+func TestParseExtraBody_AllowedToolsNull(t *testing.T) {
+	raw := map[string]any{
+		"allowed_tools": nil,
+	}
+	got, err := ParseExtraBody(raw)
+	if err != nil {
+		t.Fatalf("unexpected err: %v", err)
+	}
+	if got.AllowedTools != nil {
+		t.Errorf("AllowedTools should be nil for null, got %v", got.AllowedTools)
+	}
+}
+
 func TestEffectiveSystemPromptMode_Defaults(t *testing.T) {
 	if got := (ExtraBody{}).EffectiveSystemPromptMode(); got != SystemPromptPrepend {
 		t.Errorf("default = %q, want prepend", got)

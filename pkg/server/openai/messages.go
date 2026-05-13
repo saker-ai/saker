@@ -129,6 +129,9 @@ func MessagesToRequest(msgs []ChatMessage, extra ExtraBody, modelTier api.ModelT
 	if extra.SessionID != "" {
 		req.SessionID = extra.SessionID
 	}
+	if len(extra.AllowedTools) > 0 {
+		req.ToolWhitelist = extra.AllowedTools
+	}
 	return req, nil
 }
 

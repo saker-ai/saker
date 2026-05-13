@@ -92,6 +92,11 @@ type ExtraBody struct {
 	// SystemPromptMode picks how the client `system` message merges with
 	// the persona system prompt. Empty means prepend.
 	SystemPromptMode SystemPromptMode
+
+	// AllowedTools is a per-request tool whitelist. When non-empty, only
+	// tools whose canonical name appears in this list are sent to the LLM.
+	// Maps directly to api.Request.ToolWhitelist.
+	AllowedTools []string
 }
 
 // EffectiveHumanInputMode resolves the alias (Interactive) onto
@@ -234,6 +239,14 @@ func ParseExtraBody(raw map[string]any) (ExtraBody, error) {
 		out.ExpiresAfterSeconds = n
 	}
 
+	if v, ok := raw["allowed_tools"]; ok {
+		s, err := coerceStringSlice(v)
+		if err != nil {
+			return out, fmt.Errorf("extra_body.allowed_tools: %w", err)
+		}
+		out.AllowedTools = s
+	}
+
 	if v, ok := raw["system_prompt_mode"]; ok {
 		s, err := coerceString(v)
 		if err != nil {
@@ -271,6 +284,25 @@ func coerceBool(v any) (bool, error) {
 		return false, fmt.Errorf("expected boolean, got %T", v)
 	}
 	return b, nil
+}
+
+func coerceStringSlice(v any) ([]string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	arr, ok := v.([]any)
+	if !ok {
+		return nil, fmt.Errorf("expected array, got %T", v)
+	}
+	out := make([]string, 0, len(arr))
+	for i, elem := range arr {
+		s, ok := elem.(string)
+		if !ok {
+			return nil, fmt.Errorf("element [%d]: expected string, got %T", i, elem)
+		}
+		out = append(out, s)
+	}
+	return out, nil
 }
 
 // coerceInt accepts JSON numbers, which arrive as float64 from
