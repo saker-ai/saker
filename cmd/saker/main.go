@@ -357,7 +357,8 @@ Options:
 			v := *skillsRecursive
 			return &v
 		}(),
-		MemoryDir: ".saker/memory",
+		EnabledBuiltinTools: splitMultiValue(allowedTools),
+		MemoryDir:           ".saker/memory",
 	}
 	sandboxOpts, err := buildSandboxOptions(*project, selectedBackend, *sandboxProjectMount, *sandboxImage)
 	if err != nil {
@@ -382,6 +383,10 @@ Options:
 		return serveACPStdio(context.Background(), options, os.Stdin, stdout)
 	}
 
+	if *serverAPIOnly {
+		options.ModePreset = api.PresetServerAPI
+	}
+
 	if *serverMode {
 		gw := openaiGatewayFlags{
 			Enabled:                     *openaiGwEnabled,
@@ -402,9 +407,6 @@ Options:
 			RunHubSinkBreakerThreshold:  *openaiGwRunHubSinkBreakerThreshold,
 			RunHubSinkBreakerCooldown:   *openaiGwRunHubSinkBreakerCooldown,
 			RunHubPGCopyThreshold:       *openaiGwRunHubPGCopyThreshold,
-		}
-		if *serverAPIOnly {
-			options.ModePreset = api.PresetServerAPI
 		}
 		return runServerMode(stdout, stderr, options, *serverAddr, *serverDataDir, *serverStatic, *serverLogDir, *debugFlag, gw)
 	}
@@ -429,10 +431,12 @@ Options:
 		}, *timeoutMs)
 	}
 
-	// Register IM config tool so the LLM can manage IM channel credentials via conversation.
+	// Register IM config tool unless --allowed-tools excludes it.
 	imCtrl := goim.NewIMController(channelsPath)
 	imTool := im.NewIMBridgeTool(imCtrl, options)
-	options.CustomTools = append(options.CustomTools, imTool)
+	if len(options.EnabledBuiltinTools) == 0 || containsTool(options.EnabledBuiltinTools, "im_config") {
+		options.CustomTools = append(options.CustomTools, imTool)
+	}
 
 	// Open the event-sourced conversation log at <configBase>/conversation.db.
 	// Failure is logged but non-fatal — CLI continues without conversation

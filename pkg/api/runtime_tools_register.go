@@ -145,6 +145,15 @@ func registerTools(registry *tool.Registry, opts Options, settings *config.Setti
 				continue
 			}
 		}
+		// When EnabledBuiltinTools whitelist is set, also filter auto-discovered
+		// tools (aigo) that are not in the whitelist.
+		if opts.EnabledBuiltinTools != nil && aigoToolNames != nil {
+			if _, isAigo := aigoToolNames[name]; isAigo {
+				if !isInEnabledList(opts.EnabledBuiltinTools, canon) {
+					continue
+				}
+			}
+		}
 		if idx, ok := seen[canon]; ok {
 			slog.Warn("tool overrides previous duplicate", "name", name)
 			filtered[idx] = impl
@@ -219,6 +228,18 @@ func shouldRegisterTaskTool(entry EntryPoint) bool { //nolint:unused // kept for
 	default:
 		return false
 	}
+}
+
+func isInEnabledList(enabled []string, canon string) bool {
+	repl := strings.NewReplacer("-", "_", " ", "_")
+	for _, name := range enabled {
+		key := strings.ToLower(strings.TrimSpace(name))
+		key = repl.Replace(key)
+		if key == canon {
+			return true
+		}
+	}
+	return false
 }
 
 func locateTaskTool(tools []tool.Tool) *toolbuiltin.TaskTool {
