@@ -132,7 +132,7 @@ make web-editor-dev               # 剪辑器开发服务器
 |---|---|---|
 | `cli` | core_io、bash_mgmt、task_mgmt、web、media、interaction | 交互式终端 / TUI |
 | `server_web` | core_io、bash_mgmt、task_mgmt、web、media、canvas、browser | 带 Web UI 的工作台 |
-| `server_api` | core_io、bash_mgmt、task_mgmt、media、canvas | 纯 API 后台（无 web/browser）|
+| `server_api` | core_io、bash_mgmt、task_mgmt、web、media、canvas | 纯 API 后台（无 browser/interaction）|
 | `ci` | core_io、bash_mgmt | CI 流水线（最小集）|
 
 可通过 `Options.ModePreset` 或 `--api-only` 标志覆盖。用 `Options.EnabledBuiltinTools`（白名单）或 `Options.DisallowedTools`（黑名单）进一步过滤。MCP 与远程工具会在预设之上注册。

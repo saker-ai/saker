@@ -132,7 +132,7 @@ Each runtime mode selects a curated subset via **mode presets**:
 |---|---|---|
 | `cli` | core_io, bash_mgmt, task_mgmt, web, media, interaction | Interactive terminal / TUI |
 | `server_web` | core_io, bash_mgmt, task_mgmt, web, media, canvas, browser | Web workspace with UI |
-| `server_api` | core_io, bash_mgmt, task_mgmt, media, canvas | API-only backend (no web/browser) |
+| `server_api` | core_io, bash_mgmt, task_mgmt, web, media, canvas | API-only backend (no browser/interaction) |
 | `ci` | core_io, bash_mgmt | CI pipelines (minimal) |
 
 Override with `Options.ModePreset` or `--api-only` flag. Further filter with `Options.EnabledBuiltinTools` (whitelist) or `Options.DisallowedTools` (blacklist). MCP and remote tools register on top of the preset.

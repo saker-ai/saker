@@ -211,11 +211,14 @@ func TestModePresetOverride(t *testing.T) {
 	if !names["canvas_get_node"] {
 		t.Error("server_api preset should include canvas_get_node")
 	}
-	if names["web_fetch"] {
-		t.Error("server_api preset should NOT include web_fetch")
+	if !names["web_fetch"] {
+		t.Error("server_api preset should include web_fetch")
 	}
 	if names["ask_user_question"] {
 		t.Error("server_api preset should NOT include ask_user_question")
+	}
+	if names["browser"] {
+		t.Error("server_api preset should NOT include browser")
 	}
 }
 

@@ -55,14 +55,14 @@ func TestPresetTools_ServerAPI(t *testing.T) {
 	tools := PresetTools(PresetServerAPI)
 	set := toSet(tools)
 
-	mustHave := []string{"bash", "file_read", "canvas_get_node", "image_read"}
+	mustHave := []string{"bash", "file_read", "canvas_get_node", "image_read", "web_fetch", "web_search"}
 	for _, name := range mustHave {
 		if !set[name] {
 			t.Errorf("PresetServerAPI missing %q", name)
 		}
 	}
 
-	mustNotHave := []string{"web_fetch", "web_search", "browser", "webhook", "ask_user_question"}
+	mustNotHave := []string{"browser", "webhook", "ask_user_question", "skill", "slash_command"}
 	for _, name := range mustNotHave {
 		if set[name] {
 			t.Errorf("PresetServerAPI should not include %q", name)
