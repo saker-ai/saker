@@ -28,6 +28,9 @@ import (
 // and switches the global pricing region so the cost ledger uses
 // china_mainland rates instead of US.
 func Detect(providerFlag, modelFlag, system string) (model.Provider, string) {
+	if modelFlag == "" {
+		modelFlag = os.Getenv("SAKER_MODEL")
+	}
 	provider := strings.ToLower(strings.TrimSpace(providerFlag))
 
 	if provider == "" {

@@ -14,6 +14,7 @@ func TestDetect_AnthropicWinsAutoDetect(t *testing.T) {
 	t.Setenv("ANTHROPIC_API_KEY", "")
 	t.Setenv("ANTHROPIC_AUTH_TOKEN", "anth-token")
 	t.Setenv("OPENAI_API_KEY", "openai-key")
+	t.Setenv("SAKER_MODEL", "")
 
 	prov, modelName := Detect("", "", "")
 	if _, ok := prov.(*model.AnthropicProvider); !ok {
@@ -31,6 +32,7 @@ func TestDetect_OpenAIFallback(t *testing.T) {
 	t.Setenv("ANTHROPIC_API_KEY", "")
 	t.Setenv("ANTHROPIC_AUTH_TOKEN", "")
 	t.Setenv("OPENAI_API_KEY", "openai-key")
+	t.Setenv("SAKER_MODEL", "")
 
 	prov, modelName := Detect("", "", "")
 	if _, ok := prov.(*model.OpenAIProvider); !ok {
@@ -38,6 +40,23 @@ func TestDetect_OpenAIFallback(t *testing.T) {
 	}
 	if modelName != "gpt-4o" {
 		t.Fatalf("default openai model = %q, want gpt-4o", modelName)
+	}
+}
+
+// TestDetect_SakerModelEnvOverridesDefault verifies that SAKER_MODEL is
+// used when no --model flag is passed, so .env-based configuration works.
+func TestDetect_SakerModelEnvOverridesDefault(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "")
+	t.Setenv("ANTHROPIC_AUTH_TOKEN", "anth-token")
+	t.Setenv("OPENAI_API_KEY", "")
+	t.Setenv("SAKER_MODEL", "glm-5.1")
+
+	prov, modelName := Detect("", "", "")
+	if _, ok := prov.(*model.AnthropicProvider); !ok {
+		t.Fatalf("expected *AnthropicProvider, got %T", prov)
+	}
+	if modelName != "glm-5.1" {
+		t.Fatalf("model = %q, want glm-5.1 from SAKER_MODEL env", modelName)
 	}
 }
 
