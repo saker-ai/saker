@@ -218,12 +218,16 @@ func New(ctx context.Context, opts Options) (*Runtime, error) {
 					promptBlocks[len(promptBlocks)-1] += "\n\n" + memContent
 				}
 			}
-			// Register memory tools.
-			if regErr := registry.Register(toolbuiltin.NewMemorySaveTool(ms)); regErr != nil {
-				logging.From(ctx).Warn("memory_save tool registration warning", "error", regErr)
+			// Register memory tools (skipped when EnabledBuiltinTools whitelist excludes them).
+			if opts.EnabledBuiltinTools == nil || isInEnabledList(opts.EnabledBuiltinTools, "memory_save") {
+				if regErr := registry.Register(toolbuiltin.NewMemorySaveTool(ms)); regErr != nil {
+					logging.From(ctx).Warn("memory_save tool registration warning", "error", regErr)
+				}
 			}
-			if regErr := registry.Register(toolbuiltin.NewMemoryReadTool(ms)); regErr != nil {
-				logging.From(ctx).Warn("memory_read tool registration warning", "error", regErr)
+			if opts.EnabledBuiltinTools == nil || isInEnabledList(opts.EnabledBuiltinTools, "memory_read") {
+				if regErr := registry.Register(toolbuiltin.NewMemoryReadTool(ms)); regErr != nil {
+					logging.From(ctx).Warn("memory_read tool registration warning", "error", regErr)
+				}
 			}
 		}
 	}

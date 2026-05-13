@@ -41,6 +41,37 @@ func (m *multiValue) Set(value string) error {
 	return nil
 }
 
+func containsTool(list []string, name string) bool {
+	target := strings.ToLower(strings.TrimSpace(name))
+	repl := strings.NewReplacer("-", "_", " ", "_")
+	for _, v := range list {
+		key := strings.ToLower(strings.TrimSpace(v))
+		key = repl.Replace(key)
+		if key == target {
+			return true
+		}
+	}
+	return false
+}
+
+func splitMultiValue(m multiValue) []string {
+	if len(m) == 0 {
+		return nil
+	}
+	var result []string
+	for _, v := range m {
+		for _, part := range strings.FieldsFunc(v, func(r rune) bool { return r == ',' || r == ' ' }) {
+			if s := strings.TrimSpace(part); s != "" {
+				result = append(result, s)
+			}
+		}
+	}
+	if len(result) == 0 {
+		return nil
+	}
+	return result
+}
+
 // promptUpgrade asks the user whether to upgrade and performs the upgrade if accepted.
 // Returns true if the upgrade was performed (caller should exit), false otherwise.
 func promptUpgrade(stdout, stderr io.Writer, info *versionpkg.UpdateInfo) bool {
