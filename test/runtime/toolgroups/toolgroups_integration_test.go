@@ -214,8 +214,8 @@ func TestModePresetOverride(t *testing.T) {
 	if !names["web_fetch"] {
 		t.Error("server_api preset should include web_fetch")
 	}
-	if names["ask_user_question"] {
-		t.Error("server_api preset should NOT include ask_user_question")
+	if !names["ask_user_question"] {
+		t.Error("server_api preset should include ask_user_question")
 	}
 	if names["browser"] {
 		t.Error("server_api preset should NOT include browser")
