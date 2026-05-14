@@ -34,6 +34,8 @@ const (
 	StopReasonMaxTokens StopReason = "max_tokens"
 	// StopReasonRepeatLoop — RepeatLoopThreshold identical tool calls in a row.
 	StopReasonRepeatLoop StopReason = "repeat_loop"
+	// StopReasonStagnation — N iterations without a productive tool call.
+	StopReasonStagnation StopReason = "stagnation"
 	// StopReasonContextCancel — caller canceled the parent context.
 	StopReasonContextCancel StopReason = "aborted_context"
 	// StopReasonContextDeadline — context deadline / Options.Timeout fired.
@@ -169,6 +171,15 @@ func (a *Agent) Run(ctx context.Context, c *Context) (*ModelOutput, error) {
 	warned := map[toolCallSig]bool{}
 	threshold := a.opts.RepeatLoopThreshold
 
+	// Stagnation detection: track iterations since last productive tool call
+	// (write/edit). Aborts when agent explores endlessly without producing code.
+	stagnationThreshold := a.opts.StagnationThreshold
+	if stagnationThreshold == 0 {
+		stagnationThreshold = DefaultStagnationThreshold
+	}
+	itersSinceProductive := 0
+	stagnationWarned := false
+
 	for {
 		if err := ctx.Err(); err != nil {
 			annotateContextErr(last, err)
@@ -298,6 +309,32 @@ func (a *Agent) Run(ctx context.Context, c *Context) (*ModelOutput, error) {
 			}
 		}
 
+		// Stagnation detection: check if any tool call this iteration was
+		// "productive" (write or edit). If not, increment the counter.
+		if stagnationThreshold > 0 {
+			productive := false
+			for _, call := range out.ToolCalls {
+				if isProductiveToolCall(call.Name) {
+					productive = true
+					break
+				}
+			}
+			if productive {
+				itersSinceProductive = 0
+				stagnationWarned = false
+			} else {
+				itersSinceProductive++
+			}
+			if itersSinceProductive >= stagnationThreshold {
+				annotate(last, StopReasonStagnation)
+				return last, fmt.Errorf("agent: stagnation detected (%d iterations without write/edit)", stagnationThreshold)
+			}
+			if !stagnationWarned && itersSinceProductive >= stagnationThreshold-2 && a.opts.OnStagnationWarning != nil {
+				stagnationWarned = true
+				a.opts.OnStagnationWarning(ctx, itersSinceProductive)
+			}
+		}
+
 		iteration++
 	}
 }
@@ -365,6 +402,18 @@ type toolCallSig struct{ name, input string }
 // tailRepeatCount returns how many of the most recent entries in calls are
 // identical to the very last one (always >= 1 when calls is non-empty).
 // It is the building block both the warning hook and the abort check use.
+// isProductiveToolCall returns true if the tool name indicates a state-changing
+// operation (writing/editing files). Read-only tools (read, grep, glob, bash)
+// are not considered productive for stagnation purposes.
+func isProductiveToolCall(name string) bool {
+	switch name {
+	case "write", "edit", "write_file", "write_text_file",
+		"notebook_edit", "NotebookEdit", "MultiEdit":
+		return true
+	}
+	return false
+}
+
 func tailRepeatCount(calls []toolCallSig) int {
 	n := len(calls)
 	if n == 0 {

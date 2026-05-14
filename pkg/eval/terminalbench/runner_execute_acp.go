@@ -10,6 +10,7 @@ package terminalbench
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"os"
 	"path/filepath"
@@ -66,6 +67,8 @@ func (r *Runner) runAgentACP(
 	}
 	if strings.TrimSpace(r.cfg.SystemPrompt) != "" {
 		opts.SystemPrompt = r.cfg.SystemPrompt
+	} else {
+		opts.SystemPrompt = evalSystemPrompt(r.cfg.MaxIterations)
 	}
 
 	// --- set up in-process ACP connection (net.Pipe) ---
@@ -322,6 +325,27 @@ func updatesToTranscriptMessages(updates []acpproto.SessionNotification, session
 	return msgs
 }
 
+// evalSystemPrompt generates a system prompt that includes iteration budget
+// awareness and strategy guidance to prevent stagnation in eval tasks.
+func evalSystemPrompt(maxIters int) string {
+	if maxIters <= 0 {
+		maxIters = 50
+	}
+	return fmt.Sprintf(`You are a skilled software engineer solving a task inside a Docker container.
+
+## Constraints
+- You have a maximum of %d tool-call iterations to complete the task.
+- All tools execute inside the container. You have bash, read, and write available.
+
+## Strategy
+- Start by understanding the task, then ACT quickly. Do not over-explore.
+- If you have spent more than 5 iterations only reading/exploring without writing any code, STOP exploring and produce a solution immediately.
+- Prefer writing a complete solution in one go over incremental trial-and-error.
+- If a command fails, analyze the error and fix it rather than retrying the same approach.
+- Do not repeatedly check versions, paths, or environment — trust what you observe the first time.
+`, maxIters)
+}
+
 // extractACPStopReason checks if an ACP error is actually a known agent
 // stop condition (max_iterations, max_budget, max_tokens) rather than a
 // true failure. Returns the stop reason string or "" if it's a real error.
@@ -339,6 +363,8 @@ func extractACPStopReason(err error) string {
 		return "max_tokens"
 	case strings.Contains(msg, "repeat"):
 		return "repeat_loop"
+	case strings.Contains(msg, "stagnation"):
+		return "stagnation"
 	case strings.Contains(msg, "context deadline exceeded"):
 		return "timeout"
 	case strings.Contains(msg, "context canceled"):
