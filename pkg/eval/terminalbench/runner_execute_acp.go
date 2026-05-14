@@ -194,9 +194,10 @@ func updatesToTranscriptMessages(updates []acpproto.SessionNotification, session
 
 	// Collect tool call arguments and results across multiple updates.
 	type toolInfo struct {
-		args   map[string]any
-		name   string
-		result string
+		args        map[string]any
+		name        string
+		contentText string // actual command output (from Content blocks)
+		rawOutput   string // metadata JSON fallback (from RawOutput)
 	}
 	toolData := make(map[string]*toolInfo)
 
@@ -239,20 +240,26 @@ func updatesToTranscriptMessages(updates []acpproto.SessionNotification, session
 					_ = json.Unmarshal(raw, &toolData[id].args)
 				}
 			}
-			// Keep the last non-empty result (final > intermediate).
-			content := ""
-			if up.ToolCallUpdate.RawOutput != nil {
-				raw, _ := json.Marshal(up.ToolCallUpdate.RawOutput)
-				content = string(raw)
-			} else if len(up.ToolCallUpdate.Content) > 0 {
+			// Collect output text from Content blocks (actual command
+			// stdout/stderr) and RawOutput (metadata like exit_code).
+			// Content is preferred for the transcript because RawOutput
+			// from the final ToolCallUpdate typically contains only
+			// metadata (exit_code, terminal_id) — not the text the
+			// agent saw.
+			if len(up.ToolCallUpdate.Content) > 0 {
+				var text strings.Builder
 				for _, block := range up.ToolCallUpdate.Content {
 					if block.Content != nil && block.Content.Content.Text != nil {
-						content += block.Content.Content.Text.Text
+						text.WriteString(block.Content.Content.Text.Text)
 					}
 				}
+				if text.Len() > 0 {
+					toolData[id].contentText = text.String()
+				}
 			}
-			if content != "" {
-				toolData[id].result = content
+			if up.ToolCallUpdate.RawOutput != nil {
+				raw, _ := json.Marshal(up.ToolCallUpdate.RawOutput)
+				toolData[id].rawOutput = string(raw)
 			}
 		}
 	}
@@ -290,13 +297,22 @@ func updatesToTranscriptMessages(updates []acpproto.SessionNotification, session
 				continue
 			}
 			info := toolData[id]
-			if info != nil && info.result != "" {
+			result := ""
+			if info != nil {
+				// Prefer contentText (actual output) over rawOutput (metadata).
+				if info.contentText != "" {
+					result = info.contentText
+				} else if info.rawOutput != "" {
+					result = info.rawOutput
+				}
+			}
+			if result != "" {
 				emittedResults[id] = true
 				msgs = append(msgs, message.Message{
 					Role: "tool",
 					ToolCalls: []message.ToolCall{{
 						ID:     id,
-						Result: info.result,
+						Result: result,
 					}},
 				})
 			}
