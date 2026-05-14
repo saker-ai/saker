@@ -47,7 +47,7 @@ VERBOSE=1
 REPEAT_THRESHOLD=0          # 0 = use saker default (5); -1 disables loop detection
 NO_TRANSCRIPTS=0
 WITH_MIRROR=0               # opt in to terminalbench.DefaultMirrorEnv (China firewall workaround)
-NO_VERIFIER_MIRROR=0        # disable per-call verifier mirror env (on by default; isolated from agent)
+NO_VERIFIER_MIRROR=1        # disable per-call verifier mirror env (off by default; direct access is more reliable)
 MIRRORS=()                  # repeated --mirror KEY=VAL pairs
 PROXY_URL=""                # http(s) proxy injected into containers (e.g. http://127.0.0.1:7890)
 USE_ACP=0                   # use full Saker Runtime via ACP protocol

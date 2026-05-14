@@ -171,13 +171,10 @@ func (c *Config) applyDefaults() {
 		c.ContainerTTL = c.TaskTimeout + c.TerminalTimeout + 5*time.Minute
 	}
 	if c.VerifierEnv == nil {
-		// Verifier runs uv/pip on the host's behalf — eval-side infrastructure,
-		// not agent capability. Default-fill so it works on China networks
-		// without the user having to know about uv's GitHub fetch.
-		c.VerifierEnv = make(map[string]string, len(DefaultMirrorEnv))
-		for k, v := range DefaultMirrorEnv {
-			c.VerifierEnv[k] = v
-		}
+		// Default: no verifier mirror. The verifier runs with direct network
+		// access (host mode) and doesn't need mirror env vars. Previously
+		// defaulted to DefaultMirrorEnv but NJU/aliyun mirrors are unreliable.
+		c.VerifierEnv = map[string]string{}
 	}
 	if c.EnvFactory == nil {
 		c.EnvFactory = c.defaultEnvFactory()
