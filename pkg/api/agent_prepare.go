@@ -76,8 +76,10 @@ func (rt *Runtime) prepare(ctx context.Context, req Request) (preparedRun, error
 		}
 	}
 	parsedSkills, cleanedPrompt, missingSkills := extractPromptSkillInvocations(normalized.Prompt, skillExists, commandExists)
-	if err := unknownForcedSkillsError(missingSkills); err != nil {
-		return preparedRun{}, err
+	if !rt.opts.DangerouslySkipPermissions {
+		if err := unknownForcedSkillsError(missingSkills); err != nil {
+			return preparedRun{}, err
+		}
 	}
 	normalized.ForceSkills = mergeOrderedNames(normalized.ForceSkills, parsedSkills)
 	normalized.Prompt = cleanedPrompt
