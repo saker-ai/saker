@@ -171,12 +171,14 @@ func (rt *Runtime) runAgentWithMiddleware(prep preparedRun, extras ...middleware
 		maxIters = prep.maxIterationsOverride
 	}
 	ag, err := agent.New(modelAdapter, toolExec, agent.Options{
-		MaxIterations: maxIters,
-		Timeout:       rt.opts.Timeout,
-		Middleware:    chain,
-		MaxBudgetUSD:  rt.opts.MaxBudgetUSD,
-		MaxTokens:     rt.opts.MaxTokens,
-		ModelName:     budgetModelName,
+		MaxIterations:       maxIters,
+		Timeout:             rt.opts.Timeout,
+		Middleware:          chain,
+		MaxBudgetUSD:        rt.opts.MaxBudgetUSD,
+		MaxTokens:           rt.opts.MaxTokens,
+		ModelName:           budgetModelName,
+		RepeatLoopThreshold: rt.opts.RepeatLoopThreshold,
+		StagnationThreshold: rt.opts.StagnationThreshold,
 	})
 	if err != nil {
 		return runResult{}, err
