@@ -1,6 +1,7 @@
 package openai
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"strings"
@@ -42,7 +43,7 @@ func TestResolveModelTier(t *testing.T) {
 }
 
 func TestMessagesToRequest_EmptyError(t *testing.T) {
-	_, err := MessagesToRequest(nil, ExtraBody{}, "")
+	_, err := MessagesToRequest(context.Background(),nil, ExtraBody{}, "")
 	if err == nil {
 		t.Fatal("expected error for empty messages")
 	}
@@ -52,7 +53,7 @@ func TestMessagesToRequest_SimpleUser(t *testing.T) {
 	msgs := []ChatMessage{
 		{Role: "user", Content: mustJSON(t, "Hello, saker.")},
 	}
-	got, err := MessagesToRequest(msgs, ExtraBody{}, api.ModelTierMid)
+	got, err := MessagesToRequest(context.Background(),msgs, ExtraBody{}, api.ModelTierMid)
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
@@ -75,7 +76,7 @@ func TestMessagesToRequest_SystemPrepended(t *testing.T) {
 		{Role: "system", Content: mustJSON(t, "Be concise.")},
 		{Role: "user", Content: mustJSON(t, "Hi")},
 	}
-	got, err := MessagesToRequest(msgs, ExtraBody{}, "")
+	got, err := MessagesToRequest(context.Background(),msgs, ExtraBody{}, "")
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
@@ -93,7 +94,7 @@ func TestMessagesToRequest_MultiTurnFolding(t *testing.T) {
 		{Role: "assistant", Content: mustJSON(t, "ack")},
 		{Role: "user", Content: mustJSON(t, "second")},
 	}
-	got, err := MessagesToRequest(msgs, ExtraBody{}, "")
+	got, err := MessagesToRequest(context.Background(),msgs, ExtraBody{}, "")
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
@@ -117,7 +118,7 @@ func TestMessagesToRequest_ToolMessage(t *testing.T) {
 		{Role: "tool", ToolCallID: "call_1", Content: mustJSON(t, "found 3 bugs")},
 		{Role: "user", Content: mustJSON(t, "ok thanks")},
 	}
-	got, err := MessagesToRequest(msgs, ExtraBody{}, "")
+	got, err := MessagesToRequest(context.Background(),msgs, ExtraBody{}, "")
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
@@ -133,7 +134,7 @@ func TestMessagesToRequest_UnknownRole(t *testing.T) {
 	msgs := []ChatMessage{
 		{Role: "alien", Content: mustJSON(t, "hi")},
 	}
-	_, err := MessagesToRequest(msgs, ExtraBody{}, "")
+	_, err := MessagesToRequest(context.Background(),msgs, ExtraBody{}, "")
 	if err == nil {
 		t.Fatal("expected error for unknown role")
 	}
@@ -146,7 +147,7 @@ func TestMessagesToRequest_NoUserContent(t *testing.T) {
 	msgs := []ChatMessage{
 		{Role: "system", Content: mustJSON(t, "Be helpful.")},
 	}
-	_, err := MessagesToRequest(msgs, ExtraBody{}, "")
+	_, err := MessagesToRequest(context.Background(),msgs, ExtraBody{}, "")
 	if err == nil {
 		t.Fatal("expected error when no user content present")
 	}
@@ -154,7 +155,7 @@ func TestMessagesToRequest_NoUserContent(t *testing.T) {
 
 func TestMessagesToRequest_SessionIDPropagates(t *testing.T) {
 	msgs := []ChatMessage{{Role: "user", Content: mustJSON(t, "hi")}}
-	got, err := MessagesToRequest(msgs, ExtraBody{SessionID: "sess_99"}, "")
+	got, err := MessagesToRequest(context.Background(),msgs, ExtraBody{SessionID: "sess_99"}, "")
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
@@ -173,7 +174,7 @@ func TestMessagesToRequest_ImageDataURI(t *testing.T) {
 	msgs := []ChatMessage{
 		{Role: "user", Content: mustJSON(t, parts)},
 	}
-	got, err := MessagesToRequest(msgs, ExtraBody{}, "")
+	got, err := MessagesToRequest(context.Background(),msgs, ExtraBody{}, "")
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
@@ -199,7 +200,7 @@ func TestMessagesToRequest_ImageURLBadScheme(t *testing.T) {
 	msgs := []ChatMessage{
 		{Role: "user", Content: mustJSON(t, parts)},
 	}
-	_, err := MessagesToRequest(msgs, ExtraBody{}, "")
+	_, err := MessagesToRequest(context.Background(),msgs, ExtraBody{}, "")
 	if err == nil {
 		t.Fatal("expected error for unsupported scheme")
 	}
@@ -208,7 +209,7 @@ func TestMessagesToRequest_ImageURLBadScheme(t *testing.T) {
 func TestMessagesToRequest_AllowedToolsPropagates(t *testing.T) {
 	msgs := []ChatMessage{{Role: "user", Content: mustJSON(t, "hi")}}
 	extra := ExtraBody{AllowedTools: []string{"bash", "grep"}}
-	got, err := MessagesToRequest(msgs, extra, "")
+	got, err := MessagesToRequest(context.Background(),msgs, extra, "")
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
@@ -222,7 +223,7 @@ func TestMessagesToRequest_AllowedToolsPropagates(t *testing.T) {
 
 func TestMessagesToRequest_EmptyAllowedToolsNoWhitelist(t *testing.T) {
 	msgs := []ChatMessage{{Role: "user", Content: mustJSON(t, "hi")}}
-	got, err := MessagesToRequest(msgs, ExtraBody{}, "")
+	got, err := MessagesToRequest(context.Background(),msgs, ExtraBody{}, "")
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
@@ -257,7 +258,7 @@ func TestExtractMessageText_NullEmpty(t *testing.T) {
 }
 
 func TestExtractUserContent_StringPath(t *testing.T) {
-	txt, blocks, err := extractUserContent(mustJSON(t, "hi"))
+	txt, blocks, err := extractUserContent(context.Background(),mustJSON(t, "hi"))
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
@@ -274,7 +275,7 @@ func TestExtractUserContent_UnknownPartIgnored(t *testing.T) {
 		{Type: "text", Text: "hello"},
 		{Type: "audio", Text: "ignored"},
 	}
-	txt, blocks, err := extractUserContent(mustJSON(t, parts))
+	txt, blocks, err := extractUserContent(context.Background(),mustJSON(t, parts))
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
 	}
