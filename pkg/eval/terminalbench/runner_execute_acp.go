@@ -182,9 +182,23 @@ func (r *Runner) runAgentACP(
 
 // updatesToTranscriptMessages converts ACP session updates into
 // message.Message records suitable for the JSONL transcript writer.
+//
+// Deduplication: ACP sends multiple ToolCallUpdate notifications per tool
+// call (status changes, partial output, final output). We keep only the
+// last non-empty result per ToolCallId to avoid 2x transcript bloat.
+// Arguments: captured from both the initial ToolCall and subsequent
+// ToolCallUpdate.RawInput (whichever is non-nil first).
 func updatesToTranscriptMessages(updates []acpproto.SessionNotification, sessionID acpproto.SessionId) []message.Message {
 	var msgs []message.Message
 	var pendingText strings.Builder
+
+	// Collect tool call arguments and results across multiple updates.
+	type toolInfo struct {
+		args   map[string]any
+		name   string
+		result string
+	}
+	toolData := make(map[string]*toolInfo)
 
 	flushText := func() {
 		if pendingText.Len() > 0 {
@@ -195,6 +209,56 @@ func updatesToTranscriptMessages(updates []acpproto.SessionNotification, session
 			pendingText.Reset()
 		}
 	}
+
+	// First pass: collect all tool data (args + results).
+	for _, u := range updates {
+		if u.SessionId != sessionID {
+			continue
+		}
+		up := u.Update
+
+		if up.ToolCall != nil {
+			id := string(up.ToolCall.ToolCallId)
+			info := &toolInfo{name: up.ToolCall.Title}
+			if up.ToolCall.RawInput != nil {
+				if raw, err := json.Marshal(up.ToolCall.RawInput); err == nil {
+					_ = json.Unmarshal(raw, &info.args)
+				}
+			}
+			toolData[id] = info
+		}
+
+		if up.ToolCallUpdate != nil {
+			id := string(up.ToolCallUpdate.ToolCallId)
+			if toolData[id] == nil {
+				toolData[id] = &toolInfo{}
+			}
+			// Capture args from update if initial was empty.
+			if toolData[id].args == nil && up.ToolCallUpdate.RawInput != nil {
+				if raw, err := json.Marshal(up.ToolCallUpdate.RawInput); err == nil {
+					_ = json.Unmarshal(raw, &toolData[id].args)
+				}
+			}
+			// Keep the last non-empty result (final > intermediate).
+			content := ""
+			if up.ToolCallUpdate.RawOutput != nil {
+				raw, _ := json.Marshal(up.ToolCallUpdate.RawOutput)
+				content = string(raw)
+			} else if len(up.ToolCallUpdate.Content) > 0 {
+				for _, block := range up.ToolCallUpdate.Content {
+					if block.Content != nil && block.Content.Content.Text != nil {
+						content += block.Content.Content.Text.Text
+					}
+				}
+			}
+			if content != "" {
+				toolData[id].result = content
+			}
+		}
+	}
+
+	// Second pass: emit messages in order, using deduplicated tool data.
+	emittedResults := make(map[string]bool)
 
 	for _, u := range updates {
 		if u.SessionId != sessionID {
@@ -208,43 +272,31 @@ func updatesToTranscriptMessages(updates []acpproto.SessionNotification, session
 
 		if up.ToolCall != nil {
 			flushText()
-			var args map[string]any
-			if up.ToolCall.RawInput != nil {
-				if raw, err := json.Marshal(up.ToolCall.RawInput); err == nil {
-					_ = json.Unmarshal(raw, &args)
-				}
-			}
+			id := string(up.ToolCall.ToolCallId)
+			info := toolData[id]
 			msgs = append(msgs, message.Message{
 				Role: "assistant",
 				ToolCalls: []message.ToolCall{{
-					ID:        string(up.ToolCall.ToolCallId),
-					Name:      up.ToolCall.Title,
-					Arguments: args,
+					ID:        id,
+					Name:      info.name,
+					Arguments: info.args,
 				}},
 			})
 		}
 
 		if up.ToolCallUpdate != nil {
-			content := ""
-			if up.ToolCallUpdate.RawOutput != nil {
-				raw, _ := json.Marshal(up.ToolCallUpdate.RawOutput)
-				content = string(raw)
-			} else if len(up.ToolCallUpdate.Content) > 0 {
-				for _, block := range up.ToolCallUpdate.Content {
-					if block.Content != nil && block.Content.Content.Text != nil {
-						content += block.Content.Content.Text.Text
-					}
-					if block.Terminal != nil {
-						content += block.Terminal.TerminalId
-					}
-				}
+			id := string(up.ToolCallUpdate.ToolCallId)
+			if emittedResults[id] {
+				continue
 			}
-			if content != "" {
+			info := toolData[id]
+			if info != nil && info.result != "" {
+				emittedResults[id] = true
 				msgs = append(msgs, message.Message{
 					Role: "tool",
 					ToolCalls: []message.ToolCall{{
-						ID:     string(up.ToolCallUpdate.ToolCallId),
-						Result: content,
+						ID:     id,
+						Result: info.result,
 					}},
 				})
 			}
