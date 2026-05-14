@@ -774,23 +774,16 @@ func TestConfigApplyDefaultsPreservesExplicitValues(t *testing.T) {
 	}
 }
 
-func TestConfigApplyDefaults_VerifierEnvFillsFromDefaultMirror(t *testing.T) {
+func TestConfigApplyDefaults_VerifierEnvDefaultsToEmpty(t *testing.T) {
 	t.Parallel()
 
 	cfg := &Config{}
 	cfg.applyDefaults()
-	if len(cfg.VerifierEnv) == 0 {
-		t.Fatal("VerifierEnv should auto-fill from DefaultMirrorEnv when nil")
+	if cfg.VerifierEnv == nil {
+		t.Fatal("VerifierEnv should be non-nil empty map after applyDefaults")
 	}
-	for k, v := range DefaultMirrorEnv {
-		if cfg.VerifierEnv[k] != v {
-			t.Errorf("VerifierEnv[%s] = %q, want %q", k, cfg.VerifierEnv[k], v)
-		}
-	}
-	// Mutating must not poison the package-level default map.
-	cfg.VerifierEnv["PIP_INDEX_URL"] = "tampered"
-	if DefaultMirrorEnv["PIP_INDEX_URL"] == "tampered" {
-		t.Fatal("applyDefaults leaked DefaultMirrorEnv by reference")
+	if len(cfg.VerifierEnv) != 0 {
+		t.Fatalf("VerifierEnv should default to empty map, got %v", cfg.VerifierEnv)
 	}
 }
 
