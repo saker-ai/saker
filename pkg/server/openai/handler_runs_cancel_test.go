@@ -163,18 +163,15 @@ func TestRunsCancel_AlreadyTerminalIsIdempotent(t *testing.T) {
 	}
 }
 
-// TestRunsCancel_EmptyTenantAllowsAnyIdentity mirrors the reconnect
-// equivalent — runs created without a tenant id (only happens in
-// tests) are reachable from any caller.
-func TestRunsCancel_EmptyTenantAllowsAnyIdentity(t *testing.T) {
+func TestRunsCancel_EmptyTenantRejects(t *testing.T) {
 	t.Parallel()
 	gw, eng := newMemoryCancelGateway(t)
 
 	run, _ := gw.hub.Create(runhub.CreateOptions{})
 
 	status, _ := doCancel(t, eng, run.ID)
-	if status != http.StatusNoContent {
-		t.Errorf("empty-tenant runs should be cancellable, got %d", status)
+	if status != http.StatusNotFound {
+		t.Errorf("empty-tenant runs must be rejected, got %d", status)
 	}
 }
 

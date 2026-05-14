@@ -11,6 +11,39 @@ type askAnswer struct {
 	Action  string // "accept" (default), "decline", "cancel"
 }
 
+// pauseSignal coordinates the pause/resume channel between the askFn
+// (producer goroutine) and the SSE consumer. Thread-safe: the askFn calls
+// Signal to close the current channel; the resume handler calls Reset to
+// allocate a fresh channel for the next SSE consumer.
+type pauseSignal struct {
+	mu sync.Mutex
+	ch chan struct{}
+}
+
+func newPauseSignal() *pauseSignal {
+	return &pauseSignal{ch: make(chan struct{})}
+}
+
+func (p *pauseSignal) Ch() <-chan struct{} {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.ch
+}
+
+func (p *pauseSignal) Signal() {
+	p.mu.Lock()
+	ch := p.ch
+	p.mu.Unlock()
+	close(ch)
+}
+
+func (p *pauseSignal) Reset() <-chan struct{} {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.ch = make(chan struct{})
+	return p.ch
+}
+
 // pendingAsk represents a single paused ask_user_question awaiting client response.
 type pendingAsk struct {
 	RunID      string
@@ -18,7 +51,7 @@ type pendingAsk struct {
 	TenantID   string
 	ToolCallID string
 	AnswerCh   chan askAnswer
-	PauseCh    chan struct{}
+	Pause      *pauseSignal
 	CreatedAt  time.Time
 }
 

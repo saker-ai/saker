@@ -160,9 +160,11 @@ All `/v1/*` requests require a Bearer token in the `Authorization` header:
 Authorization: Bearer sk-proj-...
 ```
 
-When a project store is configured, the token is validated against the API key table. Without a project store (legacy/embedded mode), any non-empty token is accepted as anonymous.
+When a project store is configured, the token is validated against the API key table. Without a project store, requests are rejected with `401` unless dev bypass is explicitly enabled.
 
 **Dev bypass**: set `--openai-gw-dev-bypass-auth` (or `OPENAI_GW_DEV_BYPASS=true`) to skip auth for local development. Never enable in production.
+
+**Tenant isolation**: all run operations (reconnect, cancel, submit) enforce strict tenant ownership. A run is only accessible to the same Bearer key that created it. Cross-tenant probes receive `404` (not `403`) to prevent existence leaks.
 
 ---
 
@@ -319,7 +321,12 @@ Messages follow the OpenAI chat message schema:
 | `assistant` | Prior assistant responses. May include `tool_calls` |
 | `tool` | Tool result for a prior `tool_call_id` |
 
-**Image support**: user messages accept `image_url` content parts. Both `data:` URIs (base64) and `http(s)` URLs are supported. HTTP URLs are fetched server-side (15s timeout, 20 MiB cap) and inlined as base64.
+**Image support**: user messages accept `image_url` content parts. Both `data:` URIs (base64) and `http(s)` URLs are supported. HTTP URLs are fetched server-side with the following protections:
+- **SSRF protection**: DNS resolution is validated against private/internal IP ranges (loopback, RFC 1918, link-local, cloud metadata endpoints). Connections are pinned to the resolved IP to prevent DNS rebinding.
+- **Redirect limit**: max 3 hops.
+- **Timeout**: 15 seconds.
+- **Size cap**: 20 MiB.
+- **Content-Type validation**: response must be `image/*`; non-image responses are rejected.
 
 #### Synchronous Response (stream=false)
 

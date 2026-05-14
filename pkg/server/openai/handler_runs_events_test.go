@@ -237,19 +237,17 @@ func TestRunsEvents_CrossTenantReturns404(t *testing.T) {
 	}
 }
 
-func TestRunsEvents_EmptyTenantAllowsAnyIdentity(t *testing.T) {
+func TestRunsEvents_EmptyTenantRejects(t *testing.T) {
 	t.Parallel()
 	gw, eng := newMemoryReconnectGateway(t, 64)
 
-	// TenantID="" matches the test fixture pattern in pkg/runhub tests
-	// where ownership isn't being exercised. Should be reachable.
 	run, _ := gw.hub.Create(runhub.CreateOptions{})
 	run.Publish("chunk", []byte("x"))
 	gw.hub.Finish(run.ID, runhub.RunStatusCompleted)
 
 	_, _, status := fetchEvents(t, eng, run.ID, 0)
-	if status != http.StatusOK {
-		t.Errorf("empty-tenant runs should be readable, got %d", status)
+	if status != http.StatusNotFound {
+		t.Errorf("empty-tenant runs must be rejected, got %d", status)
 	}
 }
 

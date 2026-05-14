@@ -136,7 +136,7 @@ func stringFromAny(v any) (string, bool) {
 }
 
 func filterNonEmpty(in []string) []string {
-	out := in[:0]
+	out := make([]string, 0, len(in))
 	for _, s := range in {
 		if s != "" {
 			out = append(out, s)

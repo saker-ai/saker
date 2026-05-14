@@ -3,6 +3,7 @@ package openai
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/cinience/saker/pkg/project"
 	"github.com/gin-gonic/gin"
@@ -60,13 +61,21 @@ func (g *Gateway) authMiddleware() gin.HandlerFunc {
 		// configurable that way through cmd_server, but tests can.
 		if token != "" {
 			if g.deps.ProjectStore == nil {
-				withIdentity(c, Identity{Username: "anonymous", APIKeyID: "", Bypass: false})
-				c.Next()
+				if g.deps.Options.DevBypassAuth {
+					withIdentity(c, Identity{Username: "anonymous", APIKeyID: "", Bypass: true})
+					c.Next()
+					return
+				}
+				Unauthorized(c, "authentication service unavailable")
 				return
 			}
 			row, err := g.deps.ProjectStore.LookupAPIKey(c.Request.Context(), token)
 			if err == nil && row != nil {
-				go g.deps.ProjectStore.TouchAPIKey(context.Background(), row.ID)
+				go func() {
+					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+					defer cancel()
+					g.deps.ProjectStore.TouchAPIKey(ctx, row.ID)
+				}()
 				withIdentity(c, Identity{
 					UserID:    row.UserID,
 					Username:  row.Name,
