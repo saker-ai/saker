@@ -67,10 +67,13 @@ type ChatToolDefinition struct {
 	Parameters  map[string]any `json:"parameters,omitempty"`
 }
 
-// ChatToolCall is one tool call emitted by the assistant.
+// ChatToolCall is one tool call emitted by the assistant. In streaming
+// deltas, Index identifies which tool call is being updated (arguments
+// may arrive across multiple chunks sharing the same index).
 type ChatToolCall struct {
-	ID       string                 `json:"id"`
-	Type     string                 `json:"type"` // "function"
+	Index    *int                   `json:"index,omitempty"`
+	ID       string                 `json:"id,omitempty"`
+	Type     string                 `json:"type,omitempty"`
 	Function ChatToolCallInvocation `json:"function"`
 }
 

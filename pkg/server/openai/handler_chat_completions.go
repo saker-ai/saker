@@ -64,6 +64,10 @@ func (g *Gateway) handleChatCompletions(c *gin.Context) {
 		InvalidRequestField(c, "messages", "field 'messages' must contain at least one message")
 		return
 	}
+	if req.N > 1 {
+		InvalidRequestField(c, "n", "saker gateway supports n=1 only")
+		return
+	}
 
 	extra, err := ParseExtraBody(req.ExtraBody)
 	if err != nil {
@@ -72,7 +76,7 @@ func (g *Gateway) handleChatCompletions(c *gin.Context) {
 	}
 
 	tier := ResolveModelTier(req.Model)
-	sakerReq, err := MessagesToRequest(req.Messages, extra, tier)
+	sakerReq, err := MessagesToRequest(c.Request.Context(), req.Messages, extra, tier)
 	if err != nil {
 		InvalidRequest(c, err.Error())
 		return
@@ -454,7 +458,7 @@ func (g *Gateway) streamChatSync(c *gin.Context, hubRun *runhub.Run, extra Extra
 
 	var (
 		contentBuf   strings.Builder
-		toolCalls    []ChatToolCall
+		toolCallMap  = map[int]*ChatToolCall{}
 		finishReason string
 		usage        *ChatUsage
 	)
@@ -464,8 +468,6 @@ func (g *Gateway) streamChatSync(c *gin.Context, hubRun *runhub.Run, extra Extra
 		if err := json.Unmarshal(e.Data, &chunk); err != nil {
 			return
 		}
-		// Usage piggybacks on the trailing chunk (empty choices, populated
-		// usage). Capture it for the synchronous response envelope.
 		if chunk.Usage != nil {
 			usage = chunk.Usage
 		}
@@ -476,8 +478,24 @@ func (g *Gateway) streamChatSync(c *gin.Context, hubRun *runhub.Run, extra Extra
 			if ch.Delta.Content != "" {
 				contentBuf.WriteString(ch.Delta.Content)
 			}
-			if len(ch.Delta.ToolCalls) > 0 {
-				toolCalls = append(toolCalls, ch.Delta.ToolCalls...)
+			for _, tc := range ch.Delta.ToolCalls {
+				idx := 0
+				if tc.Index != nil {
+					idx = *tc.Index
+				}
+				if existing, ok := toolCallMap[idx]; ok {
+					existing.Function.Arguments += tc.Function.Arguments
+					if tc.ID != "" {
+						existing.ID = tc.ID
+					}
+					if tc.Function.Name != "" {
+						existing.Function.Name = tc.Function.Name
+					}
+				} else {
+					clone := tc
+					clone.Index = nil
+					toolCallMap[idx] = &clone
+				}
 			}
 			if ch.FinishReason != "" {
 				finishReason = ch.FinishReason
@@ -520,7 +538,19 @@ loop:
 		Role:    "assistant",
 		Content: server.CleanAssistantReply(contentBuf.String()),
 	}
-	if len(toolCalls) > 0 {
+	if len(toolCallMap) > 0 {
+		maxIdx := 0
+		for idx := range toolCallMap {
+			if idx > maxIdx {
+				maxIdx = idx
+			}
+		}
+		toolCalls := make([]ChatToolCall, 0, len(toolCallMap))
+		for i := 0; i <= maxIdx; i++ {
+			if tc, ok := toolCallMap[i]; ok {
+				toolCalls = append(toolCalls, *tc)
+			}
+		}
 		msg.ToolCalls = toolCalls
 	}
 	resp := ChatCompletionResponse{

@@ -236,6 +236,7 @@ func (h *MemoryHub) Finish(id string, status RunStatus) {
 	if !ok {
 		return
 	}
+	r.FinishedAt = time.Now()
 	r.SetStatus(status)
 	r.closeAllSubscribers()
 }
@@ -328,7 +329,7 @@ func (h *MemoryHub) sweep() {
 		st := r.Status()
 		switch st {
 		case RunStatusCompleted, RunStatusCancelled, RunStatusFailed, RunStatusExpired:
-			if now.Sub(r.CreatedAt) > finishedRetention {
+			if !r.FinishedAt.IsZero() && now.Sub(r.FinishedAt) > finishedRetention {
 				victims = append(victims, victim{id: id})
 			}
 		default:

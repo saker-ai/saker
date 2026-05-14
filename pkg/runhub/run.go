@@ -54,6 +54,11 @@ type Run struct {
 	// pass one).
 	ExpiresAt time.Time
 
+	// FinishedAt records when the run reached a terminal status. Used by
+	// the GC sweep to determine post-finish retention. Zero means still
+	// in progress.
+	FinishedAt time.Time
+
 	mu          sync.Mutex
 	status      RunStatus
 	ring        []Event

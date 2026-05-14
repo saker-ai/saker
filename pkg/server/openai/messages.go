@@ -26,7 +26,7 @@ import (
 // extra carries the per-request ExtraBody (system_prompt_mode, etc).
 // modelTier resolves the OpenAI model id ("saker-mid" / "saker-default")
 // onto a saker ModelTier; an empty tier means "use saker default".
-func MessagesToRequest(msgs []ChatMessage, extra ExtraBody, modelTier api.ModelTier) (api.Request, error) {
+func MessagesToRequest(ctx context.Context, msgs []ChatMessage, extra ExtraBody, modelTier api.ModelTier) (api.Request, error) {
 	if len(msgs) == 0 {
 		return api.Request{}, errors.New("messages is empty")
 	}
@@ -50,7 +50,7 @@ func MessagesToRequest(msgs []ChatMessage, extra ExtraBody, modelTier api.ModelT
 				systemTexts = append(systemTexts, s)
 			}
 		case "user":
-			s, parts, err := extractUserContent(m.Content)
+			s, parts, err := extractUserContent(ctx, m.Content)
 			if err != nil {
 				return api.Request{}, fmt.Errorf("messages[%d] (user): %w", i, err)
 			}
@@ -171,7 +171,7 @@ func extractMessageText(raw json.RawMessage) (string, error) {
 // for a user message. Image URL parts that are http(s) are downloaded
 // once and inlined; data: URIs are decoded inline. Non-image, non-text
 // parts are silently dropped (forward-compat for new content types).
-func extractUserContent(raw json.RawMessage) (string, []model.ContentBlock, error) {
+func extractUserContent(ctx context.Context, raw json.RawMessage) (string, []model.ContentBlock, error) {
 	if len(raw) == 0 || string(raw) == "null" {
 		return "", nil, nil
 	}
@@ -198,7 +198,7 @@ func extractUserContent(raw json.RawMessage) (string, []model.ContentBlock, erro
 			if p.ImageURL == nil || p.ImageURL.URL == "" {
 				continue
 			}
-			block, err := imageURLToBlock(p.ImageURL.URL)
+			block, err := imageURLToBlock(ctx, p.ImageURL.URL)
 			if err != nil {
 				return "", nil, fmt.Errorf("image_url: %w", err)
 			}
@@ -212,7 +212,7 @@ func extractUserContent(raw json.RawMessage) (string, []model.ContentBlock, erro
 
 // imageURLToBlock turns either a data: URI or an http(s) URL into a
 // model.ContentBlock with base64-inlined data.
-func imageURLToBlock(u string) (model.ContentBlock, error) {
+func imageURLToBlock(ctx context.Context, u string) (model.ContentBlock, error) {
 	u = strings.TrimSpace(u)
 	if strings.HasPrefix(u, "data:") {
 		return decodeDataURI(u)
@@ -233,7 +233,7 @@ func imageURLToBlock(u string) (model.ContentBlock, error) {
 			port = "80"
 		}
 	}
-	result, err := security.CheckSSRF(context.Background(), host)
+	result, err := security.CheckSSRF(ctx, host)
 	if err != nil {
 		return model.ContentBlock{}, fmt.Errorf("image fetch blocked: %w", err)
 	}
@@ -250,7 +250,11 @@ func imageURLToBlock(u string) (model.ContentBlock, error) {
 			return nil
 		},
 	}
-	resp, err := client.Get(u)
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return model.ContentBlock{}, fmt.Errorf("image request: %w", err)
+	}
+	resp, err := client.Do(httpReq)
 	if err != nil {
 		return model.ContentBlock{}, err
 	}
