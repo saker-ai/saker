@@ -198,6 +198,7 @@ func (r *Runner) Run(ctx context.Context) (*Report, error) {
 			WithMirror:      len(r.cfg.MirrorEnv) > 0,
 			VerifierMirr:    len(r.cfg.VerifierEnv) > 0,
 			ProxyURL:        r.cfg.ProxyURL,
+			UseACP:          r.cfg.UseACP,
 		},
 	}
 

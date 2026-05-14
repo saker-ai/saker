@@ -18,6 +18,7 @@ import (
 	modelpkg "github.com/cinience/saker/pkg/model"
 	"github.com/cinience/saker/pkg/provider"
 	"github.com/cinience/saker/pkg/sandbox/dockerenv"
+	"github.com/joho/godotenv"
 )
 
 // runEvalCommand is the entry point for `saker eval <subcommand>`.
@@ -115,6 +116,8 @@ func runEvalTerminalBench(stdout, stderr io.Writer, args []string) error {
 	var mirrorOverrides evalMultiValue
 	fs.Var(&mirrorOverrides, "mirror", "Add a mirror env var as KEY=VAL (repeatable). With --with-mirror, KEY= drops a default key")
 	proxyURL := fs.String("proxy", "", "HTTP(S) proxy URL routed into containers (e.g. http://127.0.0.1:7890 for local Clash). Loopback hosts are auto-rewritten to host.docker.internal and --add-host is wired to host-gateway. Mirror domains are appended to NO_PROXY automatically.")
+	useACP := fs.Bool("acp", false, "Use full Saker Runtime via ACP protocol (end-to-end evaluation with middleware, compaction, hooks, prompt-cache)")
+	envFile := fs.String("env", "", "Path to .env file for model/provider configuration (loaded before provider detection)")
 
 	var includes evalMultiValue
 	var excludes evalMultiValue
@@ -128,6 +131,13 @@ func runEvalTerminalBench(stdout, stderr io.Writer, args []string) error {
 		fs.Usage()
 		return fmt.Errorf("eval terminalbench: --dataset is required")
 	}
+
+	if ef := strings.TrimSpace(*envFile); ef != "" {
+		if err := godotenv.Overload(ef); err != nil {
+			return fmt.Errorf("eval terminalbench: load --env %q: %w", ef, err)
+		}
+	}
+
 	pullPolicy, err := parsePullPolicy(*pull)
 	if err != nil {
 		return err
@@ -173,6 +183,7 @@ func runEvalTerminalBench(stdout, stderr io.Writer, args []string) error {
 		MirrorEnv:           mirrorEnv,
 		VerifierEnv:         verifierEnv,
 		ProxyURL:            strings.TrimSpace(*proxyURL),
+		UseACP:              *useACP,
 	}
 
 	runner, err := terminalbench.New(cfg)

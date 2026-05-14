@@ -96,6 +96,7 @@ type ConfigSnapshot struct {
 	WithMirror   bool   `json:"with_mirror,omitempty"`
 	VerifierMirr bool   `json:"verifier_mirror,omitempty"`
 	ProxyURL     string `json:"proxy_url,omitempty"`
+	UseACP       bool   `json:"use_acp,omitempty"`
 }
 
 // Report is the structured output written to report.json.
