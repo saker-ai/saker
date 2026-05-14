@@ -108,6 +108,13 @@ type Config struct {
 	// Mirror domains in MirrorEnv are auto-appended to NO_PROXY so the
 	// proxy never short-circuits a fast direct path to aliyun/nju.
 	ProxyURL string
+
+	// UseACP routes agent execution through a full Saker Runtime via the
+	// ACP protocol instead of the bare modelBridge + historyToolExecutor.
+	// The Runtime brings middleware, compaction, prompt-cache, hooks, and
+	// failover — the entire product stack. Tool calls are routed back to
+	// the Docker container through ACP capability callbacks.
+	UseACP bool
 }
 
 // DefaultMirrorEnv is the canned mirror set callers may opt into when

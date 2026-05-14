@@ -3,16 +3,12 @@ package terminalbench
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/agent"
 	"github.com/cinience/saker/pkg/eval/dataset"
-	"github.com/cinience/saker/pkg/message"
 	"github.com/cinience/saker/pkg/middleware"
 	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/tool"
 )
 
 // runOne executes the per-task pipeline. It NEVER returns an error: every
@@ -111,96 +107,12 @@ func (r *Runner) runOne(ctx context.Context, task dataset.Task) (res TaskResult)
 		}
 	}
 
-	registry := tool.NewRegistry()
-	if err := registerBuiltinTools(registry, env, guestRoot); err != nil {
-		res.Stage = "register-tools"
-		res.ErrorMsg = err.Error()
-		return res
-	}
-	exec := tool.NewExecutor(registry, nil)
+	// --- Agent execution: ACP (full Runtime) or bare (direct agent loop) ---
 
-	history := message.NewHistory()
-	mdl, err := r.cfg.ModelFactory(taskCtx)
-	if err != nil {
-		res.Stage = "model-init"
-		res.ErrorMsg = err.Error()
-		return res
-	}
-
-	bridge := newModelBridge(mdl, history, r.cfg.SystemPrompt, task.Instruction, availableTools(registry))
-	toolExec := newHistoryToolExecutor(exec, history, guestRoot)
-
-	ag, err := agent.New(bridge, toolExec, agent.Options{
-		MaxIterations:       r.cfg.MaxIterations,
-		Timeout:             r.taskAgentCap(task),
-		RepeatLoopThreshold: r.cfg.RepeatLoopThreshold,
-		MaxBudgetUSD:        r.cfg.MaxBudgetUSD,
-		MaxTokens:           r.cfg.MaxTokens,
-		ModelName:           r.cfg.ModelName,
-	})
-	if err != nil {
-		res.Stage = "agent-init"
-		res.ErrorMsg = err.Error()
-		return res
-	}
-
-	agentCtx := agent.NewContext()
-	finalOut, runErr := ag.Run(taskCtx, agentCtx)
-	if runErr != nil {
-		res.Stage = "agent-run"
-		res.ErrorMsg = runErr.Error()
-		// Fall through — partial completion can still pass tests.
-	}
-	res.Iterations = agentCtx.Iteration + 1
-	usage := bridge.Usage()
-	res.InputTokens = usage.InputTokens
-	res.OutputTokens = usage.OutputTokens
-	res.CacheReadTokens = usage.CacheReadTokens
-	res.CacheCreationTokens = usage.CacheCreationTokens
-	if calls := bridge.PerCallUsage(); len(calls) > 0 {
-		res.IterationTokens = make([]TokenSample, len(calls))
-		for i, u := range calls {
-			res.IterationTokens[i] = TokenSample{
-				Iter:          i + 1,
-				Input:         u.InputTokens,
-				Output:        u.OutputTokens,
-				CacheRead:     u.CacheReadTokens,
-				CacheCreation: u.CacheCreationTokens,
-			}
-		}
-	}
-	// Prefer the agent-level structured StopReason when set (max_budget,
-	// max_tokens, max_iterations, repeat_loop, aborted_*). It carries the
-	// loop's own decision, which is more actionable than the model's
-	// "end_turn"/"stop" string. Fall back to the model-level reason.
-	if finalOut != nil && finalOut.StopReason != "" && finalOut.StopReason != agent.StopReasonCompleted {
-		res.StopReason = string(finalOut.StopReason)
+	if r.cfg.UseACP {
+		r.runAgentACP(taskCtx, task, env, ps, guestRoot, &res)
 	} else {
-		res.StopReason = bridge.StopReason()
-	}
-	// Capture the verbatim provider failure into the transcript so post-mortem
-	// analysis doesn't have to cross-reference results.jsonl. Stored as a
-	// synthetic "system" entry to keep the file replayable.
-	if runErr != nil {
-		if lastErr := bridge.LastError(); lastErr != nil {
-			history.Append(message.Message{
-				Role:    "system",
-				Content: fmt.Sprintf("[runner] model.Generate failed: %s", lastErr.Error()),
-			})
-		} else {
-			history.Append(message.Message{
-				Role:    "system",
-				Content: fmt.Sprintf("[runner] agent loop aborted: %s (stop_reason=%s)", runErr.Error(), res.StopReason),
-			})
-		}
-	}
-	if !r.cfg.DisableTranscripts {
-		if path, terr := writeTranscript(r.cfg.OutputDir, task.Name, history.All()); terr != nil && res.ErrorMsg == "" {
-			res.Stage = "write-transcript"
-			res.ErrorMsg = terr.Error()
-		} else if path != "" {
-			res.TranscriptPath = path
-		}
+		r.runAgentBare(taskCtx, task, env, guestRoot, &res)
 	}
 
 	if verifyErr := runVerifier(taskCtx, env, uploader, ps, task, &res, r.cfg.TerminalTimeout, r.cfg.OutputDir, r.cfg.VerifierEnv); verifyErr != nil && res.ErrorMsg == "" {

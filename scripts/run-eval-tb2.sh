@@ -50,6 +50,8 @@ WITH_MIRROR=0               # opt in to terminalbench.DefaultMirrorEnv (China fi
 NO_VERIFIER_MIRROR=0        # disable per-call verifier mirror env (on by default; isolated from agent)
 MIRRORS=()                  # repeated --mirror KEY=VAL pairs
 PROXY_URL=""                # http(s) proxy injected into containers (e.g. http://127.0.0.1:7890)
+USE_ACP=0                   # use full Saker Runtime via ACP protocol
+ENV_FILE=""                 # .env file for model/provider configuration
 # Safety nets for per-task spend. Picked well above typical TB2 task usage so a
 # normal run never trips them, but a runaway loop (or a regression in repeat-
 # detection) can't quietly drain a budget overnight.
@@ -88,6 +90,8 @@ while [[ $# -gt 0 ]]; do
         --no-verifier-mirror) NO_VERIFIER_MIRROR=1; shift ;;
         --mirror)             MIRRORS+=("$2"); shift 2 ;;
         --proxy)              PROXY_URL="$2"; shift 2 ;;
+        --acp)                USE_ACP=1; shift ;;
+        --env)                ENV_FILE="$2"; shift 2 ;;
         --max-tokens)         MAX_TOKENS="$2"; shift 2 ;;
         --max-budget-usd)     MAX_BUDGET_USD="$2"; shift 2 ;;
         --)                   shift; EXTRA_ARGS=("$@"); break ;;
@@ -215,6 +219,8 @@ ARGS=(
 [[ "$WITH_MIRROR" -eq 1 ]] && ARGS+=(--with-mirror)
 [[ "$NO_VERIFIER_MIRROR" -eq 1 ]] && ARGS+=(--no-verifier-mirror)
 [[ -n "$PROXY_URL" ]] && ARGS+=(--proxy "$PROXY_URL")
+[[ "$USE_ACP" -eq 1 ]] && ARGS+=(--acp)
+[[ -n "$ENV_FILE" ]] && ARGS+=(--env "$ENV_FILE")
 [[ "$REPEAT_THRESHOLD" -ne 0 ]] && ARGS+=(--repeat-threshold "$REPEAT_THRESHOLD")
 # Pass non-zero token/budget caps. 0 means "disabled" both here and in the CLI.
 [[ "$MAX_TOKENS" -gt 0 ]] && ARGS+=(--max-tokens "$MAX_TOKENS")
