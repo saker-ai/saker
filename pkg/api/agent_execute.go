@@ -131,7 +131,9 @@ func (rt *Runtime) runAgentWithMiddleware(prep preparedRun, extras ...middleware
 	}
 
 	chainItems := make([]middleware.Middleware, 0, 3+len(rt.opts.Middleware)+len(extras))
-	chainItems = append(chainItems, newSafetyMiddleware())
+	if !rt.opts.DangerouslySkipPermissions {
+		chainItems = append(chainItems, newSafetyMiddleware())
+	}
 	chainItems = append(chainItems, newSubdirHintsMiddleware(rt.sbRoot))
 	chainItems = append(chainItems, middleware.NewErrorClassifier())
 	if rt.memoryStore != nil {
