@@ -40,6 +40,13 @@ func Parse(input string) ([]Invocation, error) {
 		if trimmed == "" || !strings.HasPrefix(trimmed, "/") {
 			continue
 		}
+		// Pre-check: extract the first word and verify its name portion
+		// looks like a command (alphanumeric + hyphens/underscores). Lines
+		// starting with "/" that have path-like names (e.g. /app/foo.csv)
+		// are skipped so they don't block prompt processing.
+		if !looksLikeCommand(trimmed) {
+			continue
+		}
 		inv, err := parseLine(trimmed)
 		if err != nil {
 			return nil, fmt.Errorf("commands: line %d: %w", idx+1, err)
@@ -147,6 +154,30 @@ func lex(line string) ([]string, error) {
 	}
 	emit()
 	return tokens, nil
+}
+
+// looksLikeCommand returns true when the trimmed line (already known to start
+// with "/") appears to be an intended command rather than a file path. Lines
+// like "/app/foo.csv" contain a second "/" after the leading one, which is a
+// clear path indicator and are skipped. Lines like "/bad^" have no extra "/"
+// so they're treated as (possibly malformed) commands and fully parsed.
+func looksLikeCommand(line string) bool {
+	// Find end of first token (space or end of string).
+	end := strings.IndexFunc(line, unicode.IsSpace)
+	firstToken := line
+	if end > 0 {
+		firstToken = line[:end]
+	}
+	// Strip leading "/" and check for path separators in the remainder.
+	name := strings.TrimPrefix(firstToken, "/")
+	if name == "" {
+		return false
+	}
+	// A second "/" means this is almost certainly a file path.
+	if strings.Contains(name, "/") {
+		return false
+	}
+	return true
 }
 
 func validName(name string) bool {
