@@ -21,7 +21,7 @@ import (
 func (g *Gateway) makeAskQuestionFunc(
 	hubRun *runhub.Run,
 	builder *chatChunkBuilder,
-	pauseCh chan struct{},
+	ps *pauseSignal,
 ) toolbuiltin.AskQuestionFunc {
 	return func(ctx context.Context, questions []toolbuiltin.Question) (map[string]string, error) {
 		toolCallID := "call_axq_" + uuid.New().String()[:12]
@@ -65,13 +65,13 @@ func (g *Gateway) makeAskQuestionFunc(
 			TenantID:   hubRun.TenantID,
 			ToolCallID: toolCallID,
 			AnswerCh:   answerCh,
-			PauseCh:    pauseCh,
+			Pause:      ps,
 			CreatedAt:  time.Now(),
 		})
 		hubRun.SetStatus(runhub.RunStatusRequiresAction)
 
 		// Signal the SSE consumer to write [DONE] and close.
-		close(pauseCh)
+		ps.Signal()
 
 		g.deps.Logger.Info("ask_user_question paused run",
 			"run_id", hubRun.ID,

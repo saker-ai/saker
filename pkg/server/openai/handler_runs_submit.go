@@ -96,15 +96,18 @@ func (g *Gateway) handleRunsSubmit(c *gin.Context) {
 
 	c.Writer.Header().Set("X-Saker-Run-Id", hubRun.ID)
 
-	// Create new pauseCh for potential follow-up questions.
-	newPauseCh := make(chan struct{})
-	pa.PauseCh = newPauseCh
+	newCh := pa.Pause.Reset()
 
 	// Deliver answer — unblocks the askFn goroutine.
-	pa.AnswerCh <- askAnswer{Answers: answers, Action: action}
+	select {
+	case pa.AnswerCh <- askAnswer{Answers: answers, Action: action}:
+	case <-c.Request.Context().Done():
+		ServerError(c, "client disconnected before answer could be delivered")
+		return
+	}
 
 	if req.Stream {
-		g.streamChatSSE(c, hubRun, ExtraBody{}, false, newPauseCh)
+		g.streamChatSSE(c, hubRun, ExtraBody{}, false, newCh)
 	} else {
 		// Wait for the run to complete and return the aggregated response.
 		g.streamChatSync(c, hubRun, ExtraBody{}, hubRun.ID, makeChatChunkID(hubRun.ID))

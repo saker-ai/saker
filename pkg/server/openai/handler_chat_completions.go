@@ -40,12 +40,12 @@ func (g *Gateway) handleChatCompletions(c *gin.Context) {
 	if maxBody <= 0 {
 		maxBody = 10 * 1024 * 1024
 	}
-	rawBody, err := io.ReadAll(io.LimitReader(c.Request.Body, maxBody))
+	rawBody, err := io.ReadAll(io.LimitReader(c.Request.Body, maxBody+1))
 	if err != nil {
 		InvalidRequest(c, "failed to read request body: "+err.Error())
 		return
 	}
-	if int64(len(rawBody)) >= maxBody {
+	if int64(len(rawBody)) > maxBody {
 		InvalidRequest(c, fmt.Sprintf("request body exceeds %d bytes", maxBody))
 		return
 	}
@@ -195,11 +195,11 @@ func (g *Gateway) handleChatCompletions(c *gin.Context) {
 	// Inject AskQuestionFunc when tool_call mode is active. The askFn
 	// publishes tool_calls chunks, pauses the run, and blocks until the
 	// client submits an answer via a second POST or the submit endpoint.
-	var pauseCh chan struct{}
+	var ps *pauseSignal
 	if extra.EffectiveAskUserQuestionMode() == AskQuestionToolCall {
-		pauseCh = make(chan struct{})
+		ps = newPauseSignal()
 		askBuilder := newChatChunkBuilder(chunkID, hubRun.ID, req.Model, g.deps.Options.ErrorDetailMode)
-		askFn := g.makeAskQuestionFunc(hubRun, askBuilder, pauseCh)
+		askFn := g.makeAskQuestionFunc(hubRun, askBuilder, ps)
 		producerCtx = toolbuiltin.WithAskQuestionFunc(producerCtx, askFn)
 	}
 
@@ -225,8 +225,13 @@ func (g *Gateway) handleChatCompletions(c *gin.Context) {
 
 	go g.runChatProducer(eventCh, hubRun, producerCancel, persister, chunkID, req.Model, extra.ExposeToolCalls, includeUsage)
 
+	var pauseNotify <-chan struct{}
+	if ps != nil {
+		pauseNotify = ps.Ch()
+	}
+
 	if req.Stream {
-		g.streamChatSSE(c, hubRun, extra, includeUsage, pauseCh)
+		g.streamChatSSE(c, hubRun, extra, includeUsage, pauseNotify)
 	} else {
 		g.streamChatSync(c, hubRun, extra, req.Model, chunkID)
 	}
@@ -571,17 +576,20 @@ func (g *Gateway) handleResumeToolCall(c *gin.Context, pa *pendingAsk, req ChatR
 
 	c.Writer.Header().Set("X-Saker-Run-Id", hubRun.ID)
 
-	// Create new pauseCh for potential follow-up questions in the same turn.
-	newPauseCh := make(chan struct{})
-	pa.PauseCh = newPauseCh
+	newCh := pa.Pause.Reset()
 
 	// Deliver answer — this unblocks the askFn goroutine.
-	pa.AnswerCh <- askAnswer{Answers: answers, Action: action}
+	select {
+	case pa.AnswerCh <- askAnswer{Answers: answers, Action: action}:
+	case <-c.Request.Context().Done():
+		ServerError(c, "client disconnected before answer could be delivered")
+		return
+	}
 
 	includeUsage := req.Stream && parseIncludeUsage(req.StreamOptions)
 
 	if req.Stream {
-		g.streamChatSSE(c, hubRun, extra, includeUsage, newPauseCh)
+		g.streamChatSSE(c, hubRun, extra, includeUsage, newCh)
 	} else {
 		g.streamChatSync(c, hubRun, extra, req.Model, makeChatChunkID(hubRun.ID))
 	}

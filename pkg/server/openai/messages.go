@@ -1,17 +1,20 @@
 package openai
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
 	"github.com/cinience/saker/pkg/api"
 	"github.com/cinience/saker/pkg/model"
+	"github.com/cinience/saker/pkg/security"
 )
 
 // MessagesToRequest folds OpenAI-style messages[] into a saker
@@ -217,7 +220,36 @@ func imageURLToBlock(u string) (model.ContentBlock, error) {
 	if !strings.HasPrefix(u, "http://") && !strings.HasPrefix(u, "https://") {
 		return model.ContentBlock{}, fmt.Errorf("unsupported image URL scheme: %s", u)
 	}
-	client := &http.Client{Timeout: 15 * time.Second}
+	parsed, err := url.Parse(u)
+	if err != nil {
+		return model.ContentBlock{}, fmt.Errorf("invalid image URL: %w", err)
+	}
+	host := parsed.Host
+	port := parsed.Port()
+	if port == "" {
+		if parsed.Scheme == "https" {
+			port = "443"
+		} else {
+			port = "80"
+		}
+	}
+	result, err := security.CheckSSRF(context.Background(), host)
+	if err != nil {
+		return model.ContentBlock{}, fmt.Errorf("image fetch blocked: %w", err)
+	}
+	transport := &http.Transport{
+		DialContext: security.NewSSRFSafeDialer(result, port),
+	}
+	client := &http.Client{
+		Timeout:   15 * time.Second,
+		Transport: transport,
+		CheckRedirect: func(_ *http.Request, via []*http.Request) error {
+			if len(via) >= 3 {
+				return fmt.Errorf("too many redirects")
+			}
+			return nil
+		},
+	}
 	resp, err := client.Get(u)
 	if err != nil {
 		return model.ContentBlock{}, err
@@ -226,13 +258,16 @@ func imageURLToBlock(u string) (model.ContentBlock, error) {
 	if resp.StatusCode/100 != 2 {
 		return model.ContentBlock{}, fmt.Errorf("fetch %s: status %d", u, resp.StatusCode)
 	}
-	data, err := io.ReadAll(io.LimitReader(resp.Body, 20*1024*1024)) // 20 MiB cap
+	data, err := io.ReadAll(io.LimitReader(resp.Body, 20*1024*1024))
 	if err != nil {
 		return model.ContentBlock{}, err
 	}
 	mt := resp.Header.Get("Content-Type")
 	if mt == "" {
-		mt = "image/png"
+		mt = http.DetectContentType(data)
+	}
+	if !strings.HasPrefix(mt, "image/") {
+		return model.ContentBlock{}, fmt.Errorf("fetch %s: not an image (Content-Type: %s)", u, mt)
 	}
 	return model.ContentBlock{
 		Type:      model.ContentBlockImage,

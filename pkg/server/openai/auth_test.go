@@ -93,11 +93,19 @@ func TestAuth_DevBypass(t *testing.T) {
 	}
 }
 
-func TestAuth_BearerWithoutStore_AnonymousAccept(t *testing.T) {
+func TestAuth_BearerWithoutStore_Rejects(t *testing.T) {
 	g := newTestGateway(t, Options{}, nil)
 	rec := runAuth(t, g, "Bearer ak_anything")
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d, want 401 (nil store without dev bypass must reject)", rec.Code)
+	}
+}
+
+func TestAuth_BearerWithoutStore_DevBypassAccepts(t *testing.T) {
+	g := newTestGateway(t, Options{DevBypassAuth: true}, nil)
+	rec := runAuth(t, g, "Bearer ak_anything")
 	if rec.Code != http.StatusOK {
-		t.Fatalf("status = %d, want 200 (legacy mode anonymous accept)", rec.Code)
+		t.Fatalf("status = %d, want 200 (nil store with dev bypass)", rec.Code)
 	}
 	var body struct {
 		User string `json:"user"`

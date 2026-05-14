@@ -162,11 +162,11 @@ func (g *Gateway) handleRunsEvents(c *gin.Context) {
 // handler: we use APIKeyID as the canonical tenant key, falling back to
 // Username when the row has no key id (legacy / dev-bypass paths).
 //
-// Runs created with an empty TenantID (only happens in tests) are
-// accessible to any identity.
+// Runs with an empty TenantID are rejected — an empty tenant means the
+// run was created without proper auth and should not be accessible.
 func runOwnedByIdentity(r *runhub.Run, id Identity) bool {
 	if r.TenantID == "" {
-		return true
+		return false
 	}
 	tenant := id.APIKeyID
 	if tenant == "" {
