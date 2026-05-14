@@ -105,7 +105,7 @@ func runEvalTerminalBench(stdout, stderr io.Writer, args []string) error {
 	modelName := fs.String("model", "", "Model name override")
 	systemPrompt := fs.String("system", "", "System prompt override")
 	pull := fs.String("pull", "if-missing", "Docker image pull policy: always|if-missing|never")
-	network := fs.String("network", "", "docker run --network mode")
+	network := fs.String("network", "host", "docker run --network mode (default: host for internet access)")
 	dockerBinary := fs.String("docker-binary", "", "docker CLI path override")
 	skipIncompat := fs.Bool("skip-incompatible", false, "Skip tasks whose task.json declares skip_reason")
 	verbose := fs.Bool("verbose", false, "Print per-task progress to stderr")
