@@ -10,6 +10,20 @@ importers:
 
   packages/editor-protocol: {}
 
+  packages/saker: {}
+
+  packages/saker-darwin-arm64: {}
+
+  packages/saker-darwin-x64: {}
+
+  packages/saker-linux-arm64: {}
+
+  packages/saker-linux-x64: {}
+
+  packages/saker-win32-arm64: {}
+
+  packages/saker-win32-x64: {}
+
   web:
     dependencies:
       '@chenglou/pretext':
