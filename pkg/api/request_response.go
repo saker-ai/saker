@@ -5,14 +5,14 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/config"
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/pipeline"
-	"github.com/cinience/saker/pkg/runtime/commands"
-	"github.com/cinience/saker/pkg/runtime/skills"
-	"github.com/cinience/saker/pkg/runtime/subagents"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/config"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/runtime/commands"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
 )
 
 // ModelOverrides bundles per-request sampling parameters that override

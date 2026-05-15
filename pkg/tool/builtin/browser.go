@@ -10,7 +10,7 @@ import (
 
 	"github.com/chromedp/chromedp"
 
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const browserDescription = `Automates a headless Chrome browser for web interaction.

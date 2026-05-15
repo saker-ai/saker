@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 )
 
 const titleMaxInputLen = 500

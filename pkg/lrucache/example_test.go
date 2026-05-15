@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/lrucache"
+	"github.com/saker-ai/saker/pkg/lrucache"
 )
 
 func ExampleLRUCache_basic() {

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/config"
 )
 
 // newMultiUserAuth creates an AuthManager with one admin + regular users for testing.

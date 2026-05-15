@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/cinience/saker/pkg/memory"
+	"github.com/saker-ai/saker/pkg/memory"
 )
 
 // fakeMemoryStore captures Save calls without touching the filesystem.

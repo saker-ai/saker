@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/project"
 )
 
 // TestPermissionMatrix_AllRoles drives the methodMinRole table against every

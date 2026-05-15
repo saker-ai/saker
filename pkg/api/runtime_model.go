@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/agent"
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/logging"
-	"github.com/cinience/saker/pkg/message"
-	"github.com/cinience/saker/pkg/middleware"
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/agent"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/logging"
+	"github.com/saker-ai/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // Heuristic thresholds for the runaway-generation warning emitted by

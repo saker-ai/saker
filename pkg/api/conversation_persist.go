@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/conversation"
-	"github.com/cinience/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/conversation"
+	"github.com/saker-ai/saker/pkg/message"
 )
 
 // conversationPersistTimeout caps a single persistHistory write into the

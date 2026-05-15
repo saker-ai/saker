@@ -10,7 +10,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/cinience/saker/pkg/mcp"
+	"github.com/saker-ai/saker/pkg/mcp"
 )
 
 func TestNewMCPClientWithOptionsDefaultPath(t *testing.T) {

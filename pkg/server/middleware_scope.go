@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/project"
 )
 
 // JSON-RPC error codes specific to project access.

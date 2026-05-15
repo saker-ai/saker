@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/config"
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/config"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // noopModel satisfies model.Model for handler tests that never call the model.

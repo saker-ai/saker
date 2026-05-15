@@ -8,9 +8,9 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/cinience/saker/pkg/media/describe"
-	"github.com/cinience/saker/pkg/media/embedding"
-	"github.com/cinience/saker/pkg/media/vecstore"
+	"github.com/saker-ai/saker/pkg/media/describe"
+	"github.com/saker-ai/saker/pkg/media/embedding"
+	"github.com/saker-ai/saker/pkg/media/vecstore"
 )
 
 // Searcher performs dual-engine media search combining vector similarity

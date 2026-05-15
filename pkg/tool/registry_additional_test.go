@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/mcp"
+	"github.com/saker-ai/saker/pkg/mcp"
 	"github.com/modelcontextprotocol/go-sdk/jsonrpc"
 )
 

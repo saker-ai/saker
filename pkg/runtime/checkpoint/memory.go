@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/pipeline"
 	"github.com/google/uuid"
 )
 

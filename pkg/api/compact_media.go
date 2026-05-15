@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/cinience/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/message"
 )
 
 // Base64 minimum length to detect embedded binary data in tool results.

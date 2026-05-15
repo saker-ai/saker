@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/cinience/saker/pkg/canvas"
+	"github.com/saker-ai/saker/pkg/canvas"
 	"github.com/gin-gonic/gin"
 )
 

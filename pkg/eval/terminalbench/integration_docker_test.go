@@ -30,10 +30,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/eval/dataset"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/sandbox/dockerenv"
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/eval/dataset"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/sandbox/dockerenv"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
 )
 
 func TestIntegration_TerminalBench_BusyboxSmoke(t *testing.T) {

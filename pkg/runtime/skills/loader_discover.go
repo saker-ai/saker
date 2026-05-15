@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cinience/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/config"
 )
 
 func loadSkillDir(root string, recursive bool, fsLayer *config.FS) ([]SkillFile, []error) {

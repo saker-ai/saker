@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cinience/saker/pkg/conversation"
+	"github.com/saker-ai/saker/pkg/conversation"
 )
 
 // openConversationStoreForCLI opens the event-sourced conversation log for

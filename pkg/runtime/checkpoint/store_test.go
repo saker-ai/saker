@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/pipeline"
 )
 
 func TestCheckpointMemoryStoreRoundTrip(t *testing.T) {

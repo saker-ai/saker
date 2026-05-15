@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cinience/saker/pkg/api"
-	storagecfg "github.com/cinience/saker/pkg/storage"
+	"github.com/saker-ai/saker/pkg/api"
+	storagecfg "github.com/saker-ai/saker/pkg/storage"
 )
 
 // writeSettings rewrites the project's settings.local.json with the supplied

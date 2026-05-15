@@ -17,18 +17,18 @@ import (
 	"strings"
 	"time"
 
-	acpserver "github.com/cinience/saker/pkg/acp"
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/clikit"
-	"github.com/cinience/saker/pkg/clikit/tui"
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/im"
-	"github.com/cinience/saker/pkg/logging"
-	"github.com/cinience/saker/pkg/profile"
-	"github.com/cinience/saker/pkg/sandbox/gvisorhelper"
-	"github.com/cinience/saker/pkg/sandbox/landlockhelper"
-	"github.com/cinience/saker/pkg/server"
-	versionpkg "github.com/cinience/saker/pkg/version"
+	acpserver "github.com/saker-ai/saker/pkg/acp"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/clikit"
+	"github.com/saker-ai/saker/pkg/clikit/tui"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/im"
+	"github.com/saker-ai/saker/pkg/logging"
+	"github.com/saker-ai/saker/pkg/profile"
+	"github.com/saker-ai/saker/pkg/sandbox/gvisorhelper"
+	"github.com/saker-ai/saker/pkg/sandbox/landlockhelper"
+	"github.com/saker-ai/saker/pkg/server"
+	versionpkg "github.com/saker-ai/saker/pkg/version"
 	"github.com/godeps/goim"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
@@ -59,7 +59,7 @@ type replEngine = clikit.ReplEngine
 // @description Saker REST + WebSocket API exposed by the embedded web server.
 // @description Localhost requests are auto-elevated to admin; remote callers must authenticate via session cookie or, for app runs, a Bearer API key. Public share-token endpoints under /api/apps/public/ require no authentication.
 // @contact.name Saker
-// @contact.url https://github.com/cinience/saker
+// @contact.url https://github.com/saker-ai/saker
 // @license.name Apache 2.0
 // @license.url https://www.apache.org/licenses/LICENSE-2.0.html
 // @host localhost:10112

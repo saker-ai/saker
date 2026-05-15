@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cinience/saker/pkg/mcp"
-	"github.com/cinience/saker/pkg/sandbox"
+	"github.com/saker-ai/saker/pkg/mcp"
+	"github.com/saker-ai/saker/pkg/sandbox"
 )
 
 func TestExtractStringSlice(t *testing.T) {

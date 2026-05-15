@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/cinience/saker/pkg/canvas"
+	"github.com/saker-ai/saker/pkg/canvas"
 	"github.com/gin-gonic/gin"
 )
 

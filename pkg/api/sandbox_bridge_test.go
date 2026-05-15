@@ -4,9 +4,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/sandbox/gvisorenv"
-	"github.com/cinience/saker/pkg/sandbox/hostenv"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/sandbox/gvisorenv"
+	"github.com/saker-ai/saker/pkg/sandbox/hostenv"
 )
 
 func TestAdditionalSandboxPathsHandlesNilAndDedup(t *testing.T) {

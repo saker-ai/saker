@@ -1,6 +1,6 @@
 package toolbuiltin
 
-import "github.com/cinience/saker/pkg/tool"
+import "github.com/saker-ai/saker/pkg/tool"
 
 var askUserQuestionSchema = &tool.JSONSchema{
 	Type: "object",

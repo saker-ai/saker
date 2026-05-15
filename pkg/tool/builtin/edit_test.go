@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/middleware"
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/sandbox/gvisorenv"
+	"github.com/saker-ai/saker/pkg/middleware"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/sandbox/gvisorenv"
 )
 
 func TestEditToolSingleReplacement(t *testing.T) {

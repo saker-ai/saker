@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/security"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 const defaultMaxFileBytes = 1 << 20 // 1 MiB

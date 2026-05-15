@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/middleware"
-	"github.com/cinience/saker/pkg/model"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/model"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 type fakeStreamRuntime struct{}

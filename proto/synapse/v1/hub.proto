@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package synapse.v1;
 
-option go_package = "github.com/cinience/saker/proto/synapse/v1;synapsev1";
+option go_package = "github.com/saker-ai/saker/proto/synapse/v1;synapsev1";
 
 service SynapseHub {
   rpc Register(stream SakerMessage) returns (stream HubMessage);

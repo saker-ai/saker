@@ -3,7 +3,7 @@ package agent
 import (
 	"time"
 
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // Context carries runtime state for a single agent execution.

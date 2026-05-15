@@ -23,8 +23,8 @@ import (
 
 	"bytes"
 
-	"github.com/cinience/saker/pkg/api"
-	modelpkg "github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/api"
+	modelpkg "github.com/saker-ai/saker/pkg/model"
 )
 
 func main() {

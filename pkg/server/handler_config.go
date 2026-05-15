@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/conversation"
-	"github.com/cinience/saker/pkg/media/embedding"
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/conversation"
+	"github.com/saker-ai/saker/pkg/media/embedding"
+	"github.com/saker-ai/saker/pkg/project"
 )
 
 func (h *Handler) handleConfigGet(req Request) Response {

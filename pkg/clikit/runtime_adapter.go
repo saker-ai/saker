@@ -6,10 +6,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/middleware"
-	runtimeskills "github.com/cinience/saker/pkg/runtime/skills"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/middleware"
+	runtimeskills "github.com/saker-ai/saker/pkg/runtime/skills"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 type streamRuntime interface {

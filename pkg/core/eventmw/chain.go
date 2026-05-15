@@ -3,7 +3,7 @@ package eventmw
 import (
 	"context"
 
-	"github.com/cinience/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/core/events"
 )
 
 // Handler is executed by the middleware chain. It operates on events and can

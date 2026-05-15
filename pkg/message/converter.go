@@ -1,6 +1,6 @@
 package message
 
-import "github.com/cinience/saker/pkg/artifact"
+import "github.com/saker-ai/saker/pkg/artifact"
 
 // ContentBlockType discriminates the kind of content in a ContentBlock.
 type ContentBlockType string

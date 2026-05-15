@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/middleware"
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/sandbox/govmenv"
-	"github.com/cinience/saker/pkg/sandbox/gvisorenv"
+	"github.com/saker-ai/saker/pkg/middleware"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/sandbox/govmenv"
+	"github.com/saker-ai/saker/pkg/sandbox/gvisorenv"
 )
 
 func TestBashToolExecuteScript(t *testing.T) {

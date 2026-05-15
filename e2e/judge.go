@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // JudgeInput describes a scenario for the LLM judge to evaluate.

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/cinience/saker/pkg/runtime/tasks"
+	"github.com/saker-ai/saker/pkg/runtime/tasks"
 )
 
 func TestStreamMonitorTool_Name(t *testing.T) {

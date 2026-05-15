@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/message"
 )
 
 func TestRuntimeRun_LongConversationCompactsAndPersists(t *testing.T) {

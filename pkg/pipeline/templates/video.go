@@ -2,8 +2,8 @@
 package templates
 
 import (
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/pipeline"
 )
 
 // VideoUnderstandingOptions configures the video understanding pipeline.

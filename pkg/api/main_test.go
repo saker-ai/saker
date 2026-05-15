@@ -45,10 +45,10 @@ func goleakRun(m *testing.M) int {
 		goleak.IgnoreTopFunction("go.opentelemetry.io/otel/sdk/trace.(*batchSpanProcessor).processQueue"),
 		// sessionGate cleanup loop; Close() exists but many runtime tests do
 		// not run the full teardown path. Loop is select-blocked on stopCh.
-		goleak.IgnoreTopFunction("github.com/cinience/saker/pkg/api.(*sessionGate).cleanupLoop"),
+		goleak.IgnoreTopFunction("github.com/saker-ai/saker/pkg/api.(*sessionGate).cleanupLoop"),
 		// Hooks executor onceTracker background sweeper; Close() exists, but
 		// embedded handler tests share an executor without explicit teardown.
-		goleak.IgnoreTopFunction("github.com/cinience/saker/pkg/core/hooks.(*Executor).onceTrackerCleanupLoop"),
+		goleak.IgnoreTopFunction("github.com/saker-ai/saker/pkg/core/hooks.(*Executor).onceTrackerCleanupLoop"),
 		// chromedp browser context cancel watcher; terminates on ctx.Done.
 		goleak.IgnoreTopFunction("github.com/chromedp/chromedp.NewContext.func1"),
 	); err != nil {

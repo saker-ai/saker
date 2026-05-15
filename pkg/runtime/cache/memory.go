@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 // MemoryStore keeps cache entries in memory for the lifetime of the process.

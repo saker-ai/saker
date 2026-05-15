@@ -8,7 +8,7 @@ import (
 type middlewareContextKey string
 
 const (
-	middlewareStateKey middlewareContextKey = "github.com/cinience/saker/middleware-state"
+	middlewareStateKey middlewareContextKey = "github.com/saker-ai/saker/middleware-state"
 	// MiddlewareStateKey exposes the context key so other packages can attach middleware state.
 	MiddlewareStateKey = middlewareStateKey
 )

@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/conversation"
-	"github.com/cinience/saker/pkg/runhub"
-	"github.com/cinience/saker/pkg/server"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/conversation"
+	"github.com/saker-ai/saker/pkg/runhub"
+	"github.com/saker-ai/saker/pkg/server"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/trace"
 )

@@ -17,7 +17,7 @@ We release patches for security vulnerabilities for the following versions:
 Instead, please report them privately via:
 
 - Email: **cinience@hotmail.com** with the subject line `[Security] Saker vulnerability report`
-- GitHub: Use the [private vulnerability reporting](https://github.com/cinience/saker/security/advisories/new) feature
+- GitHub: Use the [private vulnerability reporting](https://github.com/saker-ai/saker/security/advisories/new) feature
 
 Please include the following information:
 

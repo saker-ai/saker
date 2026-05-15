@@ -12,11 +12,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/runtime/commands"
-	"github.com/cinience/saker/pkg/runtime/tasks"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/runtime/commands"
+	"github.com/saker-ai/saker/pkg/runtime/tasks"
+	"github.com/saker-ai/saker/pkg/tool"
 	acpproto "github.com/coder/acp-go-sdk"
 )
 

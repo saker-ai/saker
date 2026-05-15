@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/metrics"
+	"github.com/saker-ai/saker/pkg/metrics"
 )
 
 // Registry keeps the mapping between tool names and implementations.

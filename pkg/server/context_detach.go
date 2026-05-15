@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/project"
 )
 
 // detachWithScope copies the project Scope (and other request-bound values)

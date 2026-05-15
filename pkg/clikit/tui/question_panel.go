@@ -6,7 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 // otherMenuLabel is the special trailing menu item that lets the user provide

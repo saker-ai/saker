@@ -14,9 +14,9 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/cinience/saker/pkg/agent"
-	"github.com/cinience/saker/pkg/message"
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/agent"
+	"github.com/saker-ai/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // modelBridge implements agent.Model on top of model.Model.

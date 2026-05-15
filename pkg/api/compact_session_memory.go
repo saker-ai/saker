@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cinience/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/message"
 )
 
 // sessionMemoryCompact uses the memory store content as a summary, avoiding

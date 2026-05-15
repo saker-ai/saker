@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/eval"
-	evalhelpers "github.com/cinience/saker/eval"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/testutil"
+	"github.com/saker-ai/saker/eval"
+	evalhelpers "github.com/saker-ai/saker/eval"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/testutil"
 )
 
 func TestEval_LLMSystemPromptAdherence_JSONFormat(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/security"
 	"github.com/maximhq/bifrost/core/schemas"
 )
 

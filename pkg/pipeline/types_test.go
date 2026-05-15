@@ -3,7 +3,7 @@ package pipeline
 import (
 	"testing"
 
-	"github.com/cinience/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/artifact"
 )
 
 func TestStepDeclaresToolAndSkillWork(t *testing.T) {

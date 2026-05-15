@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/project"
 )
 
 // newTestProjectStore opens a fresh sqlite-backed project store under t.TempDir.

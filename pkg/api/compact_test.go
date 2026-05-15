@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/cinience/saker/pkg/message"
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 type compactStubModel struct {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"path/filepath"
 
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/project"
 )
 
 // pathsFor returns the per-project paths for the request's scope. When no

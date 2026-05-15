@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/cinience/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 // FileSystemAllowList enforces path boundaries using PathResolver to block traversal and symlinks.

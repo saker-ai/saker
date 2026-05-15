@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	coreevents "github.com/cinience/saker/pkg/core/events"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
 )
 
 func TestRuntimePrepare_PrecheckCompactsHistory(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/message"
 )
 
 // FuzzLooksLikeBase64 stresses the heuristic that decides whether a tool

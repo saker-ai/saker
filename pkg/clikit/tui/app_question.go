@@ -8,7 +8,7 @@ import (
 	"context"
 	"errors"
 
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 // askQuestionFromTUI is registered with the RuntimeAdapter via

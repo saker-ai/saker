@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cinience/saker/pkg/clikit"
-	versionpkg "github.com/cinience/saker/pkg/version"
+	"github.com/saker-ai/saker/pkg/clikit"
+	versionpkg "github.com/saker-ai/saker/pkg/version"
 	"github.com/mattn/go-isatty"
 )
 

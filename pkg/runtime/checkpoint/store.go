@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/cinience/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/pipeline"
 )
 
 var ErrNotFound = errors.New("checkpoint: not found")

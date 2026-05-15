@@ -132,7 +132,7 @@ Configure via `WithOTEL(...)` when constructing the runtime
 (`pkg/api/otel_config.go`):
 
 ```go
-import "github.com/cinience/saker/pkg/api"
+import "github.com/saker-ai/saker/pkg/api"
 
 opts := api.OTELConfig{
     Enabled:     true,

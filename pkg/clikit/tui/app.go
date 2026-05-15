@@ -9,7 +9,7 @@ import (
 
 	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
-	"github.com/cinience/saker/pkg/clikit"
+	"github.com/saker-ai/saker/pkg/clikit"
 	"github.com/google/uuid"
 )
 

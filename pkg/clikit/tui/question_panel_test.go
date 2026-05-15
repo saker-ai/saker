@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 func keyRune(r rune) tea.KeyPressMsg { return tea.KeyPressMsg{Code: r} }

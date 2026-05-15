@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/agent"
-	"github.com/cinience/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/agent"
+	"github.com/saker-ai/saker/pkg/middleware"
 )
 
 type middlewareBundle struct {

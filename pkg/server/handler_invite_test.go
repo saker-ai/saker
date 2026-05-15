@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/project"
 )
 
 // scopeCtx builds a request ctx with both the auth user and the project scope

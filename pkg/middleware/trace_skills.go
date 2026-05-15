@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/cinience/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
 )
 
 // trace_skills.go owns the optional ForceSkills body-size diff logging that

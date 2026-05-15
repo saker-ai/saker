@@ -1,6 +1,6 @@
 package pipeline
 
-import "github.com/cinience/saker/pkg/artifact"
+import "github.com/saker-ai/saker/pkg/artifact"
 
 // Step is the basic unit of multimodal pipeline declaration.
 type Step struct {

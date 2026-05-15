@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/core/eventmw"
-	"github.com/cinience/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/core/eventmw"
+	"github.com/saker-ai/saker/pkg/core/events"
 )
 
 // executor.go owns the runtime: the Executor struct, dispatch (matching,

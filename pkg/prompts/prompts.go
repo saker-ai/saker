@@ -18,10 +18,10 @@ package prompts
 import (
 	"io/fs"
 
-	corehooks "github.com/cinience/saker/pkg/core/hooks"
-	"github.com/cinience/saker/pkg/runtime/commands"
-	"github.com/cinience/saker/pkg/runtime/skills"
-	"github.com/cinience/saker/pkg/runtime/subagents"
+	corehooks "github.com/saker-ai/saker/pkg/core/hooks"
+	"github.com/saker-ai/saker/pkg/runtime/commands"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
 )
 
 // Builtins contains all registration structures parsed from an embed.FS.

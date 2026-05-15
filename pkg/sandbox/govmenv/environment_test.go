@@ -9,8 +9,8 @@ import (
 
 	govmclient "github.com/godeps/govm/pkg/client"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/sandbox/pathmap"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/sandbox/pathmap"
 )
 
 func TestEnvironmentRunCommandStream(t *testing.T) {

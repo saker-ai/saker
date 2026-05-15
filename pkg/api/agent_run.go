@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	"github.com/cinience/saker/pkg/logging"
-	"github.com/cinience/saker/pkg/metrics"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/logging"
+	"github.com/saker-ai/saker/pkg/metrics"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 // Run executes the unified pipeline synchronously.

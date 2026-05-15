@@ -3,8 +3,8 @@ package cache
 import (
 	"context"
 
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 // Store persists pipeline results keyed by deterministic artifact cache keys.

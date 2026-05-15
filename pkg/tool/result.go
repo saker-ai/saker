@@ -1,8 +1,8 @@
 package tool
 
 import (
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // OutputRef describes where tool output has been persisted when it is too large

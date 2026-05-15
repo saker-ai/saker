@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/runhub"
+	"github.com/saker-ai/saker/pkg/runhub"
 )
 
 func TestParseIncludeUsage(t *testing.T) {

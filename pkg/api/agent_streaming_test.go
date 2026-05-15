@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 func TestRunStreamForwardsToolStreamSink(t *testing.T) {

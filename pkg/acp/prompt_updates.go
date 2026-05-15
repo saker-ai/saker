@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/runtime/tasks"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/runtime/tasks"
+	"github.com/saker-ai/saker/pkg/tool"
 	acpproto "github.com/coder/acp-go-sdk"
 )
 

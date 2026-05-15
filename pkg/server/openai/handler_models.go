@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 	"github.com/gin-gonic/gin"
 )
 

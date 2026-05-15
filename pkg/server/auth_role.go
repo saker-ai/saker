@@ -1,6 +1,6 @@
 package server
 
-import "github.com/cinience/saker/pkg/config"
+import "github.com/saker-ai/saker/pkg/config"
 
 // resolveRole determines the Saker role for an authenticated user based on
 // the RoleMappingConfig. It checks AdminUsers, then AdminGroups, and falls

@@ -3,7 +3,7 @@ package api
 import (
 	"testing"
 
-	"github.com/cinience/saker/pkg/runtime/subagents"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
 )
 
 func TestDefaultSubagentDefinitions(t *testing.T) {

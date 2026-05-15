@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	"github.com/cinience/saker/pkg/model"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 type blockingModel struct {

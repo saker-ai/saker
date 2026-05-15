@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
 )
 
 func TestSkillToolExecutesSkill(t *testing.T) {

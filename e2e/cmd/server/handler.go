@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 )
 
 type e2eServer struct {

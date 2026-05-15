@@ -8,13 +8,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cinience/saker/pkg/media"
-	"github.com/cinience/saker/pkg/media/chunk"
-	"github.com/cinience/saker/pkg/media/describe"
-	"github.com/cinience/saker/pkg/media/embedding"
-	"github.com/cinience/saker/pkg/media/vecstore"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/media"
+	"github.com/saker-ai/saker/pkg/media/chunk"
+	"github.com/saker-ai/saker/pkg/media/describe"
+	"github.com/saker-ai/saker/pkg/media/embedding"
+	"github.com/saker-ai/saker/pkg/media/vecstore"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const mediaIndexDescription = `Index video files for semantic search.

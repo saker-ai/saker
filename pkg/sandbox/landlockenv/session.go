@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
 )
 
 func prepareSession(_ context.Context, projectRoot string, opts *sandboxenv.LandlockOptions, session sandboxenv.SessionContext) (*sandboxenv.PreparedSession, error) {

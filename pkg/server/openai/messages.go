@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 // MessagesToRequest folds OpenAI-style messages[] into a saker

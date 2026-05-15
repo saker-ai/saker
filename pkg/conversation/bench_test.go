@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cinience/saker/pkg/conversation"
-	"github.com/cinience/saker/pkg/server"
+	"github.com/saker-ai/saker/pkg/conversation"
+	"github.com/saker-ai/saker/pkg/server"
 )
 
 // External benchmark package (`conversation_test`) so the import cycle

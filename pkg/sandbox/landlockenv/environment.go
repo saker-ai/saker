@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/sandbox/landlockhelper"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/sandbox/landlockhelper"
 )
 
 // Environment is the Landlock-backed execution environment.

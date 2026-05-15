@@ -16,7 +16,7 @@ import (
 	"github.com/godeps/aigo/tooldef"
 	"github.com/godeps/aigo/workflow"
 
-	"github.com/cinience/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/config"
 )
 
 // ----- AigoTool API surface (Engines, Capabilities, DryRun, WithTimeout) -----

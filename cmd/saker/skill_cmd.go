@@ -3,7 +3,7 @@ package main
 import (
 	"io"
 
-	"github.com/cinience/saker/pkg/skillhub"
+	"github.com/saker-ai/saker/pkg/skillhub"
 )
 
 func runSkillCommand(stdout, stderr io.Writer, projectRoot string, args []string) error {

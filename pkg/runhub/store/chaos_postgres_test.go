@@ -23,7 +23,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/runhub/store"
+	"github.com/saker-ai/saker/pkg/runhub/store"
 	"github.com/jackc/pgx/v5"
 )
 

@@ -1336,7 +1336,7 @@ const file_proto_synapse_v1_hub_proto_rawDesc = "" +
 	"\x1bPROTOCOL_ANTHROPIC_MESSAGES\x10\x022N\n" +
 	"\n" +
 	"SynapseHub\x12@\n" +
-	"\bRegister\x12\x18.synapse.v1.SakerMessage\x1a\x16.synapse.v1.HubMessage(\x010\x01B6Z4github.com/cinience/saker/proto/synapse/v1;synapsev1b\x06proto3"
+	"\bRegister\x12\x18.synapse.v1.SakerMessage\x1a\x16.synapse.v1.HubMessage(\x010\x01B6Z4github.com/saker-ai/saker/proto/synapse/v1;synapsev1b\x06proto3"
 
 var (
 	file_proto_synapse_v1_hub_proto_rawDescOnce sync.Once

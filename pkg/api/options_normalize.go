@@ -5,12 +5,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cinience/saker/pkg/agent"
-	coremw "github.com/cinience/saker/pkg/core/eventmw"
-	corehooks "github.com/cinience/saker/pkg/core/hooks"
-	"github.com/cinience/saker/pkg/middleware"
-	"github.com/cinience/saker/pkg/runtime/skills"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/agent"
+	coremw "github.com/saker-ai/saker/pkg/core/eventmw"
+	corehooks "github.com/saker-ai/saker/pkg/core/hooks"
+	"github.com/saker-ai/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const (

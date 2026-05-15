@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const taskToolDescription = `Launch a specialized subagent execution to handle complex, multi-step tasks autonomously. 

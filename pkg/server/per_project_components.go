@@ -5,9 +5,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/cinience/saker/pkg/apps"
-	"github.com/cinience/saker/pkg/canvas"
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/apps"
+	"github.com/saker-ai/saker/pkg/canvas"
+	"github.com/saker-ai/saker/pkg/project"
 )
 
 // canvasRunPin is a small state machine that closes the race between

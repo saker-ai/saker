@@ -34,9 +34,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/pipeline"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 func main() {

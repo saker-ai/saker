@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/project"
 	"github.com/gin-gonic/gin"
 )
 

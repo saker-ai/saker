@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/mcp"
+	"github.com/saker-ai/saker/pkg/mcp"
 )
 
 type mcpListChangedHandler = func(context.Context, *mcp.ClientSession)

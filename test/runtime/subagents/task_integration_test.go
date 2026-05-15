@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/runtime/skills"
-	"github.com/cinience/saker/pkg/runtime/subagents"
-	"github.com/cinience/saker/pkg/tool"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
+	"github.com/saker-ai/saker/pkg/tool"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 func TestTaskIntegration_NoTaskTool_NoDispatch(t *testing.T) {

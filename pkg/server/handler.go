@@ -8,11 +8,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/canvas"
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	"github.com/cinience/saker/pkg/project"
-	storagecfg "github.com/cinience/saker/pkg/storage"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/canvas"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/project"
+	storagecfg "github.com/saker-ai/saker/pkg/storage"
 	"github.com/google/uuid"
 	"github.com/mojatter/s2"
 )

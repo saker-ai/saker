@@ -7,14 +7,14 @@ import (
 	"time"
 	_ "unsafe"
 
-	"github.com/cinience/saker/pkg/mcp"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/mcp"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
-//go:linkname patchedNewMCPClient github.com/cinience/saker/pkg/tool.newMCPClient
+//go:linkname patchedNewMCPClient github.com/saker-ai/saker/pkg/tool.newMCPClient
 var patchedNewMCPClient func(ctx context.Context, spec string, handler func(context.Context, *mcp.ClientSession)) (*mcp.ClientSession, error)
 
-//go:linkname patchedNewMCPClientWithOptions github.com/cinience/saker/pkg/tool.newMCPClientWithOptions
+//go:linkname patchedNewMCPClientWithOptions github.com/saker-ai/saker/pkg/tool.newMCPClientWithOptions
 var patchedNewMCPClientWithOptions func(ctx context.Context, spec string, opts tool.MCPServerOptions, handler func(context.Context, *mcp.ClientSession)) (*mcp.ClientSession, error)
 
 type mcpCallCounter struct {

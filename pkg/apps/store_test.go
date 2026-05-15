@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/canvas"
+	"github.com/saker-ai/saker/pkg/canvas"
 )
 
 func newTestStore(t *testing.T) *Store {

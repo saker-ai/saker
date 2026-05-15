@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/project"
 )
 
 // TestResolveScope_Disabled verifies that the scope middleware is a transparent

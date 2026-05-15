@@ -12,10 +12,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/runtime/commands"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/runtime/commands"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 type runConfig struct {

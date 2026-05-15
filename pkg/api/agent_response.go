@@ -4,9 +4,9 @@ import (
 	"maps"
 	"strings"
 
-	"github.com/cinience/saker/pkg/agent"
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/agent"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 func (rt *Runtime) buildResponse(prep preparedRun, result runResult) *Response {

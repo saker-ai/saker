@@ -5,11 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/eval"
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/testutil"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/eval"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/testutil"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 type noopModel struct{}

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cinience/saker/pkg/mcp"
+	"github.com/saker-ai/saker/pkg/mcp"
 )
 
 func buildRemoteToolWrappers(session *mcp.ClientSession, serverName string, tools []*mcp.Tool, opts MCPServerOptions) ([]Tool, []string, error) {

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/pipeline"
 	"github.com/stretchr/testify/require"
 )
 

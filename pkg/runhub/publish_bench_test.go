@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/runhub/store"
+	"github.com/saker-ai/saker/pkg/runhub/store"
 )
 
 // benchPayload is the same 64-byte payload across every benchmark so

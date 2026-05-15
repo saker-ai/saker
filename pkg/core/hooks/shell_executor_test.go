@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/core/eventmw"
-	"github.com/cinience/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/core/eventmw"
+	"github.com/saker-ai/saker/pkg/core/events"
 	"github.com/stretchr/testify/require"
 )
 

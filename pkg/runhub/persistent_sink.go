@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/cinience/saker/pkg/runhub/store"
+	"github.com/saker-ai/saker/pkg/runhub/store"
 )
 
 // dbSink implements eventSink against a *store.Store. As of Stage B the

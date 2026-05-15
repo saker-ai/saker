@@ -14,8 +14,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/runhub"
-	"github.com/cinience/saker/pkg/runhub/store"
+	"github.com/saker-ai/saker/pkg/runhub"
+	"github.com/saker-ai/saker/pkg/runhub/store"
 	"github.com/gin-gonic/gin"
 )
 

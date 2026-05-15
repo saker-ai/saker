@@ -5,9 +5,9 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/cinience/saker/pkg/runtime/commands"
-	"github.com/cinience/saker/pkg/runtime/skills"
-	"github.com/cinience/saker/pkg/runtime/subagents"
+	"github.com/saker-ai/saker/pkg/runtime/commands"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
 )
 
 func TestParse_EmptyFS(t *testing.T) {

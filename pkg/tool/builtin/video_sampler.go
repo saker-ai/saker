@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const videoSamplerDescription = `Extracts frames from a video file using ffmpeg.

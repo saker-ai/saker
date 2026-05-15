@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/cinience/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/artifact"
 )
 
 // StreamResult delivers the outcome of processing one stream segment.

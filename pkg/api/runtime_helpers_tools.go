@@ -1,6 +1,6 @@
 package api
 
-import "github.com/cinience/saker/pkg/model"
+import "github.com/saker-ai/saker/pkg/model"
 
 // EnabledBuiltinToolKeys returns the built-in registration keys selected by
 // Options.EnabledBuiltinTools for the effective entrypoint.

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 	acpproto "github.com/coder/acp-go-sdk"
 )
 

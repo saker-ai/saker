@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/persona"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/persona"
 )
 
 // initPersonas builds a persona registry and router from file-based personas

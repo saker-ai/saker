@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	corehooks "github.com/cinience/saker/pkg/core/hooks"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	corehooks "github.com/saker-ai/saker/pkg/core/hooks"
 )
 
 // HookRecorder records hook events for inspection.

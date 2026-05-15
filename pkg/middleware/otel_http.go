@@ -27,7 +27,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-const otelTracerName = "github.com/cinience/saker/pkg/middleware"
+const otelTracerName = "github.com/saker-ai/saker/pkg/middleware"
 
 // OTELHTTPMiddleware returns a gin middleware that creates a server-side
 // span per HTTP request using the OTel global tracer. Trace context is

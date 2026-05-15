@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
 )
 
 // environment_io.go covers everything the agent runs against an existing

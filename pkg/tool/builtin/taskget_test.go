@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/runtime/tasks"
+	"github.com/saker-ai/saker/pkg/runtime/tasks"
 )
 
 func TestTaskGetToolMetadata(t *testing.T) {

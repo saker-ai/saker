@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 
-	synapsev1 "github.com/cinience/saker/proto/synapse/v1"
+	synapsev1 "github.com/saker-ai/saker/proto/synapse/v1"
 )
 
 // DialOptions describes how to reach the synapse hub.

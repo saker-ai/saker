@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 	"github.com/gin-gonic/gin"
 )
 

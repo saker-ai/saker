@@ -1,7 +1,7 @@
 package clikit
 
 import (
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 // AskQuestionFunc mirrors toolbuiltin.AskQuestionFunc and is re-exported so

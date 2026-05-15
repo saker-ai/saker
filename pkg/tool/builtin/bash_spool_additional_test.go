@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 func TestBashOutputSpoolFinalizeTruncated(t *testing.T) {

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 )
 
 // branching; refactoring would push the same complexity into helpers without

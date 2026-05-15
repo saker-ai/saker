@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/middleware"
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 func TestBashSessionIDFromContext(t *testing.T) {

@@ -3,7 +3,7 @@ package aigo
 import (
 	"github.com/godeps/aigo/tooldef"
 
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 // convertSchema converts a tooldef.Schema to a tool.JSONSchema.

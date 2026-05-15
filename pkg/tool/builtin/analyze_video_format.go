@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/media/chunk"
-	"github.com/cinience/saker/pkg/media/describe"
+	"github.com/saker-ai/saker/pkg/media/chunk"
+	"github.com/saker-ai/saker/pkg/media/describe"
 )
 
 // analyze_video_format.go owns report rendering, on-disk persistence, and

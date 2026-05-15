@@ -6,14 +6,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/agent"
-	"github.com/cinience/saker/pkg/config"
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	"github.com/cinience/saker/pkg/logging"
-	"github.com/cinience/saker/pkg/metrics"
-	"github.com/cinience/saker/pkg/middleware"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/agent"
+	"github.com/saker-ai/saker/pkg/config"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/logging"
+	"github.com/saker-ai/saker/pkg/metrics"
+	"github.com/saker-ai/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
 )
 
 func (rt *Runtime) runAgent(prep preparedRun) (runResult, error) {

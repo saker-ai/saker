@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/project"
 )
 
 // resolveCurrentUser returns the project.User row for the authenticated

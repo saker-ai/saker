@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/runtime/subagents"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
 )
 
 func TestEnsureACPFlag(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cinience/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/message"
 )
 
 // CollapseConfig controls tool output folding to save tokens.

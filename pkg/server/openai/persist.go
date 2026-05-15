@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/conversation"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/conversation"
 )
 
 // closeTurnTimeout caps the wall-clock budget for the post-stream

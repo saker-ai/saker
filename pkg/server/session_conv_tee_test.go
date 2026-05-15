@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cinience/saker/pkg/conversation"
+	"github.com/saker-ai/saker/pkg/conversation"
 )
 
 // openConvStoreForServerTest opens a fresh SQLite-backed conversation.Store

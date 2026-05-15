@@ -3,14 +3,14 @@ package api
 import (
 	"testing"
 
-	coremw "github.com/cinience/saker/pkg/core/eventmw"
-	corehooks "github.com/cinience/saker/pkg/core/hooks"
-	"github.com/cinience/saker/pkg/middleware"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/runtime/commands"
-	"github.com/cinience/saker/pkg/runtime/skills"
-	"github.com/cinience/saker/pkg/runtime/subagents"
-	"github.com/cinience/saker/pkg/tool"
+	coremw "github.com/saker-ai/saker/pkg/core/eventmw"
+	corehooks "github.com/saker-ai/saker/pkg/core/hooks"
+	"github.com/saker-ai/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/runtime/commands"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 func TestOptionsFrozenClonesCollections(t *testing.T) {

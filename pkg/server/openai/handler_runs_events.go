@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/runhub"
+	"github.com/saker-ai/saker/pkg/runhub"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/trace"
 )

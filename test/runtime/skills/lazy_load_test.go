@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
 )
 
 func TestLazyLoadViaRegistry(t *testing.T) {

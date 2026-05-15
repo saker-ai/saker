@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/apps"
-	"github.com/cinience/saker/pkg/canvas"
+	"github.com/saker-ai/saker/pkg/apps"
+	"github.com/saker-ai/saker/pkg/canvas"
 	"github.com/gin-gonic/gin"
 )
 

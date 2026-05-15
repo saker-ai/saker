@@ -9,8 +9,8 @@ import (
 	"github.com/godeps/aigo/engine"
 	"github.com/godeps/aigo/tooldef"
 
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 // ParseRef splits "provider-name/model" into provider and model.

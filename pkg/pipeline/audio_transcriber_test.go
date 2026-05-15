@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/pipeline"
 )
 
 // fakeAudioExtractor creates an AudioExtractor-like source for testing

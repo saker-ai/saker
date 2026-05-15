@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/pipeline"
-	"github.com/cinience/saker/pkg/runtime/checkpoint"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/runtime/checkpoint"
+	"github.com/saker-ai/saker/pkg/tool"
 	"github.com/stretchr/testify/require"
 )
 

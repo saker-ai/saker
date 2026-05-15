@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/config"
 )
 
 func TestParseFrontMatterAndApplyArguments(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"charm.land/lipgloss/v2"
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // StatusBar renders the bottom status line below the input box.

@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/runhub/store"
+	"github.com/saker-ai/saker/pkg/runhub/store"
 )
 
 // PersistentHub composes a MemoryHub with a runhub-store backed event

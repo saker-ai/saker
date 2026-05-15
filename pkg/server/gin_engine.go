@@ -5,8 +5,8 @@ import (
 	"net/http/pprof"
 	"strings"
 
-	"github.com/cinience/saker/pkg/middleware"
-	storagecfg "github.com/cinience/saker/pkg/storage"
+	"github.com/saker-ai/saker/pkg/middleware"
+	storagecfg "github.com/saker-ai/saker/pkg/storage"
 	"github.com/gin-gonic/gin"
 )
 

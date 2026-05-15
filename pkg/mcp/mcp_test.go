@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	coreevents "github.com/cinience/saker/pkg/core/events"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

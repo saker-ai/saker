@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cinience/saker/pkg/api"
-	modelpkg "github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/provider"
+	"github.com/saker-ai/saker/pkg/api"
+	modelpkg "github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/provider"
 )
 
 // buildModelProvider delegates to the shared provider.Detect function.

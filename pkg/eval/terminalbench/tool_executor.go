@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cinience/saker/pkg/agent"
-	"github.com/cinience/saker/pkg/message"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/agent"
+	"github.com/saker-ai/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 // historyToolExecutor wraps tool.Executor with the bookkeeping the agent loop

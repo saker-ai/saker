@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/cinience/saker/pkg/runtime/tasks"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/runtime/tasks"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const taskUpdateDescription = "Update a task's status, owner, and dependencies. Use delete=true to delete tasks."

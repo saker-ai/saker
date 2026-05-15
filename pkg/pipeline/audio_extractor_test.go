@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/pipeline"
 )
 
 func TestAudioExtractorOptions(t *testing.T) {

@@ -39,7 +39,7 @@ import (
 	"github.com/godeps/aigo/engine/suno"
 	"github.com/godeps/aigo/engine/volcvoice"
 
-	"github.com/cinience/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/config"
 )
 
 // envProvider describes a default provider activated by an environment variable.

@@ -3,8 +3,8 @@ package api
 import (
 	"testing"
 
-	"github.com/cinience/saker/pkg/config"
-	coreevents "github.com/cinience/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/config"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
 )
 
 func TestBuildSettingsHooksNil(t *testing.T) {

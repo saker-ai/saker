@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 func writeGrepFixture(t *testing.T, dir, name, content string) string {

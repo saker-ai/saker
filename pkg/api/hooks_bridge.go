@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/config"
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	corehooks "github.com/cinience/saker/pkg/core/hooks"
+	"github.com/saker-ai/saker/pkg/config"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	corehooks "github.com/saker-ai/saker/pkg/core/hooks"
 )
 
 func newHookExecutor(opts Options, recorder HookRecorder, settings *config.Settings) *corehooks.Executor {

@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cinience/saker/pkg/media"
-	"github.com/cinience/saker/pkg/media/clip"
-	"github.com/cinience/saker/pkg/media/describe"
-	"github.com/cinience/saker/pkg/media/embedding"
-	"github.com/cinience/saker/pkg/media/vecstore"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/media"
+	"github.com/saker-ai/saker/pkg/media/clip"
+	"github.com/saker-ai/saker/pkg/media/describe"
+	"github.com/saker-ai/saker/pkg/media/embedding"
+	"github.com/saker-ai/saker/pkg/media/vecstore"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const mediaSearchDescription = `Search indexed video footage using natural language queries.

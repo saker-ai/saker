@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/core/events"
-	corehooks "github.com/cinience/saker/pkg/core/hooks"
+	"github.com/saker-ai/saker/pkg/core/events"
+	corehooks "github.com/saker-ai/saker/pkg/core/hooks"
 )
 
 // hookConfig represents the JSON structure for hooks configuration.

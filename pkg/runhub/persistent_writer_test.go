@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/runhub/store"
+	"github.com/saker-ai/saker/pkg/runhub/store"
 )
 
 // TestBatchWriter_SizeTrigger asserts that filling the buffer to

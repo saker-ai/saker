@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
 )
 
 func buildSkills() []api.SkillRegistration {

@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/cinience/saker/pkg/pipeline"
-	"github.com/cinience/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 // stream_monitor_webhook.go isolates outbound HTTP delivery for detected

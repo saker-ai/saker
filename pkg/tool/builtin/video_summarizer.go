@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const videoSummarizerDescription = `Aggregates per-frame analysis results into a coherent video-level understanding.

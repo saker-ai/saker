@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/agent"
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	"github.com/cinience/saker/pkg/middleware"
-	"github.com/cinience/saker/pkg/runtime/subagents"
-	"github.com/cinience/saker/pkg/security"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/agent"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
+	"github.com/saker-ai/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 func (t *runtimeToolExecutor) isAllowed(ctx context.Context, name string) bool {

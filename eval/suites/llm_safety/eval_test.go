@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/eval"
-	evalhelpers "github.com/cinience/saker/eval"
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/testutil"
+	"github.com/saker-ai/saker/eval"
+	evalhelpers "github.com/saker-ai/saker/eval"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/testutil"
 )
 
 type safetyCase struct {

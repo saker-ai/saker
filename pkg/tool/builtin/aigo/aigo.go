@@ -32,7 +32,7 @@ import (
 	"github.com/godeps/aigo/engine"
 	"github.com/godeps/aigo/tooldef"
 
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 // Compile-time interface assertions.

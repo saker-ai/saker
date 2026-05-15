@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/project"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )

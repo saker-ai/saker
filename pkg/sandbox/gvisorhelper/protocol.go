@@ -1,6 +1,6 @@
 package gvisorhelper
 
-import "github.com/cinience/saker/pkg/sandbox"
+import "github.com/saker-ai/saker/pkg/sandbox"
 
 // Request is the stdin protocol payload for helper mode.
 type Request struct {

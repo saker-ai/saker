@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/middleware"
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // usagePublishingModel mimics how pkg/api/runtime_model.go publishes

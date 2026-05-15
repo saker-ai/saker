@@ -11,7 +11,7 @@ import (
 
 	"go.uber.org/zap"
 
-	synapsev1 "github.com/cinience/saker/proto/synapse/v1"
+	synapsev1 "github.com/saker-ai/saker/proto/synapse/v1"
 )
 
 // Pump owns the bidi stream lifecycle once Hello has been ack'd.

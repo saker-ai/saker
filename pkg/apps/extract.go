@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cinience/saker/pkg/canvas"
+	"github.com/saker-ai/saker/pkg/canvas"
 )
 
 // ExtractInputs walks doc.Nodes and returns one AppInputField for every

@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/tool"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 // StreamExecute runs the bash command while emitting incremental output. It

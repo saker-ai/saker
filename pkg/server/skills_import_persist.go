@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 )
 
 func resolveSkillImportTargetRoot(rt *api.Runtime, scope skillImportScope) (string, error) {

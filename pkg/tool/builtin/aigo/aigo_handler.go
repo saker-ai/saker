@@ -11,7 +11,7 @@ import (
 	sdk "github.com/godeps/aigo"
 	"github.com/godeps/aigo/tooldef"
 
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 func (t *AigoTool) Execute(ctx context.Context, params map[string]interface{}) (*tool.ToolResult, error) {

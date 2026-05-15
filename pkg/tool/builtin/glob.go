@@ -10,10 +10,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/cinience/saker/pkg/gitignore"
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/security"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/gitignore"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const (

@@ -5,7 +5,7 @@ package api
 import (
 	"testing"
 
-	"github.com/cinience/saker/pkg/sandbox/govmenv"
+	"github.com/saker-ai/saker/pkg/sandbox/govmenv"
 )
 
 func TestBuildExecutionEnvironmentSelectsGovm(t *testing.T) {

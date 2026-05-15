@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/runhub"
+	"github.com/saker-ai/saker/pkg/runhub"
 )
 
 // TestWriteTerminalErrorIfNeeded_Mapping is the unit-level lock for the

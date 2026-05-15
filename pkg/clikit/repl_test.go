@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/chzyer/readline"
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 )
 
 func TestIsReadTermination(t *testing.T) {

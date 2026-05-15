@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // delayModel simulates streaming with configurable per-token delay.

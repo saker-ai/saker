@@ -16,7 +16,7 @@ import (
 
 const (
 	// GitHubReleaseURL is the base URL for downloading release assets.
-	GitHubReleaseURL = "https://github.com/cinience/saker/releases/download"
+	GitHubReleaseURL = "https://github.com/saker-ai/saker/releases/download"
 
 	// DownloadTimeout is the timeout for downloading a release binary.
 	DownloadTimeout = 120 * time.Second

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
 )
 
 func TestExecuteSkillsDedupesAutoAndForcedMatches(t *testing.T) {

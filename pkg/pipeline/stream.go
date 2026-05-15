@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/artifact"
 )
 
 // StreamSource produces artifacts on demand from an ongoing stream.

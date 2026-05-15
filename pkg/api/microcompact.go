@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/message"
 )
 
 // MicrocompactConfig controls time-based tool output clearing.

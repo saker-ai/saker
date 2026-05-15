@@ -3,7 +3,7 @@ package server
 import (
 	"testing"
 
-	"github.com/cinience/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/config"
 )
 
 func TestIsAuthEnabled_NilConfig(t *testing.T) {

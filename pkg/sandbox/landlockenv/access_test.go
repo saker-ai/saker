@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
 )
 
 func makeSession(guestCwd string, roPaths, rwPaths []string) *sandboxenv.PreparedSession {

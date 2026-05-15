@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/cinience/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/artifact"
 )
 
 // ContentBlockType discriminates the kind of content in a ContentBlock.

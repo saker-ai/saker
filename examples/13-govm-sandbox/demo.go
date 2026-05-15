@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/sandbox/govmenv"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/sandbox/govmenv"
 )
 
 type demoReport struct {

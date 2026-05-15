@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/mcp"
+	"github.com/saker-ai/saker/pkg/mcp"
 )
 
 type roundTripperFunc func(*http.Request) (*http.Response, error)

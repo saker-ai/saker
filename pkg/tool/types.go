@@ -3,7 +3,7 @@ package tool
 import (
 	"time"
 
-	"github.com/cinience/saker/pkg/sandbox"
+	"github.com/saker-ai/saker/pkg/sandbox"
 )
 
 // Call captures a single tool invocation request.

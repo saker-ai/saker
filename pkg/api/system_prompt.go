@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // environmentInfo captures runtime context for the environment section.

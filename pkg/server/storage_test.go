@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/config"
-	storagecfg "github.com/cinience/saker/pkg/storage"
+	"github.com/saker-ai/saker/pkg/config"
+	storagecfg "github.com/saker-ai/saker/pkg/storage"
 )
 
 // TestStorageConfigFromSettings_NilDefaults asserts that the converter never

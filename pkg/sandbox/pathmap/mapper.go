@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
 )
 
 // Mapper translates between guest-visible and host-visible paths for one session.

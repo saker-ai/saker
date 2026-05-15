@@ -3,7 +3,7 @@ package server
 import (
 	"time"
 
-	"github.com/cinience/saker/pkg/logging"
+	"github.com/saker-ai/saker/pkg/logging"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )

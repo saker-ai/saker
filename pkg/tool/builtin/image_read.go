@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/security"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const imageReadDescription = `Reads an image file from the local filesystem within the configured sandbox.

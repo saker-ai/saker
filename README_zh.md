@@ -6,10 +6,10 @@
   <img src="https://img.shields.io/badge/Go-1.26%2B-00ADD8?logo=go&logoColor=white" alt="Go 1.26+">
   <img src="https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white" alt="Node.js 22+">
   <img src="https://img.shields.io/badge/License-SKL--1.0-c2410c" alt="License: SKL-1.0">
-  <a href="https://github.com/cinience/saker/actions/workflows/ci.yml"><img src="https://github.com/cinience/saker/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/cinience/saker/actions/workflows/codeql.yml"><img src="https://github.com/cinience/saker/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
-  <a href="https://goreportcard.com/report/github.com/cinience/saker"><img src="https://goreportcard.com/badge/github.com/cinience/saker" alt="Go Report Card"></a>
-  <a href="https://codecov.io/gh/cinience/saker"><img src="https://codecov.io/gh/cinience/saker/branch/main/graph/badge.svg" alt="Coverage"></a>
+  <a href="https://github.com/saker-ai/saker/actions/workflows/ci.yml"><img src="https://github.com/saker-ai/saker/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/saker-ai/saker/actions/workflows/codeql.yml"><img src="https://github.com/saker-ai/saker/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
+  <a href="https://goreportcard.com/report/github.com/saker-ai/saker"><img src="https://goreportcard.com/badge/github.com/saker-ai/saker" alt="Go Report Card"></a>
+  <a href="https://codecov.io/gh/saker-ai/saker"><img src="https://codecov.io/gh/saker-ai/saker/branch/main/graph/badge.svg" alt="Coverage"></a>
 </p>
 
 **面向创作场景的源码可见 Agent 运行时。**
@@ -55,7 +55,7 @@ Saker 把创作团队通常分散使用的三层栈 &mdash; agent 运行时、We
 ### 构建并运行
 
 ```bash
-git clone https://github.com/cinience/saker.git
+git clone https://github.com/saker-ai/saker.git
 cd saker
 
 pnpm install                      # 安装前端依赖

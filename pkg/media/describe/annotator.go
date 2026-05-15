@@ -10,7 +10,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // Segment identifies a video segment for annotation (avoids import cycle with media).

@@ -3,7 +3,7 @@ package acp
 import (
 	"testing"
 
-	"github.com/cinience/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/message"
 	acpproto "github.com/coder/acp-go-sdk"
 )
 

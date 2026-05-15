@@ -5,10 +5,10 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/cinience/saker/pkg/model"
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/sandbox/hostenv"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	"github.com/saker-ai/saker/pkg/model"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/sandbox/hostenv"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 func TestEnabledBuiltinToolKeys(t *testing.T) {

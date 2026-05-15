@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/pipeline"
 	"github.com/stretchr/testify/require"
 )
 

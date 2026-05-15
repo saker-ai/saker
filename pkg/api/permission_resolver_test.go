@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	"github.com/cinience/saker/pkg/security"
-	"github.com/cinience/saker/pkg/tool"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 func TestBuildPermissionResolverHandlerAndApprovals(t *testing.T) {

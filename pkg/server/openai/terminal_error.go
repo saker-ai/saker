@@ -3,7 +3,7 @@ package openai
 import (
 	"io"
 
-	"github.com/cinience/saker/pkg/runhub"
+	"github.com/saker-ai/saker/pkg/runhub"
 )
 
 // writeTerminalErrorIfNeeded inspects the run's terminal status after

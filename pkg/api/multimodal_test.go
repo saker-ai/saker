@@ -3,8 +3,8 @@ package api
 import (
 	"testing"
 
-	"github.com/cinience/saker/pkg/message"
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 func TestConvertMessages_WithContentBlocks(t *testing.T) {

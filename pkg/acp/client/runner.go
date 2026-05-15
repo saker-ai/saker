@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cinience/saker/pkg/runtime/subagents"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
 )
 
 // ACPAgentConfig describes how to launch an external ACP agent.

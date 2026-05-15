@@ -18,8 +18,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	storagecfg "github.com/cinience/saker/pkg/storage"
+	"github.com/saker-ai/saker/pkg/api"
+	storagecfg "github.com/saker-ai/saker/pkg/storage"
 	"github.com/mojatter/s2"
 )
 

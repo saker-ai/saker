@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 type requestPayload struct {

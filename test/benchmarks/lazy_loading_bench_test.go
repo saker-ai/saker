@@ -9,11 +9,11 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/runtime/commands"
-	"github.com/cinience/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/runtime/commands"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
 )
 
 const iterationsPerBenchmark = 100

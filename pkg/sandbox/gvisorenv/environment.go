@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/sandbox/gvisorhelper"
-	"github.com/cinience/saker/pkg/sandbox/pathmap"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/sandbox/gvisorhelper"
+	"github.com/saker-ai/saker/pkg/sandbox/pathmap"
 )
 
 var errGVisorNotImplemented = errors.New("sandbox gvisorenv: operation not implemented")

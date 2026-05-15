@@ -12,10 +12,10 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/cinience/saker/pkg/media/chunk"
-	"github.com/cinience/saker/pkg/media/describe"
-	"github.com/cinience/saker/pkg/media/embedding"
-	"github.com/cinience/saker/pkg/media/vecstore"
+	"github.com/saker-ai/saker/pkg/media/chunk"
+	"github.com/saker-ai/saker/pkg/media/describe"
+	"github.com/saker-ai/saker/pkg/media/embedding"
+	"github.com/saker-ai/saker/pkg/media/vecstore"
 )
 
 // Indexer orchestrates the full media indexing pipeline:

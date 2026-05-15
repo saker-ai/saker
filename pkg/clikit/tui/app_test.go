@@ -10,9 +10,9 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/clikit"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/clikit"
 )
 
 // ---------------------------------------------------------------------------

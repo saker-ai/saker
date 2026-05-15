@@ -10,9 +10,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/provider"
-	"github.com/cinience/saker/pkg/server"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/provider"
+	"github.com/saker-ai/saker/pkg/server"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"

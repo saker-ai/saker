@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/security"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 // NewSSRFSafeClient returns an HTTP client hardened against SSRF attacks

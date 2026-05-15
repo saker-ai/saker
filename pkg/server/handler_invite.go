@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/project"
 )
 
 // inviteJSON is the wire shape for an Invite. ExpiresAt is omitted when nil so

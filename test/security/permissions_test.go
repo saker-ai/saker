@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cinience/saker/pkg/sandbox"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/sandbox"
+	"github.com/saker-ai/saker/pkg/tool"
 	"github.com/stretchr/testify/require"
 )
 

@@ -24,7 +24,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/project"
 )
 
 // pgStore opens a project.Store backed by the postgres DSN in

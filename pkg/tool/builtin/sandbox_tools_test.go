@@ -3,7 +3,7 @@ package toolbuiltin
 import (
 	"testing"
 
-	"github.com/cinience/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 func TestCustomSandboxConstructors(t *testing.T) {

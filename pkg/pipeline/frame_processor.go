@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/artifact"
 )
 
 // Event represents a detected event during frame-level processing.

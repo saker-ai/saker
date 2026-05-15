@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/runtime/subagents"
-	"github.com/cinience/saker/pkg/runtime/tasks"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
+	"github.com/saker-ai/saker/pkg/runtime/tasks"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 func TestTaskToolMetadata(t *testing.T) {

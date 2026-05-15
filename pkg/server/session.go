@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/conversation"
+	"github.com/saker-ai/saker/pkg/conversation"
 	"github.com/google/uuid"
 )
 

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	synapsev1 "github.com/cinience/saker/proto/synapse/v1"
+	synapsev1 "github.com/saker-ai/saker/proto/synapse/v1"
 )
 
 // Backend is the abstraction for forwarding chat requests to a local

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/cinience/saker/pkg/profile"
+	"github.com/saker-ai/saker/pkg/profile"
 )
 
 // runProfileCommand handles "saker profile <action> [name]" subcommands.

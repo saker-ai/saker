@@ -3,8 +3,8 @@ package pipeline_test
 import (
 	"testing"
 
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/pipeline"
 	"github.com/stretchr/testify/require"
 )
 

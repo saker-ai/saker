@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"testing"
 
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	corehooks "github.com/cinience/saker/pkg/core/hooks"
-	"github.com/cinience/saker/pkg/tool"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	corehooks "github.com/saker-ai/saker/pkg/core/hooks"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 func TestWithMaxSessionsRespectsPositiveOnly(t *testing.T) {

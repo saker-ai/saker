@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 	"github.com/google/uuid"
 )
 

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/cinience/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 var (

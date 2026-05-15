@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 )
 
 // chatChunkBuilder is per-run state that turns saker StreamEvents into

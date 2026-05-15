@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // ---------------------------------------------------------------------------

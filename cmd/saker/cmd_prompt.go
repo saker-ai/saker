@@ -10,7 +10,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 )
 
 func resolvePrompt(literal, file string, tail []string) (string, error) {

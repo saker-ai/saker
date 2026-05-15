@@ -4,8 +4,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 // Detect selects and configures a model provider based on explicit flags and

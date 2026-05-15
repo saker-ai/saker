@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/core/events"
 )
 
 // executor_types.go declares the public types and configuration knobs for the

@@ -3,7 +3,7 @@ package api
 import (
 	"testing"
 
-	"github.com/cinience/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/message"
 )
 
 func TestMicrocompact_nilCompactor(t *testing.T) {

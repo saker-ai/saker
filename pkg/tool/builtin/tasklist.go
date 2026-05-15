@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/cinience/saker/pkg/runtime/tasks"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/runtime/tasks"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const taskListDescription = "List tasks with optional status/owner filtering and dependency visualization."

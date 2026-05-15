@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/eval/terminalbench"
-	"github.com/cinience/saker/pkg/sandbox/dockerenv"
+	"github.com/saker-ai/saker/pkg/eval/terminalbench"
+	"github.com/saker-ai/saker/pkg/sandbox/dockerenv"
 )
 
 func TestRunEvalCommand_NoArgs_PrintsUsage(t *testing.T) {

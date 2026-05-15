@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // SupportedImageMediaTypes is the canonical whitelist of image MIME types we

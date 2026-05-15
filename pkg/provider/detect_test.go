@@ -3,7 +3,7 @@ package provider
 import (
 	"testing"
 
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // TestDetect_AnthropicWinsAutoDetect locks in the auto-detection priority:

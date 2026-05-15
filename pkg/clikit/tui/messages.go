@@ -1,8 +1,8 @@
 package tui
 
 import (
-	"github.com/cinience/saker/pkg/api"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	"github.com/saker-ai/saker/pkg/api"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 // Internal message types for the bubbletea Update loop.

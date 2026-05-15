@@ -4,7 +4,7 @@ Thank you for your interest in contributing to saker. This document covers the p
 
 ## Reporting Bugs
 
-Use [GitHub Issues](https://github.com/cinience/saker/issues) to report bugs. Before opening a new issue, search existing issues to avoid duplicates.
+Use [GitHub Issues](https://github.com/saker-ai/saker/issues) to report bugs. Before opening a new issue, search existing issues to avoid duplicates.
 
 A good bug report includes:
 
@@ -24,7 +24,7 @@ Open a GitHub Issue with the `enhancement` label. Describe the problem the featu
 
 ```bash
 # Clone the repository
-git clone https://github.com/cinience/saker.git
+git clone https://github.com/saker-ai/saker.git
 cd saker
 
 # Install Go dependencies

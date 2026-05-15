@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	coremw "github.com/cinience/saker/pkg/core/eventmw"
-	"github.com/cinience/saker/pkg/core/events"
+	coremw "github.com/saker-ai/saker/pkg/core/eventmw"
+	"github.com/saker-ai/saker/pkg/core/events"
 )
 
 type hookBundle struct {

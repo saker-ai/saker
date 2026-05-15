@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/eval/dataset"
-	"github.com/cinience/saker/pkg/model"
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/eval/dataset"
+	"github.com/saker-ai/saker/pkg/model"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
 )
 
 // stubEnv is a fake ExecutionEnvironment that records every call so tests can

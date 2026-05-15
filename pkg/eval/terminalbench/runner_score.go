@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/eval/dataset"
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/eval/dataset"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
 )
 
 // runVerifier uploads tests.tar, executes the verifier command and reads

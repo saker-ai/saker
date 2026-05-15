@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/runhub/store"
+	"github.com/saker-ai/saker/pkg/runhub/store"
 )
 
 // openTestStore returns a fresh store backed by a real sqlite file under

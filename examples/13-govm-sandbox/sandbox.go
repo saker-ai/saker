@@ -3,7 +3,7 @@ package main
 import (
 	"path/filepath"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
 )
 
 type demoConfig struct {

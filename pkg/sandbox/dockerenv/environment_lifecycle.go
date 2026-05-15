@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
 )
 
 // environment_lifecycle.go owns container lifecycle: image pull policy,

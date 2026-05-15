@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const todoWriteDescription = `Updates the todo list.

@@ -23,24 +23,24 @@ func TestMain(m *testing.M) {
 		goleak.IgnoreTopFunction("go.opentelemetry.io/otel/sdk/trace.(*batchSpanProcessor).processQueue"),
 		// AuthManager background cleanup loops; Close()-able but tests do not
 		// always reach the teardown path. Bound to package-scope auth state.
-		goleak.IgnoreTopFunction("github.com/cinience/saker/pkg/server.(*AuthManager).cleanupRevokedLoop"),
-		goleak.IgnoreTopFunction("github.com/cinience/saker/pkg/server.(*AuthManager).cleanupUserInfoCacheLoop"),
+		goleak.IgnoreTopFunction("github.com/saker-ai/saker/pkg/server.(*AuthManager).cleanupRevokedLoop"),
+		goleak.IgnoreTopFunction("github.com/saker-ai/saker/pkg/server.(*AuthManager).cleanupUserInfoCacheLoop"),
 		// TaskTracker background cleanup loop; no Close method, lives for
 		// the test process lifetime. Same pattern as the AuthManager loops.
-		goleak.IgnoreTopFunction("github.com/cinience/saker/pkg/server.(*TaskTracker).cleanup"),
+		goleak.IgnoreTopFunction("github.com/saker-ai/saker/pkg/server.(*TaskTracker).cleanup"),
 		// Hooks executor onceTracker background sweeper; Close() exists, but
 		// many embedded handler tests share an executor without explicit
 		// teardown. Loop is select-blocked on stopCh.
-		goleak.IgnoreTopFunction("github.com/cinience/saker/pkg/core/hooks.(*Executor).onceTrackerCleanupLoop"),
+		goleak.IgnoreTopFunction("github.com/saker-ai/saker/pkg/core/hooks.(*Executor).onceTrackerCleanupLoop"),
 		// Project-scope ComponentRegistry sweeper; tests instantiate a global
 		// registry that lives for the test process lifetime.
-		goleak.IgnoreAnyFunction("github.com/cinience/saker/pkg/project.(*ComponentRegistry[...]).sweepLoop"),
+		goleak.IgnoreAnyFunction("github.com/saker-ai/saker/pkg/project.(*ComponentRegistry[...]).sweepLoop"),
 		// chromedp browser context cancel watcher; tests using chromedp do
 		// not always invoke the explicit cancel func, but the goroutine
 		// terminates on context.Done.
 		goleak.IgnoreTopFunction("github.com/chromedp/chromedp.NewContext.func1"),
 		// Apps RateLimitManager background sweeper; Close() exists, but
 		// shared rate limiter instances live for the test process lifetime.
-		goleak.IgnoreTopFunction("github.com/cinience/saker/pkg/apps.(*RateLimitManager).cleanupLoop"),
+		goleak.IgnoreTopFunction("github.com/saker-ai/saker/pkg/apps.(*RateLimitManager).cleanupLoop"),
 	)
 }

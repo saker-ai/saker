@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
 
-	"github.com/cinience/saker/pkg/project/dialect"
+	"github.com/saker-ai/saker/pkg/project/dialect"
 )
 
 // Config controls how Store is opened.

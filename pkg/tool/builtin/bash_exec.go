@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/middleware"
-	"github.com/cinience/saker/pkg/model"
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/model"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
 )
 
 func (b *BashTool) resolveWorkdir(params map[string]interface{}, ps *sandboxenv.PreparedSession) (string, error) {

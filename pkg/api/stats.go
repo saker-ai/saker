@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // TokenStats captures token usage for a single model call.

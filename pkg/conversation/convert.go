@@ -3,7 +3,7 @@ package conversation
 import (
 	"encoding/json"
 
-	"github.com/cinience/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/message"
 )
 
 // ToRuntimeMessages converts projected conversation messages back to the

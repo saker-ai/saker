@@ -5,9 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/cinience/saker/pkg/agent"
-	"github.com/cinience/saker/pkg/message"
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/agent"
+	"github.com/saker-ai/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // scriptedBaseModel is a model.Model that walks a fixed list of (response,

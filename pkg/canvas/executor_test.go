@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 // fakeRuntime captures every dispatch made by the executor so tests can

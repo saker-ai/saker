@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	coreevents "github.com/cinience/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/api"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
 )
 
 // ---------------------------------------------------------------------------

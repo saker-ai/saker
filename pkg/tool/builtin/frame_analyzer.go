@@ -9,9 +9,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const frameAnalyzerDescription = `Analyzes a single image frame using a vision-capable LLM.

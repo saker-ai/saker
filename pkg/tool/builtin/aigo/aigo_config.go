@@ -9,8 +9,8 @@ import (
 	sdk "github.com/godeps/aigo"
 	"github.com/godeps/aigo/tooldef"
 
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 // ConfigOption configures NewToolsFromConfig behavior.

@@ -21,7 +21,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/skillhub"
+	"github.com/saker-ai/saker/pkg/skillhub"
 )
 
 const (

@@ -8,14 +8,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/config"
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	corehooks "github.com/cinience/saker/pkg/core/hooks"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/runtime/commands"
-	"github.com/cinience/saker/pkg/runtime/skills"
-	"github.com/cinience/saker/pkg/sandbox"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/config"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	corehooks "github.com/saker-ai/saker/pkg/core/hooks"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/runtime/commands"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/sandbox"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 type namedTool struct{ name string }

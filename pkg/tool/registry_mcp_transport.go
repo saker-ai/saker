@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/cinience/saker/pkg/mcp"
+	"github.com/saker-ai/saker/pkg/mcp"
 )
 
 func applyMCPTransportOptions(transport mcp.Transport, opts MCPServerOptions) error {

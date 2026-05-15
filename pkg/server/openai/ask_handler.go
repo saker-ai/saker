@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cinience/saker/pkg/runhub"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	"github.com/saker-ai/saker/pkg/runhub"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 	"github.com/google/uuid"
 )
 

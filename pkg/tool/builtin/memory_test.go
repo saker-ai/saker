@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/memory"
+	"github.com/saker-ai/saker/pkg/memory"
 )
 
 func TestMemorySaveTool_basic(t *testing.T) {

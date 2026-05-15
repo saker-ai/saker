@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const askUserQuestionDescription = `Use this tool when you need to ask the user questions during execution. This allows you to:

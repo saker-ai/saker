@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/middleware"
-	"github.com/cinience/saker/pkg/model"
-	runtimeskills "github.com/cinience/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/model"
+	runtimeskills "github.com/saker-ai/saker/pkg/runtime/skills"
 )
 
 func TestRuntimeAvailableSkillsSnapshot(t *testing.T) {

@@ -9,13 +9,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/pipeline"
-	runtimecache "github.com/cinience/saker/pkg/runtime/cache"
-	"github.com/cinience/saker/pkg/runtime/checkpoint"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/pipeline"
+	runtimecache "github.com/saker-ai/saker/pkg/runtime/cache"
+	"github.com/saker-ai/saker/pkg/runtime/checkpoint"
+	"github.com/saker-ai/saker/pkg/tool"
 	"github.com/stretchr/testify/require"
 )
 

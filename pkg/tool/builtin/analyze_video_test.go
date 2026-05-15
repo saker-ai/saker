@@ -3,7 +3,7 @@ package toolbuiltin
 import (
 	"testing"
 
-	"github.com/cinience/saker/pkg/media/describe"
+	"github.com/saker-ai/saker/pkg/media/describe"
 )
 
 func TestDetectConsistencyIssues(t *testing.T) {

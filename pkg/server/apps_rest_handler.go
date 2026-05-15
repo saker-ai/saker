@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/apps"
+	"github.com/saker-ai/saker/pkg/apps"
 )
 
 // Routes for the apps REST API are mounted at /api/apps/ and registered

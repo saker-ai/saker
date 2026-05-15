@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const killTaskDescription = `Terminates a running asynchronous bash task started with bash(async=true).

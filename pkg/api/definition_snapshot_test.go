@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cinience/saker/pkg/runtime/commands"
+	"github.com/saker-ai/saker/pkg/runtime/commands"
 )
 
 func TestDefinitionSnapshotVariants(t *testing.T) {

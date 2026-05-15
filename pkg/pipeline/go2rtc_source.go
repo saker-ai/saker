@@ -19,7 +19,7 @@ import (
 	"github.com/AlexxIT/go2rtc/pkg/mjpeg"
 	"github.com/AlexxIT/go2rtc/pkg/onvif"
 	"github.com/AlexxIT/go2rtc/pkg/rtsp"
-	"github.com/cinience/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/artifact"
 )
 
 // DefaultConnectTimeout is the default timeout for establishing a stream connection.

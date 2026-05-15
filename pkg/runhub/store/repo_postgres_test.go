@@ -26,7 +26,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/runhub/store"
+	"github.com/saker-ai/saker/pkg/runhub/store"
 )
 
 // openPGWithCopyThreshold opens a Store backed by SAKER_TEST_PG_DSN with

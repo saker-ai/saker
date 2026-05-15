@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/message"
 )
 
 // TaskResult is one task's outcome.

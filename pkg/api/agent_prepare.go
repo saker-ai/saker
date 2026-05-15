@@ -6,14 +6,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/agent"
-	"github.com/cinience/saker/pkg/logging"
-	"github.com/cinience/saker/pkg/message"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/persona"
-	"github.com/cinience/saker/pkg/runtime/commands"
-	"github.com/cinience/saker/pkg/runtime/skills"
-	"github.com/cinience/saker/pkg/runtime/subagents"
+	"github.com/saker-ai/saker/pkg/agent"
+	"github.com/saker-ai/saker/pkg/logging"
+	"github.com/saker-ai/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/persona"
+	"github.com/saker-ai/saker/pkg/runtime/commands"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
 	"github.com/google/uuid"
 )
 

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	runtimeskills "github.com/cinience/saker/pkg/runtime/skills"
+	runtimeskills "github.com/saker-ai/saker/pkg/runtime/skills"
 )
 
 func TestRuntimeReloadSkillsLoadsImportedDefinitions(t *testing.T) {

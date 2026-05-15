@@ -11,10 +11,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/project"
-	storagecfg "github.com/cinience/saker/pkg/storage"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/project"
+	storagecfg "github.com/saker-ai/saker/pkg/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )

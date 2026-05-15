@@ -3,7 +3,7 @@ package server
 import (
 	"testing"
 
-	"github.com/cinience/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/config"
 )
 
 func TestResolveRole_NilMapping(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/cinience/saker/pkg/config"
-	storagecfg "github.com/cinience/saker/pkg/storage"
+	"github.com/saker-ai/saker/pkg/config"
+	storagecfg "github.com/saker-ai/saker/pkg/storage"
 	"github.com/gin-gonic/gin"
 )
 

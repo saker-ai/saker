@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/e2e"
-	"github.com/cinience/saker/eval"
+	"github.com/saker-ai/saker/e2e"
+	"github.com/saker-ai/saker/eval"
 )
 
 func TestVideoDeepAnalysis(t *testing.T) {

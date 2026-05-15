@@ -5,11 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/agent"
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/runtime/skills"
-	"github.com/cinience/saker/pkg/runtime/subagents"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	"github.com/saker-ai/saker/pkg/agent"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 // ---------------------------------------------------------------------------

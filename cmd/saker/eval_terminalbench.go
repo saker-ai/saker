@@ -14,10 +14,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cinience/saker/pkg/eval/terminalbench"
-	modelpkg "github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/provider"
-	"github.com/cinience/saker/pkg/sandbox/dockerenv"
+	"github.com/saker-ai/saker/pkg/eval/terminalbench"
+	modelpkg "github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/provider"
+	"github.com/saker-ai/saker/pkg/sandbox/dockerenv"
 	"github.com/joho/godotenv"
 )
 

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cinience/saker/pkg/media/describe"
-	"github.com/cinience/saker/pkg/media/vecstore"
+	"github.com/saker-ai/saker/pkg/media/describe"
+	"github.com/saker-ai/saker/pkg/media/vecstore"
 )
 
 // mockEmbedder implements embedding.Embedder for testing.

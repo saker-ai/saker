@@ -9,8 +9,8 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/cinience/saker/pkg/sandbox"
-	"github.com/cinience/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/sandbox"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 // Executor wires tool registry lookup with sandbox enforcement.

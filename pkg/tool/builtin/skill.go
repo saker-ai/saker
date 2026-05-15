@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cinience/saker/pkg/runtime/skills"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 const skillToolDescriptionHeader = `Execute a skill within the main conversation

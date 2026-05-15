@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	"github.com/cinience/saker/pkg/sandbox"
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/security"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/sandbox"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 // SandboxOptions mirrors sandbox.Manager construction knobs exposed at the API

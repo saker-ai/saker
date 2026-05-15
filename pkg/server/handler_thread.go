@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 	"github.com/google/uuid"
 )
 

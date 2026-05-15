@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cinience/saker/pkg/canvas"
+	"github.com/saker-ai/saker/pkg/canvas"
 	"github.com/google/uuid"
 )
 

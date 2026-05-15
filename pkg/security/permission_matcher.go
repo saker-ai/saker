@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/config"
 )
 
 // PermissionAction represents the enforcement outcome for a tool invocation.

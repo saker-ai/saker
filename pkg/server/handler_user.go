@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/profile"
-	"github.com/cinience/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/profile"
+	"github.com/saker-ai/saker/pkg/project"
 	"golang.org/x/crypto/bcrypt"
 )
 

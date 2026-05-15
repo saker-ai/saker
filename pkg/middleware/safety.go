@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/cinience/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 // SafetyMiddleware runs leak detection and prompt injection sanitization

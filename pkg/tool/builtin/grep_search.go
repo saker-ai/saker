@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/cinience/saker/pkg/gitignore"
+	"github.com/saker-ai/saker/pkg/gitignore"
 )
 
 type grepSearchOptions struct {

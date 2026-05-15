@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cinience/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/config"
 	"github.com/go-ldap/ldap/v3"
 )
 

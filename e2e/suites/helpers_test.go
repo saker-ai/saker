@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/e2e"
-	"github.com/cinience/saker/eval"
+	"github.com/saker-ai/saker/e2e"
+	"github.com/saker-ai/saker/eval"
 )
 
 // serverURL returns the saker server URL from environment.

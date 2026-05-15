@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/conversation"
-	"github.com/cinience/saker/pkg/project"
-	"github.com/cinience/saker/pkg/runhub"
-	"github.com/cinience/saker/pkg/runhub/store"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/conversation"
+	"github.com/saker-ai/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/runhub"
+	"github.com/saker-ai/saker/pkg/runhub/store"
 	"github.com/gin-gonic/gin"
 )
 

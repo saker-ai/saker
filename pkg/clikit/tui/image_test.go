@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 )
 
 // createTestPNG creates a small PNG file and returns its path.

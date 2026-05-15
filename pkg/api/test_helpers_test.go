@@ -3,7 +3,7 @@ package api
 import (
 	"strings"
 
-	"github.com/cinience/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/message"
 )
 
 func msgWithTokens(role string, tokens int) message.Message {

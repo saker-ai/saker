@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/sandbox/pathmap"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/sandbox/pathmap"
 )
 
 func prepareSession(_ context.Context, projectRoot string, gv *sandboxenv.GovmOptions, session sandboxenv.SessionContext) (*sandboxenv.PreparedSession, *pathmap.Mapper, []sandboxenv.MountSpec, error) {

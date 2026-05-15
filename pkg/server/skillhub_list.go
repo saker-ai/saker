@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/skillhub"
+	"github.com/saker-ai/saker/pkg/skillhub"
 	"github.com/google/uuid"
 )
 

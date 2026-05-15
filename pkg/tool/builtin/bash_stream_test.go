@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/security"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 func TestBashToolStreamExecute(t *testing.T) {

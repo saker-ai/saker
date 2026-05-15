@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/artifact"
-	ptemplates "github.com/cinience/saker/pkg/pipeline/templates"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/artifact"
+	ptemplates "github.com/saker-ai/saker/pkg/pipeline/templates"
+	"github.com/saker-ai/saker/pkg/tool"
 	"github.com/stretchr/testify/require"
 )
 

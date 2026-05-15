@@ -14,16 +14,16 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/conversation"
-	"github.com/cinience/saker/pkg/logging"
-	"github.com/cinience/saker/pkg/middleware"
-	"github.com/cinience/saker/pkg/project"
-	"github.com/cinience/saker/pkg/sandbox/landlockenv"
-	"github.com/cinience/saker/pkg/server"
-	sakersynapse "github.com/cinience/saker/pkg/synapse"
-	openaigw "github.com/cinience/saker/pkg/server/openai"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/conversation"
+	"github.com/saker-ai/saker/pkg/logging"
+	"github.com/saker-ai/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/project"
+	"github.com/saker-ai/saker/pkg/sandbox/landlockenv"
+	"github.com/saker-ai/saker/pkg/server"
+	sakersynapse "github.com/saker-ai/saker/pkg/synapse"
+	openaigw "github.com/saker-ai/saker/pkg/server/openai"
 	"github.com/gin-gonic/gin"
 )
 

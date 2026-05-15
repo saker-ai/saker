@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/cinience/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/config"
 	"github.com/stretchr/testify/require"
 )
 

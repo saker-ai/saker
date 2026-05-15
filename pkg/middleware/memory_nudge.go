@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/cinience/saker/pkg/logging"
-	"github.com/cinience/saker/pkg/memory"
+	"github.com/saker-ai/saker/pkg/logging"
+	"github.com/saker-ai/saker/pkg/memory"
 )
 
 // MemoryNudgeConfig controls when and how the memory nudge fires.

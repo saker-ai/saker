@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
 )
 
 func TestPrepareSessionUsesProjectRootAsGuestCwd(t *testing.T) {

@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 // RunToolFunc is the function signature for dispatching a pipeline step to a tool.

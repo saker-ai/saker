@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // mockModel implements model.Model for testing

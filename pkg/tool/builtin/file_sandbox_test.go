@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 func TestFileSandboxResolveReadWrite(t *testing.T) {

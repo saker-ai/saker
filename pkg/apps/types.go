@@ -20,7 +20,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/cinience/saker/pkg/canvas"
+	"github.com/saker-ai/saker/pkg/canvas"
 )
 
 // Sentinel errors that callers (REST handlers, RPC) translate to status

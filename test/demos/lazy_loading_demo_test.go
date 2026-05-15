@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/middleware"
-	"github.com/cinience/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
 )
 
 func TestSkillLazyLoadingDemo(t *testing.T) {

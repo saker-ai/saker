@@ -7,8 +7,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/runtime/commands"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/runtime/commands"
 )
 
 func buildCommands() []api.CommandRegistration {

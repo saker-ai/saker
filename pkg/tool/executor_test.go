@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/sandbox"
-	"github.com/cinience/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/sandbox"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 type stubTool struct {

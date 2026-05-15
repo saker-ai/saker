@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/project/dialect"
+	"github.com/saker-ai/saker/pkg/project/dialect"
 )
 
 // Options carries operator-side gateway configuration. Everything here is

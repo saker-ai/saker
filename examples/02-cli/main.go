@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cinience/saker/pkg/api"
-	modelpkg "github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/api"
+	modelpkg "github.com/saker-ai/saker/pkg/model"
 )
 
 const defaultModel = "claude-sonnet-4-5-20250929"

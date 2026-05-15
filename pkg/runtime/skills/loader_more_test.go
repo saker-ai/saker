@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/config"
 )
 
 func TestParseSkillFileMismatchAndInvalid(t *testing.T) {

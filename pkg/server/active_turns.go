@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 )
 
 // ActiveTurn represents a currently running agent turn.

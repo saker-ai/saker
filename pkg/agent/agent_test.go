@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/middleware"
 )
 
 type scriptedModel struct {

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 // WrapModel returns a model.Model decorator that records request count,

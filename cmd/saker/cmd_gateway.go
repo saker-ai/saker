@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/im"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/im"
 	"github.com/godeps/goim"
 )
 

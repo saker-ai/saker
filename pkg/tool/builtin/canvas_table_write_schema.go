@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 // canvas_table_write_schema.go owns the public tool surface (struct, schema,

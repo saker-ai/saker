@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cinience/saker/pkg/runhub/store"
+	"github.com/saker-ai/saker/pkg/runhub/store"
 )
 
 // SQLite chaos tests for E.6. These assert that filesystem-level

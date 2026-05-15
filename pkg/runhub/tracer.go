@@ -29,9 +29,9 @@ import (
 // runhubTracerName is the import-path-style identifier surfaced as
 // otel.scope.name on every emitted span. Matches the standard pattern
 // used elsewhere in the codebase (pkg/middleware uses
-// "github.com/cinience/saker/pkg/middleware") so dashboards filtering by
+// "github.com/saker-ai/saker/pkg/middleware") so dashboards filtering by
 // scope can pivot per-package.
-const runhubTracerName = "github.com/cinience/saker/pkg/runhub"
+const runhubTracerName = "github.com/saker-ai/saker/pkg/runhub"
 
 // runhubTracer fetches the runhub OTel tracer from the global provider.
 // Cheaper to fetch on every call than to cache (the global resolution is

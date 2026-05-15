@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 )
 
 func (h *Handler) handleSkillList(req Request) Response {

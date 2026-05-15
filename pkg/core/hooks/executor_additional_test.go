@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/core/events"
 )
 
 func TestExecutorWithWorkDirAndClose(t *testing.T) {

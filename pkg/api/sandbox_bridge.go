@@ -4,12 +4,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cinience/saker/pkg/config"
-	"github.com/cinience/saker/pkg/sandbox"
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
-	"github.com/cinience/saker/pkg/sandbox/gvisorenv"
-	"github.com/cinience/saker/pkg/sandbox/hostenv"
-	"github.com/cinience/saker/pkg/sandbox/landlockenv"
+	"github.com/saker-ai/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/sandbox"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
+	"github.com/saker-ai/saker/pkg/sandbox/gvisorenv"
+	"github.com/saker-ai/saker/pkg/sandbox/hostenv"
+	"github.com/saker-ai/saker/pkg/sandbox/landlockenv"
 )
 
 // govmEnvFactory is set by sandbox_bridge_govm.go when built with the govm tag.

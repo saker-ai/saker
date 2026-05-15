@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cinience/saker/pkg/agent"
-	"github.com/cinience/saker/pkg/message"
-	"github.com/cinience/saker/pkg/middleware"
-	"github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/agent"
+	"github.com/saker-ai/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 func TestConversationModelGenerateNilModel(t *testing.T) {

@@ -28,7 +28,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/cinience/saker/pkg/middleware"
+	"github.com/saker-ai/saker/pkg/middleware"
 )
 
 // TestOTLPSpansLandInCollector asserts that:

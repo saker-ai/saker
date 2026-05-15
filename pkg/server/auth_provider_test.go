@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cinience/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/config"
 )
 
 func TestLocalProvider_Authenticate(t *testing.T) {

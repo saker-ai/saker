@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/artifact"
-	"github.com/cinience/saker/pkg/clikit"
-	modelpkg "github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/pipeline"
-	"github.com/cinience/saker/pkg/tool"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	"github.com/saker-ai/saker/pkg/artifact"
+	"github.com/saker-ai/saker/pkg/clikit"
+	modelpkg "github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/tool"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 func runVideoStream(out io.Writer, source string, segDuration time.Duration, windowSize, sampleRate int, events string, timeoutMs int) error {

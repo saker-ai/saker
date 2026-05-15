@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/core/events"
-	"github.com/cinience/saker/pkg/core/hooks"
-	modelpkg "github.com/cinience/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/core/hooks"
+	modelpkg "github.com/saker-ai/saker/pkg/model"
 )
 
 func main() {

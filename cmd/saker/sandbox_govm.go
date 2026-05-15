@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/cinience/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/api"
 	govmclient "github.com/godeps/govm/pkg/client"
 )
 

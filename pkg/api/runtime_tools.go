@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/cinience/saker/pkg/message"
-	"github.com/cinience/saker/pkg/tool"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	"github.com/saker-ai/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/tool"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 type runtimeToolExecutor struct {

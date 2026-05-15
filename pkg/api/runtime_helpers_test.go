@@ -4,12 +4,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/cinience/saker/pkg/message"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/runtime/commands"
-	"github.com/cinience/saker/pkg/runtime/skills"
-	"github.com/cinience/saker/pkg/runtime/subagents"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/runtime/commands"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 type helperStubTool struct {

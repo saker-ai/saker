@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/apps"
+	"github.com/saker-ai/saker/pkg/apps"
 	"github.com/gin-gonic/gin"
 )
 

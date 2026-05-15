@@ -22,7 +22,7 @@ import (
 	"sync"
 	"time"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
 )
 
 // SandboxType is the value placed in PreparedSession.SandboxType so that

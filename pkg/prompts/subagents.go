@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/cinience/saker/pkg/runtime/subagents"
+	"github.com/saker-ai/saker/pkg/runtime/subagents"
 	"gopkg.in/yaml.v3"
 )
 

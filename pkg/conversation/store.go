@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
 
-	"github.com/cinience/saker/pkg/project/dialect"
+	"github.com/saker-ai/saker/pkg/project/dialect"
 )
 
 // seqMuSweepInterval controls how often the background goroutine sweeps

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/canvas"
+	"github.com/saker-ai/saker/pkg/canvas"
 )
 
 func TestExtractInputsEmpty(t *testing.T) {

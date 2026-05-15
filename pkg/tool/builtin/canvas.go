@@ -10,8 +10,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 // canvasGetNodeDescription is shown to the LLM when it picks a tool.

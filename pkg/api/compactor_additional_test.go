@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	corehooks "github.com/cinience/saker/pkg/core/hooks"
-	"github.com/cinience/saker/pkg/message"
-	"github.com/cinience/saker/pkg/model"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	corehooks "github.com/saker-ai/saker/pkg/core/hooks"
+	"github.com/saker-ai/saker/pkg/message"
+	"github.com/saker-ai/saker/pkg/model"
 )
 
 type summaryModel struct {

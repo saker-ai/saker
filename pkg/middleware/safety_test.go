@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/security"
+	"github.com/saker-ai/saker/pkg/security"
 )
 
 // fakeToolResult mimics agent.ToolResult for testing without importing pkg/agent.

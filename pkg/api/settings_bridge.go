@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cinience/saker/pkg/config"
+	"github.com/saker-ai/saker/pkg/config"
 )
 
 // loadSettings resolves settings.json using the new layered SettingsLoader and

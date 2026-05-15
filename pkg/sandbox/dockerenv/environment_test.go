@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	sandboxenv "github.com/cinience/saker/pkg/sandbox/env"
+	sandboxenv "github.com/saker-ai/saker/pkg/sandbox/env"
 )
 
 // fakeCommander records each invocation and returns scripted results.

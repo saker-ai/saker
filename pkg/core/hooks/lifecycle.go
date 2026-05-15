@@ -3,7 +3,7 @@ package hooks
 import (
 	"context"
 
-	"github.com/cinience/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/core/events"
 )
 
 // Individual hook interfaces allow hook implementations to opt-in to only the

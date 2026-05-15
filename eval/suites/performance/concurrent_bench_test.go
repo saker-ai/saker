@@ -6,10 +6,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/pipeline"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/pipeline"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 type noopModel struct{}

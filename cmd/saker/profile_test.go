@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cinience/saker/pkg/profile"
-	"github.com/cinience/saker/pkg/testutil"
+	"github.com/saker-ai/saker/pkg/profile"
+	"github.com/saker-ai/saker/pkg/testutil"
 )
 
 func TestProfileCommand_ShowDefault(t *testing.T) {

@@ -3,8 +3,8 @@ package main
 import (
 	"path/filepath"
 
-	"github.com/cinience/saker/pkg/api"
-	"github.com/cinience/saker/pkg/sandbox"
+	"github.com/saker-ai/saker/pkg/api"
+	"github.com/saker-ai/saker/pkg/sandbox"
 )
 
 func buildSandboxOptions(cfg runConfig, projectRoot string) api.SandboxOptions {

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cinience/saker/pkg/memory"
-	"github.com/cinience/saker/pkg/tool"
+	"github.com/saker-ai/saker/pkg/memory"
+	"github.com/saker-ai/saker/pkg/tool"
 )
 
 // MemorySaveTool saves a memory entry to the store.

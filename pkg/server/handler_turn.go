@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cinience/saker/pkg/api"
-	coreevents "github.com/cinience/saker/pkg/core/events"
-	"github.com/cinience/saker/pkg/logging"
-	"github.com/cinience/saker/pkg/model"
-	"github.com/cinience/saker/pkg/profile"
-	toolbuiltin "github.com/cinience/saker/pkg/tool/builtin"
+	"github.com/saker-ai/saker/pkg/api"
+	coreevents "github.com/saker-ai/saker/pkg/core/events"
+	"github.com/saker-ai/saker/pkg/logging"
+	"github.com/saker-ai/saker/pkg/model"
+	"github.com/saker-ai/saker/pkg/profile"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 	"github.com/google/uuid"
 )
 
