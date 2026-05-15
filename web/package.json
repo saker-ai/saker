@@ -12,14 +12,14 @@
     "test": "tsx --test src/features/editor-runtime/webavCompose.test.mts src/features/editor-bridge/protocol.test.mts src/features/skills/shared/useSkillhubRpc.test.mts"
   },
   "dependencies": {
-    "@chenglou/pretext": "^0.0.5",
+    "@chenglou/pretext": "^0.0.7",
     "@saker/editor-protocol": "workspace:*",
     "@webav/av-cliper": "^1.2.8",
     "@xyflow/react": "^12.10.2",
-    "ai": "^6.0.149",
-    "dompurify": "^3.4.2",
+    "ai": "^6.0.182",
+    "dompurify": "^3.4.3",
     "framer-motion": "^12.38.0",
-    "lucide-react": "^1.8.0",
+    "lucide-react": "^1.16.0",
     "marked": "^15.0.0",
     "next": "^16.2.6",
     "react": "^19.0.0",
@@ -33,7 +33,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "tsx": "^4.21.0",
+    "tsx": "^4.22.0",
     "typescript": "^5.7.0"
   },
   "overrides": {
