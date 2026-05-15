@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <style>
+      .main { fill: #10b981; }
+      .secondary { fill: #34d399; }
+      .pupil { fill: #ffffff; }
+      @media (prefers-color-scheme: light) {
+        .pupil { fill: #ffffff; }
+      }
+      @media (prefers-color-scheme: dark) {
+        .pupil { fill: #030305; }
+      }
+    </style>
+  </defs>
+
+  <!-- Forehead/hair -->
+  <rect x="20" y="8" width="16" height="16" rx="3" class="main" opacity="0.4"/>
+  <rect x="36" y="4" width="16" height="22" rx="3" class="main" opacity="0.7"/>
+  <rect x="56" y="0" width="16" height="26" rx="3" class="main"/>
+  <rect x="76" y="4" width="16" height="22" rx="3" class="main" opacity="0.7"/>
+  <rect x="92" y="8" width="16" height="16" rx="3" class="main" opacity="0.4"/>
+
+  <!-- Left eye -->
+  <rect x="10" y="38" width="24" height="24" rx="5" class="main" opacity="0.8"/>
+  <rect x="16" y="44" width="12" height="12" rx="12" class="pupil"/>
+  <circle cx="22" cy="50" r="3.5" class="main"/>
+
+  <!-- Left brow -->
+  <rect x="36" y="38" width="16" height="12" rx="3" class="secondary"/>
+
+  <!-- Nose -->
+  <rect x="56" y="38" width="10" height="8" rx="2" class="secondary"/>
+  <rect x="58" y="46" width="7" height="7" rx="2" class="secondary"/>
+  <rect x="60" y="53" width="4" height="5" rx="2" class="secondary"/>
+
+  <!-- Right brow -->
+  <rect x="76" y="38" width="16" height="12" rx="3" class="secondary"/>
+
+  <!-- Right eye -->
+  <rect x="94" y="38" width="24" height="24" rx="5" class="main" opacity="0.8"/>
+  <rect x="100" y="44" width="12" height="12" rx="12" class="pupil"/>
+  <circle cx="106" cy="50" r="3.5" class="main"/>
+
+  <!-- Mouth/smile -->
+  <rect x="24" y="78" width="10" height="10" rx="2" class="main" opacity="0.5"/>
+  <rect x="34" y="84" width="54" height="10" rx="3" class="main" opacity="0.8"/>
+  <rect x="88" y="78" width="10" height="10" rx="2" class="main" opacity="0.5"/>
+
+  <!-- Chin dot -->
+  <rect x="50" y="104" width="14" height="8" rx="3" class="main" opacity="0.2"/>
+</svg>
