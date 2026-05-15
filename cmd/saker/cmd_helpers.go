@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/cinience/saker/pkg/clikit"
@@ -140,4 +141,38 @@ func parseTags(values multiValue) map[string]string {
 
 func clikitTurnRecorder() *clikit.TurnRecorder {
 	return clikit.NewTurnRecorder()
+}
+
+func envOr(def string, names ...string) string {
+	for _, n := range names {
+		if v := os.Getenv(n); v != "" {
+			return v
+		}
+	}
+	return def
+}
+
+func envOrInt(def int, names ...string) int {
+	for _, n := range names {
+		if v := os.Getenv(n); v != "" {
+			if i, err := strconv.Atoi(v); err == nil {
+				return i
+			}
+		}
+	}
+	return def
+}
+
+func envOrBool(def bool, names ...string) bool {
+	for _, n := range names {
+		if v := os.Getenv(n); v != "" {
+			switch strings.ToLower(v) {
+			case "1", "true", "yes", "on":
+				return true
+			case "0", "false", "no", "off":
+				return false
+			}
+		}
+	}
+	return def
 }

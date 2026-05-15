@@ -186,6 +186,17 @@ Options:
 	openaiGwRunHubSinkBreakerCooldown := flags.Duration("openai-gw-runhub-sink-breaker-cooldown", 30*time.Second, "OpenAI gateway: persistent-hub sink circuit breaker cooldown before half-open probe (0 with non-zero threshold = latched-open until restart)")
 	openaiGwRunHubPGCopyThreshold := flags.Int("openai-gw-runhub-pg-copy-threshold", 50, "OpenAI gateway: postgres-only batch-insert COPY threshold; batches >= this size use pgx.CopyFrom into a TEMP staging table (preserves ON CONFLICT DO NOTHING dedup). 0 disables COPY; ignored on non-postgres drivers.")
 
+	// Synapse hub registration (server mode only).
+	// Env var names match the legacy saker-bridge so containers need zero config changes.
+	synapseHubAddr := flags.String("synapse-hub-addr", envOr("", "SYNAPSE_HUB_ADDR"), "Synapse hub gRPC address; enables built-in hub registration (requires --server)")
+	synapseAuthToken := flags.String("synapse-auth-token", envOr("", "SYNAPSE_BRIDGE_SECRET"), "Shared secret for synapse hub authentication")
+	synapseInstanceID := flags.String("synapse-instance-id", envOr("", "SYNAPSE_BRIDGE_INSTANCE", "HOSTNAME"), "Instance ID for synapse registration (default: auto-generated)")
+	synapseSandboxID := flags.String("synapse-sandbox-id", envOr("", "SYNAPSE_SANDBOX_ID", "E2B_SANDBOX_ID"), "Sandbox ID for synapse registration")
+	synapseModels := flags.String("synapse-models", envOr("saker-default", "SYNAPSE_BRIDGE_MODELS"), "Comma-separated model IDs to advertise to synapse")
+	synapseMaxConcurrent := flags.Int("synapse-max-concurrent", envOrInt(8, "SYNAPSE_BRIDGE_MAX_CONCURRENT"), "Max concurrent requests to advertise to synapse hub")
+	synapseLabels := flags.String("synapse-labels", envOr("", "SYNAPSE_BRIDGE_LABELS"), "JSON-encoded labels map for synapse registration")
+	synapseInsecure := flags.Bool("synapse-insecure", envOrBool(true, "SYNAPSE_HUB_INSECURE"), "Disable TLS to synapse hub (default: true for private networks)")
+
 	profileName := flags.String("profile", "", "Use named profile for isolated settings/memory/history")
 	dangerouslySkipPermissions := flags.Bool("dangerously-skip-permissions", false, "Skip all tool permission checks")
 
@@ -408,7 +419,17 @@ Options:
 			RunHubSinkBreakerCooldown:   *openaiGwRunHubSinkBreakerCooldown,
 			RunHubPGCopyThreshold:       *openaiGwRunHubPGCopyThreshold,
 		}
-		return runServerMode(stdout, stderr, options, *serverAddr, *serverDataDir, *serverStatic, *serverLogDir, *debugFlag, gw)
+		syn := synapseHubFlags{
+			HubAddr:       *synapseHubAddr,
+			AuthToken:     *synapseAuthToken,
+			InstanceID:    *synapseInstanceID,
+			SandboxID:     *synapseSandboxID,
+			Models:        *synapseModels,
+			MaxConcurrent: *synapseMaxConcurrent,
+			Labels:        *synapseLabels,
+			Insecure:      *synapseInsecure,
+		}
+		return runServerMode(stdout, stderr, options, *serverAddr, *serverDataDir, *serverStatic, *serverLogDir, *debugFlag, gw, syn)
 	}
 
 	// Resolve channels path — IM credentials are user-global, not project-specific.

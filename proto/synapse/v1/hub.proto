@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package synapse.v1;
+
+option go_package = "github.com/cinience/saker/proto/synapse/v1;synapsev1";
+
+service SynapseHub {
+  rpc Register(stream SakerMessage) returns (stream HubMessage);
+}
+
+message SakerMessage {
+  oneof payload {
+    Hello       hello       = 1;
+    Heartbeat   heartbeat   = 2;
+    ChatChunk   chunk       = 3;
+    ChatDone    done        = 4;
+    ChatError   error       = 5;
+    ToolEvent   tool_event  = 6;
+    Pong        pong        = 7;
+  }
+}
+
+message HubMessage {
+  oneof payload {
+    HelloAck      hello_ack = 1;
+    ChatRequest   request   = 2;
+    CancelRequest cancel    = 3;
+    Shutdown      shutdown  = 4;
+    Ping          ping      = 5;
+  }
+}
+
+message Hello {
+  string instance_id          = 1;
+  string sandbox_id           = 2;
+  string version              = 3;
+  string bridge_version       = 4;
+  repeated string models      = 5;
+  int32  max_concurrent       = 6;
+  string auth_token           = 7;
+  map<string,string> labels   = 8;
+  Protocol primary_protocol   = 9;
+}
+
+message HelloAck {
+  bool   accepted             = 1;
+  string reason               = 2;
+  string assigned_node_id     = 3;
+  int64  server_time_unix_ns  = 4;
+}
+
+message Heartbeat {
+  int64  unix_nanos           = 1;
+  int32  in_flight            = 2;
+  double cpu_percent          = 3;
+  uint64 mem_rss_bytes        = 4;
+}
+
+message ChatRequest {
+  string request_id            = 1;
+  string session_id            = 2;
+  string tenant_id             = 3;
+  Protocol protocol            = 4;
+  bytes  payload               = 5;
+  map<string,string> headers   = 6;
+  int64  deadline_unix_nanos   = 7;
+  string requested_model       = 8;
+}
+
+enum Protocol {
+  PROTOCOL_UNSPECIFIED        = 0;
+  PROTOCOL_OPENAI_CHAT        = 1;
+  PROTOCOL_ANTHROPIC_MESSAGES = 2;
+}
+
+message CancelRequest {
+  string request_id = 1;
+  string reason     = 2;
+}
+
+message Shutdown {
+  string reason         = 1;
+  int32  grace_seconds  = 2;
+}
+
+message Ping { int64 unix_nanos = 1; }
+message Pong { int64 unix_nanos = 1; }
+
+message ChatChunk {
+  string request_id     = 1;
+  bytes  data           = 2;
+  string event_type     = 3;
+  string saker_event_id = 4;
+}
+
+message ChatDone {
+  string request_id    = 1;
+  Usage  usage         = 2;
+  string finish_reason = 3;
+}
+
+message ChatError {
+  string request_id = 1;
+  string code       = 2;
+  string message    = 3;
+  int32  http_status = 4;
+}
+
+message ToolEvent {
+  string request_id = 1;
+  string kind       = 2;
+  bytes  data       = 3;
+}
+
+message Usage {
+  uint64 prompt_tokens     = 1;
+  uint64 completion_tokens = 2;
+  uint64 total_tokens      = 3;
+  string model             = 4;
+}

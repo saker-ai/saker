@@ -2,13 +2,17 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/cinience/saker/pkg/api"
 	"github.com/cinience/saker/pkg/config"
@@ -18,6 +22,7 @@ import (
 	"github.com/cinience/saker/pkg/project"
 	"github.com/cinience/saker/pkg/sandbox/landlockenv"
 	"github.com/cinience/saker/pkg/server"
+	sakersynapse "github.com/cinience/saker/pkg/synapse"
 	openaigw "github.com/cinience/saker/pkg/server/openai"
 	"github.com/gin-gonic/gin"
 )
@@ -102,9 +107,21 @@ func (g openaiGatewayFlags) toOptions() openaigw.Options {
 	}
 }
 
+// synapseHubFlags holds the CLI flags for the built-in synapse hub client.
+type synapseHubFlags struct {
+	HubAddr       string
+	AuthToken     string
+	InstanceID    string
+	SandboxID     string
+	Models        string
+	MaxConcurrent int
+	Labels        string
+	Insecure      bool
+}
+
 // runServerMode starts the embedded HTTP server, wires the project store,
 // auto-enables Landlock when available, and resolves web auth credentials.
-func runServerMode(stdout, stderr io.Writer, opts api.Options, addr, dataDir, staticDir, logDir string, debug bool, gwFlags openaiGatewayFlags) error {
+func runServerMode(stdout, stderr io.Writer, opts api.Options, addr, dataDir, staticDir, logDir string, debug bool, gwFlags openaiGatewayFlags, synFlags synapseHubFlags) error {
 	opts.EntryPoint = api.EntryPointPlatform
 
 	// Auto-enable Landlock sandbox when kernel supports it and user didn't
@@ -316,6 +333,35 @@ func runServerMode(stdout, stderr io.Writer, opts api.Options, addr, dataDir, st
 
 	fmt.Fprintf(stdout, "Saker server listening on %s\n", addr)
 
+	// Start built-in synapse hub registration when configured.
+	var synCancel context.CancelFunc
+	if synFlags.HubAddr != "" {
+		synCtx, cancel := context.WithCancel(context.Background())
+		synCancel = cancel
+		models := strings.Split(synFlags.Models, ",")
+		instanceID := synFlags.InstanceID
+		if instanceID == "" {
+			instanceID = "saker-" + uuid.NewString()[:8]
+		}
+		labels := map[string]string{}
+		if synFlags.Labels != "" {
+			_ = json.Unmarshal([]byte(synFlags.Labels), &labels)
+		}
+		bridgeCfg := sakersynapse.BridgeConfig{
+			HubAddr:       synFlags.HubAddr,
+			AuthToken:     synFlags.AuthToken,
+			InstanceID:    instanceID,
+			SandboxID:     synFlags.SandboxID,
+			Models:        models,
+			MaxConcurrent: int32(synFlags.MaxConcurrent),
+			Labels:        labels,
+			InsecureTLS:   synFlags.Insecure,
+			SakerBaseURL:  "http://127.0.0.1" + addr,
+		}
+		go sakersynapse.RunBridge(synCtx, bridgeCfg)
+		fmt.Fprintf(stdout, "Synapse hub registration enabled → %s\n", synFlags.HubAddr)
+	}
+
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
@@ -330,6 +376,9 @@ func runServerMode(stdout, stderr io.Writer, opts api.Options, addr, dataDir, st
 		return err
 	case <-sigCh:
 		fmt.Fprintln(stdout, "\nShutting down...")
+		if synCancel != nil {
+			synCancel()
+		}
 		shutCtx, shutCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer shutCancel()
 		// Stop the OpenAI gateway first so the hub GC goroutine and any
