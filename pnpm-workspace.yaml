@@ -1,4 +1,5 @@
 packages:
   - "web"
   - "web-editor-next"
-  - "packages/*"
+  - "packages/saker"
+  - "packages/editor-protocol"

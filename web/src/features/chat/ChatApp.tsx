@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { flushSync } from "react-dom";
 import { toast } from "sonner";
 import {
   PanelLeftClose,
@@ -43,6 +44,8 @@ import { TopBar } from "./TopBar";
 import { CanvasLayout } from "./CanvasLayout";
 import { ChatMainView } from "./ChatMainView";
 import { useIsMobile, parseHash, type TurnStatus, type AuthProvider } from "./chatUtils";
+import { SakerCopilotProvider } from "@/features/agui/provider";
+import { CopilotBridge } from "@/features/agui/CopilotBridge";
 
 
 interface ChatAppProps {
@@ -493,11 +496,9 @@ export function ChatApp({ authRequired, authenticated, onLogin, onLogout, authPr
 
   const createThread = useCallback(async () => {
     if (!requireAuth()) return;
-    const rpc = rpcRef.current;
-    if (!rpc) return;
     try {
-      const thread = await rpc.request<Thread>("thread/create", {
-        title: "New Chat", // server-side default title, not user-facing
+      const thread = await httpRequest<Thread>("thread/create", {
+        title: "New Chat",
       });
       setThreads((prev) => [...prev, thread]);
       await switchThread(thread.id);
@@ -631,15 +632,27 @@ export function ChatApp({ authRequired, authenticated, onLogin, onLogout, authPr
     return (lastSpace > 20 ? truncated.slice(0, lastSpace) : truncated) + "...";
   }, []);
 
+  const handleAutoCreateThread = useCallback(async (title: string) => {
+    if (!requireAuth()) return;
+    try {
+      const thread = await httpRequest<Thread>("thread/create", { title });
+      flushSync(() => {
+        setThreads((prev) => [...prev, thread]);
+        setActiveThreadId(thread.id);
+      });
+      window.location.hash = `chats/${thread.id}`;
+    } catch (e) {
+      console.error("auto-create thread error:", e);
+    }
+  }, [requireAuth]);
+
   /** Update thread title on the server and locally. */
   const updateThreadTitle = useCallback(
     (threadId: string, title: string) => {
-      const rpc = rpcRef.current;
-      if (!rpc) return;
       setThreads((prev) =>
         prev.map((t) => (t.id === threadId ? { ...t, title } : t))
       );
-      rpc.request("thread/update", { threadId, title }).catch(() => {});
+      httpRequest("thread/update", { threadId, title }).catch(() => {});
     },
     []
   );
@@ -647,14 +660,12 @@ export function ChatApp({ authRequired, authenticated, onLogin, onLogout, authPr
   /** Delete a thread on the server and locally. */
   const deleteThread = useCallback(
     (threadId: string) => {
-      const rpc = rpcRef.current;
-      if (!rpc) return;
       setThreads((prev) => prev.filter((t) => t.id !== threadId));
       if (activeThreadId === threadId) {
         setActiveThreadId("");
         setMessages([]);
       }
-      rpc.request("thread/delete", { threadId }).catch(() => {});
+      httpRequest("thread/delete", { threadId }).catch(() => {});
     },
     [activeThreadId]
   );
@@ -678,10 +689,8 @@ export function ChatApp({ authRequired, authenticated, onLogin, onLogout, authPr
       if (!requireAuth()) return;
       const title = generateTitle(text);
       if (!activeThreadId) {
-        const rpc = rpcRef.current;
-        if (!rpc) return;
         try {
-          const thread = await rpc.request<Thread>("thread/create", { title });
+          const thread = await httpRequest<Thread>("thread/create", { title });
           setThreads((prev) => [...prev, thread]);
           await switchThread(thread.id);
           await doSend(thread.id, text, attachments);
@@ -919,6 +928,8 @@ export function ChatApp({ authRequired, authenticated, onLogin, onLogout, authPr
   }, [isMobile, activeView, mobileDrawerOpen, panelCollapsed, t, togglePanel]);
 
   return (
+    <SakerCopilotProvider threadId={activeThreadId}>
+    <CopilotBridge threadId={activeThreadId} historyMessages={messages}>
     <div className="app">
       <TopBar
         username={currentUser.username}
@@ -1068,18 +1079,7 @@ export function ChatApp({ authRequired, authenticated, onLogin, onLogout, authPr
           deleteThread={deleteThread}
           panelCollapsed={panelCollapsed}
           wsHealthy={wsHealthy}
-          messages={messages}
-          streamText={streamText}
-          turnStatus={turnStatus}
-          toolEvents={toolEvents}
-          highlightedTurnId={highlightedTurnId}
-          approvals={approvals}
-          questions={questions}
-          onApproval={handleApproval}
-          onQuestionRespond={handleQuestionRespond}
-          sendMessage={sendMessage}
-          sendWithAutoCreate={sendWithAutoCreate}
-          cancelTurn={cancelTurn}
+          onAutoCreateThread={handleAutoCreateThread}
           skills={skills}
         />
       )}
@@ -1097,5 +1097,7 @@ export function ChatApp({ authRequired, authenticated, onLogin, onLogout, authPr
         </div>
       )}
     </div>
+    </CopilotBridge>
+    </SakerCopilotProvider>
   );
 }

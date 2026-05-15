@@ -1,14 +1,13 @@
 "use client";
 
-import type { Thread, ThreadItem, ApprovalRequest, QuestionRequest, StreamEvent, SkillInfo } from "@/features/rpc/types";
+import { useCallback } from "react";
+import type { Thread, SkillInfo } from "@/features/rpc/types";
 import { ThreadPanel } from "./ThreadPanel";
-import { StatusBar } from "./StatusBar";
-import { Composer, type Attachment } from "./Composer";
-import { ChatStream } from "./ChatStream";
 import { EmptyState } from "./EmptyState";
-import { StarterState } from "./StarterState";
 import { useT } from "@/features/i18n";
-import type { TurnStatus } from "./chatUtils";
+import { CopilotChat } from "@copilotkit/react-ui";
+import "@copilotkit/react-ui/styles.css";
+import "./copilot-theme.css";
 
 export interface ChatMainViewProps {
   isMobile: boolean;
@@ -21,19 +20,19 @@ export interface ChatMainViewProps {
   deleteThread: (id: string) => void;
   panelCollapsed: boolean;
   wsHealthy: boolean;
-  messages: ThreadItem[];
-  streamText: string;
-  turnStatus: TurnStatus;
-  toolEvents: StreamEvent[];
-  highlightedTurnId: string | null;
-  approvals: ApprovalRequest[];
-  questions: QuestionRequest[];
-  onApproval: (id: string, decision: "allow" | "deny") => void;
-  onQuestionRespond: (id: string, answers: Record<string, string>) => void;
-  sendMessage: (text: string, attachments?: Attachment[]) => void;
-  sendWithAutoCreate: (text: string, attachments?: Attachment[]) => void;
-  cancelTurn: () => void;
+  onAutoCreateThread: (title: string) => Promise<void>;
   skills: SkillInfo[];
+}
+
+function generateTitle(text: string): string {
+  const firstSentence = text.split(/[。.!?！？\n]/)[0].trim();
+  if (firstSentence.length > 0 && firstSentence.length <= 40) {
+    return firstSentence;
+  }
+  if (text.length <= 40) return text;
+  const truncated = text.slice(0, 40);
+  const lastSpace = truncated.lastIndexOf(" ");
+  return (lastSpace > 20 ? truncated.slice(0, lastSpace) : truncated) + "...";
 }
 
 export function ChatMainView({
@@ -47,21 +46,19 @@ export function ChatMainView({
   deleteThread,
   panelCollapsed,
   wsHealthy,
-  messages,
-  streamText,
-  turnStatus,
-  toolEvents,
-  highlightedTurnId,
-  approvals,
-  questions,
-  onApproval,
-  onQuestionRespond,
-  sendMessage,
-  sendWithAutoCreate,
-  cancelTurn,
+  onAutoCreateThread,
   skills,
 }: ChatMainViewProps) {
   const { t } = useT();
+
+  const handleSubmitMessage = useCallback(
+    async (text: string) => {
+      if (!activeThreadId) {
+        await onAutoCreateThread(generateTitle(text));
+      }
+    },
+    [activeThreadId, onAutoCreateThread],
+  );
 
   return (
     <>
@@ -95,51 +92,27 @@ export function ChatMainView({
           </div>
         )}
 
-        <div
-          className={`messages${
-            activeThreadId &&
-            !(messages.length === 0 && !streamText && turnStatus === "idle")
-              ? " messages--threaded"
-              : ""
-          }`}
-        >
-          {!activeThreadId ? (
+        {!activeThreadId && (
+          <div className="messages">
             <EmptyState
               connected={wsHealthy}
-              onSend={sendWithAutoCreate}
-              skills={skills}
-            />
-          ) : messages.length === 0 &&
-            !streamText &&
-            turnStatus === "idle" ? (
-            <StarterState onSend={sendMessage} />
-          ) : (
-            <ChatStream
-              messages={messages}
-              streamText={streamText}
-              streaming={turnStatus === "running"}
-              toolEvents={toolEvents}
-              highlightedTurnId={highlightedTurnId}
-              approvals={approvals}
-              questions={questions}
-              onApproval={onApproval}
-              onQuestionRespond={onQuestionRespond}
-            />
-          )}
-        </div>
-
-        {activeThreadId && (
-          <div className="composer-area floating-composer">
-            <StatusBar connected={wsHealthy} turnStatus={turnStatus} />
-            <Composer
-              onSend={sendMessage}
-              onStop={cancelTurn}
-              disabled={!wsHealthy || turnStatus === "running"}
-              running={turnStatus === "running"}
               skills={skills}
             />
           </div>
         )}
+        <CopilotChat
+          className={`saker-copilot-chat${activeThreadId ? " saker-copilot-chat--active" : ""}`}
+          onSubmitMessage={handleSubmitMessage}
+          labels={{
+            title: "",
+            placeholder: t("composer.placeholder"),
+            initial: "",
+          }}
+          icons={{
+            sendIcon: undefined,
+            activityIcon: undefined,
+          }}
+        />
       </div>
     </>
   );

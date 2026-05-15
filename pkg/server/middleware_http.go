@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -256,9 +257,9 @@ func isLocalhostOrigin(origin string) bool {
 // Wildcard "*" is intentionally NOT honored here: WebSocket upgrades carry
 // the session cookie (credentialed), and combining "*" with credentials
 // allows any origin to read user data. Operators must list explicit origins.
-func isAllowedWSOrigin(origin string, allowedOrigins []string) bool {
+func isAllowedWSOrigin(origin string, allowedOrigins []string, requestHost string) bool {
 	if len(allowedOrigins) == 0 {
-		return isLocalhostOrigin(origin)
+		return isLocalhostOrigin(origin) || isSameOrigin(origin, requestHost)
 	}
 	for _, o := range allowedOrigins {
 		if o == origin {
@@ -266,4 +267,16 @@ func isAllowedWSOrigin(origin string, allowedOrigins []string) bool {
 		}
 	}
 	return false
+}
+
+// isSameOrigin returns true when the Origin header's host:port matches the
+// request's Host header — i.e. the browser tab and the WebSocket target are
+// the same server. This is safe because the browser already verified the page
+// was loaded from that origin.
+func isSameOrigin(origin, requestHost string) bool {
+	u, err := url.Parse(origin)
+	if err != nil || u.Host == "" {
+		return false
+	}
+	return u.Host == requestHost
 }

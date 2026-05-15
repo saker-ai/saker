@@ -23,6 +23,7 @@ import (
 	"github.com/saker-ai/saker/pkg/sandbox/landlockenv"
 	"github.com/saker-ai/saker/pkg/server"
 	sakersynapse "github.com/saker-ai/saker/pkg/synapse"
+	aguigw "github.com/saker-ai/saker/pkg/server/agui"
 	openaigw "github.com/saker-ai/saker/pkg/server/openai"
 	"github.com/gin-gonic/gin"
 )
@@ -200,9 +201,11 @@ func (a *App) runServerMode(stdout, stderr io.Writer, opts api.Options, addr, da
 		return fmt.Errorf("server mode requires api.Runtime")
 	}
 
+	var sessionValidator func(*gin.Context) (string, string, bool)
+
 	var gw *openaigw.Gateway
-	if gwFlags.Enabled {
-		srvOpts.EngineHook = func(engine *gin.Engine) error {
+	srvOpts.EngineHook = func(engine *gin.Engine) error {
+		if gwFlags.Enabled {
 			deps := openaigw.Deps{
 				Runtime:           apiRuntime,
 				ProjectStore:      projectStore,
@@ -215,8 +218,23 @@ func (a *App) runServerMode(stdout, stderr io.Writer, opts api.Options, addr, da
 				return fmt.Errorf("register openai gateway: %w", err)
 			}
 			gw = g
-			return nil
 		}
+
+		aguiDeps := aguigw.Deps{
+			Runtime:           apiRuntime,
+			ProjectStore:      projectStore,
+			ConversationStore: conversationStore,
+			Logger:            logger,
+			Options:           aguigw.Options{Enabled: true, DevBypassAuth: gwFlags.DevBypassAuth},
+			SessionValidator:  sessionValidator,
+		}
+		if _, err := aguigw.RegisterAGUIGateway(engine, aguiDeps); err != nil {
+			return fmt.Errorf("register agui gateway: %w", err)
+		}
+
+		return nil
+	}
+	if gwFlags.Enabled {
 		runhubBackend := "in-memory"
 		if gwFlags.RunHubDSN != "" {
 			runhubBackend = "persistent (" + gwFlags.RunHubDSN + ")"
@@ -258,6 +276,7 @@ func (a *App) runServerMode(stdout, stderr io.Writer, opts api.Options, addr, da
 	if err != nil {
 		return fmt.Errorf("create server: %w", err)
 	}
+	sessionValidator = srv.SessionValidatorFunc()
 
 	fmt.Fprintf(stdout, "Saker server listening on %s\n", addr)
 

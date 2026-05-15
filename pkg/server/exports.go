@@ -1,5 +1,7 @@
 package server
 
+import "github.com/gin-gonic/gin"
+
 // Public re-exports of pkg/server internals that pkg/server/openai needs.
 // The two filters live in pkg/server (next to handler_turn.go) because
 // the WebSocket handler depends on them; the OpenAI gateway lives in a
@@ -62,3 +64,28 @@ func CleanAssistantReply(raw string) string {
 // OpenAI gateway uses it as the upper bound for chat-completions runs so
 // it matches the behavior of the WebSocket-driven turn handler.
 const DefaultTurnTimeout = defaultTurnTimeout
+
+// SessionValidatorFunc returns a gin.Context-typed callback that validates the
+// saker_session cookie (or localhost loopback) and extracts identity. Intended
+// for EngineHook-mounted gateways (AG-UI, etc.) that need browser auth but
+// run outside the main auth middleware chain.
+func (s *Server) SessionValidatorFunc() func(c *gin.Context) (string, string, bool) {
+	return func(c *gin.Context) (string, string, bool) {
+		if isLocalhost(c.Request) {
+			if s.auth.cfg == nil || s.auth.cfg.Password == "" {
+				return "localhost", "admin", true
+			}
+			adminUser := s.auth.cfg.Username
+			if adminUser == "" {
+				adminUser = "admin"
+			}
+			return adminUser, "admin", true
+		}
+		cookie, err := c.Request.Cookie(sessionCookieName)
+		if err != nil || !s.auth.validToken(cookie.Value) {
+			return "", "", false
+		}
+		username, role := s.auth.extractTokenInfo(cookie.Value)
+		return username, role, true
+	}
+}

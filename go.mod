@@ -9,6 +9,7 @@ require (
 	charm.land/lipgloss/v2 v2.0.2
 	github.com/AlexxIT/go2rtc v1.9.14
 	github.com/BurntSushi/toml v1.6.0
+	github.com/ag-ui-protocol/ag-ui/sdks/community/go v0.0.0-20260514010037-6a4efc6202fe
 	github.com/andybalholm/brotli v1.2.1
 	github.com/chromedp/chromedp v0.15.1
 	github.com/chzyer/readline v1.5.1
@@ -206,6 +207,7 @@ require (
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sigurn/crc16 v0.0.0-20240131213347-83fcde1e29d1 // indirect
 	github.com/sigurn/crc8 v0.0.0-20220107193325-2243fe600f9f // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/skeema/knownhosts v1.3.1 // indirect
 	github.com/slack-go/slack v0.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect

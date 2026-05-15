@@ -11,18 +11,17 @@ import {
 import { resolveWsUrl } from "@/features/rpc/client";
 import type { SkillInfo } from "@/features/rpc/types";
 import { ParticleBackground } from "./ParticleBackground";
-import { Composer, type Attachment } from "./Composer";
 import { useT } from "@/features/i18n";
 
-/** Empty state when no thread is selected — input-centric layout. */
+/** Empty state when no thread is selected — decorative header with example cards. */
 export function EmptyState({
   connected,
-  onSend,
   skills,
+  onExampleClick,
 }: {
   connected: boolean;
-  onSend: (text: string, attachments?: Attachment[]) => void;
   skills?: SkillInfo[];
+  onExampleClick?: (text: string) => void;
 }) {
   const { t } = useT();
   const [wsDisplay, setWsDisplay] = useState("");
@@ -52,26 +51,13 @@ export function EmptyState({
       </motion.div>
 
       <motion.div
-        className="home-composer"
+        className="home-examples"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <Composer
-          onSend={onSend}
-          disabled={!connected}
-          skills={skills}
-        />
-      </motion.div>
-
-      <motion.div
-        className="home-examples"
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
         {examples.map((ex, i) => (
-          <button key={i} className="home-example-card" onClick={() => onSend(ex.text)}>
+          <button key={i} className="home-example-card" onClick={() => onExampleClick?.(ex.text)}>
             <div className="home-example-icon">{ex.icon}</div>
             <div className="home-example-text">{ex.text}</div>
           </button>

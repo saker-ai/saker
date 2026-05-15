@@ -74,10 +74,15 @@ func (a *AuthManager) Middleware(next http.Handler) http.Handler {
 	})
 }
 
-// shouldSecureCookie returns true when the request originates from a non-localhost
-// address, meaning the cookie should be marked Secure (only sent over HTTPS).
+// shouldSecureCookie returns true only when the request actually arrived over
+// TLS from a non-localhost address. Setting Secure on a plain-HTTP cookie
+// causes the browser to silently discard it, breaking login for remote users
+// who access the server over HTTP (common in LAN / dev setups).
 func shouldSecureCookie(r *http.Request) bool {
-	return !isLocalhost(r)
+	if isLocalhost(r) {
+		return false
+	}
+	return r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https"
 }
 
 // isPublicPath returns true for paths that must be accessible without

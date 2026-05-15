@@ -47,5 +47,8 @@ export function usePermissions(): ProjectPermissions {
   const projects = useProjectStore((s) => s.projects);
   const currentId = useProjectStore((s) => s.currentProjectId);
   const current = projects.find((p) => p.id === currentId) ?? null;
+  if (!current && projects.length === 0) {
+    return rolePermissions("owner");
+  }
   return rolePermissions(current?.role ?? null);
 }

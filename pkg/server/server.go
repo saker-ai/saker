@@ -152,7 +152,7 @@ func New(runtime *api.Runtime, opts Options) (*Server, error) {
 				if settings := s.runtime.Settings(); settings != nil && settings.CORS != nil {
 					allowed = settings.CORS.AllowedOrigins
 				}
-				return isAllowedWSOrigin(origin, allowed)
+				return isAllowedWSOrigin(origin, allowed, r.Host)
 			},
 			EnableCompression: true,
 		},

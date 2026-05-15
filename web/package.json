@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@chenglou/pretext": "^0.0.5",
+    "@copilotkit/react-core": "^1.57.1",
+    "@copilotkit/react-ui": "^1.57.1",
     "@saker/editor-protocol": "workspace:*",
     "@webav/av-cliper": "^1.2.8",
     "@xyflow/react": "^12.10.2",
@@ -29,7 +31,6 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
-    "@types/dompurify": "^3.2.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

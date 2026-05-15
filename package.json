@@ -1,4 +1,9 @@
 {
   "private": true,
-  "license": "SKL-1.0"
+  "license": "SKL-1.0",
+  "pnpm": {
+    "overrides": {
+      "global-agent": "^4.1.0"
+    }
+  }
 }
