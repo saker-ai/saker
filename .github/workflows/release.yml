@@ -59,6 +59,8 @@ jobs:
             goarch: arm64
           - goos: windows
             goarch: amd64
+          - goos: windows
+            goarch: arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -279,3 +281,92 @@ jobs:
           files: |
             artifacts/*
             artifacts/checksums.txt
+
+  npm-publish:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Download all binary artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Place binaries into platform packages
+        run: |
+          VERSION=${GITHUB_REF_NAME}
+
+          place_binary() {
+            local goos=$1 goarch=$2 pkg=$3
+            local artifact_dir="artifacts/saker-${goos}-${goarch}"
+
+            if [ ! -d "$artifact_dir" ]; then
+              echo "Warning: artifact dir $artifact_dir not found, skipping $pkg"
+              return
+            fi
+
+            if [ "$goos" = "windows" ]; then
+              cd "$artifact_dir" && unzip -o saker-*.zip && cd -
+              cp "$artifact_dir"/saker-*/saker.exe "packages/${pkg}/saker.exe"
+            else
+              cd "$artifact_dir" && tar xzf saker-*.tar.gz && cd -
+              cp "$artifact_dir"/saker-*/saker "packages/${pkg}/saker"
+              chmod +x "packages/${pkg}/saker"
+            fi
+          }
+
+          place_binary linux   amd64 saker-linux-x64
+          place_binary linux   arm64 saker-linux-arm64
+          place_binary darwin  amd64 saker-darwin-x64
+          place_binary darwin  arm64 saker-darwin-arm64
+          place_binary windows amd64 saker-win32-x64
+          place_binary windows arm64 saker-win32-arm64
+
+      - name: Update package versions
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+
+          # Update each platform package version
+          for pkg in saker-linux-x64 saker-linux-arm64 saker-darwin-x64 saker-darwin-arm64 saker-win32-x64 saker-win32-arm64; do
+            node -e "
+              const fs = require('fs');
+              const p = JSON.parse(fs.readFileSync('packages/${pkg}/package.json', 'utf8'));
+              p.version = '${VERSION}';
+              fs.writeFileSync('packages/${pkg}/package.json', JSON.stringify(p, null, 2) + '\n');
+            "
+          done
+
+          # Update main package version and optionalDependencies
+          node -e "
+            const fs = require('fs');
+            const p = JSON.parse(fs.readFileSync('packages/saker/package.json', 'utf8'));
+            p.version = '${VERSION}';
+            for (const dep of Object.keys(p.optionalDependencies || {})) {
+              p.optionalDependencies[dep] = '${VERSION}';
+            }
+            fs.writeFileSync('packages/saker/package.json', JSON.stringify(p, null, 2) + '\n');
+          "
+
+      - name: Publish platform packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          for pkg in saker-linux-x64 saker-linux-arm64 saker-darwin-x64 saker-darwin-arm64 saker-win32-x64 saker-win32-arm64; do
+            echo "Publishing @saker-ai/${pkg}..."
+            cd "packages/${pkg}"
+            npm publish --access public || echo "Warning: failed to publish ${pkg}, may already exist"
+            cd ../..
+          done
+
+      - name: Publish main package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd packages/saker
+          npm publish --access public
