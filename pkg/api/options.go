@@ -17,6 +17,7 @@ import (
 	"github.com/saker-ai/saker/pkg/model"
 	runtimecache "github.com/saker-ai/saker/pkg/runtime/cache"
 	"github.com/saker-ai/saker/pkg/runtime/checkpoint"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
 	"github.com/saker-ai/saker/pkg/runtime/tasks"
 	"github.com/saker-ai/saker/pkg/security"
 	"github.com/saker-ai/saker/pkg/tool"
@@ -152,6 +153,9 @@ type Options struct {
 	Skills    []SkillRegistration
 	Commands  []CommandRegistration
 	Subagents []SubagentRegistration
+	// RemoteSkillSources configures SkillHub registries from which skills are
+	// loaded dynamically into memory without writing to disk.
+	RemoteSkillSources []skills.RemoteSkillSource
 	// SkillsDirs overrides skill discovery roots. Paths may be absolute, or
 	// relative to ProjectRoot. When empty, defaults to "<ConfigRoot>/skills".
 	SkillsDirs []string

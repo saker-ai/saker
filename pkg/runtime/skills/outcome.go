@@ -10,6 +10,7 @@ const (
 	SkillScopeCustom     SkillScope = "custom"
 	SkillScopeLearned    SkillScope = "learned"
 	SkillScopeSubscribed SkillScope = "subscribed"
+	SkillScopeRemote     SkillScope = "remote"
 )
 
 // LoadOrigin describes where a skill came from during discovery.

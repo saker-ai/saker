@@ -1,15 +1,18 @@
 package api
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/saker-ai/saker/pkg/config"
 	"github.com/saker-ai/saker/pkg/runtime/commands"
 	"github.com/saker-ai/saker/pkg/runtime/skills"
 	"github.com/saker-ai/saker/pkg/runtime/subagents"
 	"github.com/saker-ai/saker/pkg/sandbox"
+	"github.com/saker-ai/saker/pkg/skillhub"
 )
 
 // runtime_helpers_loader.go owns loader option construction plus the merged
@@ -148,6 +151,22 @@ func buildSkillsRegistry(opts Options) (*skills.Registry, []error) {
 }
 
 func loadSkillRegistrations(opts Options) ([]skills.SkillRegistration, []error) {
+	var errs []error
+
+	// Phase 1: remote skills (lowest priority — overridden by FS and manual).
+	var remoteRegs []skills.SkillRegistration
+	for _, src := range opts.RemoteSkillSources {
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		client := newRemoteSkillClientAdapter(src)
+		outcome := skills.LoadFromRemote(ctx, client, src)
+		cancel()
+		if outcome != nil {
+			remoteRegs = append(remoteRegs, outcome.Registrations...)
+			errs = append(errs, outcome.Errors...)
+		}
+	}
+
+	// Phase 2: filesystem skills (override remote).
 	loader := buildLoaderOptions(opts)
 	outcome := skills.LoadOutcomeFromFS(skills.LoaderOptions{
 		ProjectRoot:    loader.ProjectRoot,
@@ -157,15 +176,49 @@ func loadSkillRegistrations(opts Options) ([]skills.SkillRegistration, []error) 
 		FS:             loader.fs,
 		DisabledSkills: loader.DisabledSkills,
 	})
-	var (
-		fsRegs []skills.SkillRegistration
-		errs   []error
-	)
+	var fsRegs []skills.SkillRegistration
 	if outcome != nil {
 		fsRegs = outcome.Registrations
-		errs = outcome.Errors
+		errs = append(errs, outcome.Errors...)
 	}
-	return mergeSkillRegistrations(fsRegs, opts.Skills, &errs), errs
+
+	// Phase 3: merge remote → FS → manual (later overrides earlier).
+	combined := mergeSkillRegs(remoteRegs, fsRegs, &errs)
+	return mergeSkillRegistrations(combined, opts.Skills, &errs), errs
+}
+
+// mergeSkillRegs merges two slices of skills.SkillRegistration. Entries in
+// the second slice override entries in the first with the same name.
+func mergeSkillRegs(base, override []skills.SkillRegistration, errs *[]error) []skills.SkillRegistration {
+	merged := make([]skills.SkillRegistration, 0, len(base)+len(override))
+	index := map[string]int{}
+
+	add := func(def skills.Definition, handler skills.Handler, source string) {
+		key := strings.ToLower(strings.TrimSpace(def.Name))
+		if key == "" {
+			*errs = append(*errs, fmt.Errorf("api: skill name is empty (%s)", source))
+			return
+		}
+		if handler == nil {
+			*errs = append(*errs, fmt.Errorf("api: skill %s handler is nil", key))
+			return
+		}
+		reg := skills.SkillRegistration{Definition: def, Handler: handler}
+		if idx, ok := index[key]; ok {
+			merged[idx] = reg
+			return
+		}
+		index[key] = len(merged)
+		merged = append(merged, reg)
+	}
+
+	for _, reg := range base {
+		add(reg.Definition, reg.Handler, "base")
+	}
+	for _, reg := range override {
+		add(reg.Definition, reg.Handler, "override")
+	}
+	return merged
 }
 
 func mergeSkillRegistrations(fsRegs []skills.SkillRegistration, manual []SkillRegistration, errs *[]error) []skills.SkillRegistration {
@@ -273,3 +326,60 @@ func snapshotSandbox(mgr *sandbox.Manager) SandboxReport {
 	}
 	return SandboxReport{ResourceLimits: mgr.Limits()}
 }
+
+// --- Remote skill client adapter -------------------------------------------
+
+// remoteSkillClientAdapter bridges skillhub.Client to skills.RemoteSkillClient.
+type remoteSkillClientAdapter struct {
+	client *skillhub.Client
+}
+
+func newRemoteSkillClientAdapter(src skills.RemoteSkillSource) *remoteSkillClientAdapter {
+	var opts []skillhub.ClientOption
+	if src.Token != "" {
+		opts = append(opts, skillhub.WithToken(src.Token))
+	}
+	return &remoteSkillClientAdapter{
+		client: skillhub.New(src.Registry, opts...),
+	}
+}
+
+func (a *remoteSkillClientAdapter) GetFile(ctx context.Context, slug, version, path string) ([]byte, error) {
+	return a.client.GetFile(ctx, slug, version, path)
+}
+
+func (a *remoteSkillClientAdapter) ListAllSkills(ctx context.Context, maxPages int) ([]skills.RemoteSkillMeta, error) {
+	all, err := a.client.ListAllSkills(ctx, maxPages)
+	if err != nil {
+		return nil, err
+	}
+	metas := make([]skills.RemoteSkillMeta, len(all))
+	for i, s := range all {
+		metas[i] = skillToRemoteMeta(s)
+	}
+	return metas, nil
+}
+
+func (a *remoteSkillClientAdapter) GetSkill(ctx context.Context, slug string) (*skills.RemoteSkillMeta, error) {
+	s, err := a.client.Get(ctx, slug)
+	if err != nil {
+		return nil, err
+	}
+	m := skillToRemoteMeta(*s)
+	return &m, nil
+}
+
+func skillToRemoteMeta(s skillhub.Skill) skills.RemoteSkillMeta {
+	return skills.RemoteSkillMeta{
+		Slug:        s.Slug,
+		DisplayName: s.DisplayName,
+		Summary:     s.Summary,
+		Category:    s.Category,
+		Kind:        s.Kind,
+		Tags:        s.Tags,
+		OwnerHandle: s.OwnerHandle,
+	}
+}
+
+// Compile-time interface check.
+var _ skills.RemoteSkillClient = (*remoteSkillClientAdapter)(nil)

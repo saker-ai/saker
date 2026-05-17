@@ -928,8 +928,8 @@ export function ChatApp({ authRequired, authenticated, onLogin, onLogout, authPr
   }, [isMobile, activeView, mobileDrawerOpen, panelCollapsed, t, togglePanel]);
 
   return (
-    <SakerCopilotProvider threadId={activeThreadId}>
-    <CopilotBridge threadId={activeThreadId} historyMessages={messages}>
+    <SakerCopilotProvider>
+    <CopilotBridge threadId={activeThreadId}>
     <div className="app">
       <TopBar
         username={currentUser.username}

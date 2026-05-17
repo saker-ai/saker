@@ -365,6 +365,15 @@ func (rt *Runtime) ReloadSkills() []error {
 	return errs
 }
 
+// SetRemoteSkillSources updates the remote skill sources used by the loader
+// pipeline. The change takes effect on the next ReloadSkills call.
+func (rt *Runtime) SetRemoteSkillSources(sources []skills.RemoteSkillSource) {
+	if rt == nil {
+		return
+	}
+	rt.opts.RemoteSkillSources = sources
+}
+
 func extractKeywordsFromMetadata(def skills.Definition) []string {
 	for _, m := range def.Matchers {
 		if km, ok := m.(skills.KeywordMatcher); ok {

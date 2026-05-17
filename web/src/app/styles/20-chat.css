@@ -13,6 +13,20 @@
   flex-direction: column;
   min-width: 0;
 }
+.main--empty {
+  overflow-y: auto;
+}
+.main--empty::before,
+.main--empty::after {
+  content: "";
+  flex: 1 1 0;
+}
+.main--empty .messages {
+  flex: none;
+}
+.main--empty .saker-copilot-chat {
+  height: auto;
+}
 
 /* ── Topbar thread title (canvas view: editable thread name in TopBar) ── */
 .topbar-thread-title {

@@ -85,7 +85,7 @@ export function ChatMainView({
         mobileDrawer={isMobile}
         mobileOpen={mobileDrawerOpen}
       />
-      <div className="main" id="main-content">
+      <div className={`main${!activeThreadId ? " main--empty" : ""}`} id="main-content">
         {!wsHealthy && (
           <div className="connection-status" role="alert">
             {t("chat.disconnected")}

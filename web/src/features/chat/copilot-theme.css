@@ -29,7 +29,11 @@
 .saker-copilot-chat .copilotKitHeader,
 .saker-copilot-chat .copilotKitDevConsole,
 .saker-copilot-chat .copilotKitVersionInfo,
-.saker-copilot-chat .copilotKitMessagesFooter {
+.saker-copilot-chat .copilotKitMessagesFooter,
+.saker-copilot-chat .poweredBy {
+  display: none !important;
+}
+cpk-web-inspector {
   display: none !important;
 }
 

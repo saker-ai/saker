@@ -22,6 +22,9 @@ type Config struct {
 	LearnedAutoPublish bool      `json:"learnedAutoPublish,omitempty"`
 	LearnedVisibility  string    `json:"learnedVisibility,omitempty"`
 	Offline            bool      `json:"offline,omitempty"`
+	RemoteMode         bool      `json:"remoteMode,omitempty"`
+	RemoteRegistry     string    `json:"remoteRegistry,omitempty"`
+	RemoteSlugs        []string  `json:"remoteSlugs,omitempty"`
 	LastSyncAt         time.Time `json:"lastSyncAt,omitempty"`
 	LastSyncStatus     string    `json:"lastSyncStatus,omitempty"` // "ok" | "partial" | "error"
 }
@@ -45,6 +48,10 @@ func (c Config) Resolved() Config {
 	}
 	if out.LearnedVisibility == "" {
 		out.LearnedVisibility = "private"
+	}
+	if v := strings.TrimSpace(os.Getenv("SKILLHUB_REMOTE_REGISTRY")); v != "" {
+		out.RemoteRegistry = v
+		out.RemoteMode = true
 	}
 	out.Registry = strings.TrimRight(out.Registry, "/")
 	return out

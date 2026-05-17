@@ -13,19 +13,16 @@ function resolveRuntimeUrl(): string {
 }
 
 export interface SakerCopilotProviderProps {
-  threadId?: string;
   children: ReactNode;
 }
 
-export function SakerCopilotProvider({ threadId, children }: SakerCopilotProviderProps) {
+export function SakerCopilotProvider({ children }: SakerCopilotProviderProps) {
   const runtimeUrl = useMemo(() => resolveRuntimeUrl(), []);
 
   return (
     <CopilotKit
       runtimeUrl={runtimeUrl}
       credentials="include"
-      threadId={threadId}
-      useSingleEndpoint={true}
     >
       {children}
     </CopilotKit>

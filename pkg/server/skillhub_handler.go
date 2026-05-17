@@ -102,6 +102,14 @@ func (h *Handler) dispatchSkillhub(ctx context.Context, req Request) (Response, 
 		return h.handleSkillhubSync(ctx, req), true
 	case "skillhub/publish-learned":
 		return h.handleSkillhubPublishLearned(ctx, req), true
+	case "skillhub/remote/enable":
+		return h.handleSkillhubRemoteEnable(ctx, req), true
+	case "skillhub/remote/disable":
+		return h.handleSkillhubRemoteDisable(ctx, req), true
+	case "skillhub/remote/refresh":
+		return h.handleSkillhubRemoteRefresh(ctx, req), true
+	case "skillhub/remote/status":
+		return h.handleSkillhubRemoteStatus(ctx, req), true
 	}
 	return Response{}, false
 }
