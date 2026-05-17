@@ -17,35 +17,30 @@ import (
 )
 
 // runStream starts streaming the model response in a goroutine and sends
-// events back to the bubbletea program via tea.Cmd.
-func (a *App) runStream(prompt string) tea.Cmd {
+// events back to the bubbletea program via program.Send(). All shared state
+// mutations happen in Update() via the corresponding message handlers.
+func (a *App) runStream(ctx context.Context, prompt string) tea.Cmd {
 	return func() tea.Msg {
-		runCtx, runCancel := context.WithCancel(a.ctx)
-		a.runCancel = runCancel
-
-		ctx := runCtx
+		streamCtx := ctx
 		if a.cfg.TimeoutMs > 0 {
 			var cancel context.CancelFunc
-			ctx, cancel = context.WithTimeout(runCtx, time.Duration(a.cfg.TimeoutMs)*time.Millisecond)
+			streamCtx, cancel = context.WithTimeout(ctx, time.Duration(a.cfg.TimeoutMs)*time.Millisecond)
 			defer cancel()
 		}
 
-		ch, err := a.cfg.Engine.RunStream(ctx, a.sessionID, prompt)
+		ch, err := a.cfg.Engine.RunStream(streamCtx, a.sessionID, prompt)
 		if err != nil {
-			runCancel()
-			a.runCancel = nil
 			return StreamErrorMsg{Err: err}
 		}
 
-		var pendingToolInput strings.Builder // accumulate tool input JSON
+		var pendingToolInput strings.Builder
 		for evt := range ch {
 			switch evt.Type {
 			case api.EventContentBlockDelta:
 				if evt.Delta != nil {
 					switch evt.Delta.Type {
 					case "text_delta":
-						a.chat.AppendStreamText(evt.Delta.Text)
-						a.smartSpinner.AddTokens(len(evt.Delta.Text))
+						a.program.Send(StreamTextMsg{Text: evt.Delta.Text})
 					case "input_json_delta":
 						var chunk string
 						_ = json.Unmarshal(evt.Delta.PartialJSON, &chunk)
@@ -53,93 +48,66 @@ func (a *App) runStream(prompt string) tea.Cmd {
 					}
 				}
 			case api.EventToolExecutionStart:
-				a.chat.FinishStreaming()
 				params := extractToolParamsFromJSON(evt.Name, pendingToolInput.String())
 				pendingToolInput.Reset()
-				a.chat.AddToolCallWithParams(evt.Name, params, "pending")
-				a.smartSpinner.SetVerb(toolVerb(evt.Name, params))
+				a.program.Send(StreamToolStartMsg{Name: evt.Name, Params: params})
 			case api.EventToolExecutionOutput:
 				output := formatToolOutput(evt)
 				if output != "" {
-					a.chat.UpdateLastToolOutput(output)
+					a.program.Send(StreamToolOutputMsg{Output: output})
 				}
 			case api.EventToolExecutionResult:
 				result, isErr := formatToolResult(evt)
-				if result != "" {
-					a.chat.UpdateLastToolOutput(result)
-				}
-				if isErr {
-					a.chat.UpdateLastToolStatus("error")
-				} else {
-					a.chat.UpdateLastToolStatus("success")
-				}
-				// Display inline images from tool result artifacts.
-				for _, path := range extractImagePaths(evt) {
-					a.chat.AddImage(path)
-				}
-				a.chat.StartStreaming()
-				a.smartSpinner.SetVerb("Thinking...")
+				a.program.Send(StreamToolResultMsg{
+					Output:     result,
+					IsError:    isErr,
+					ImagePaths: extractImagePaths(evt),
+				})
 			case api.EventMessageDelta:
 				if evt.Usage != nil && (evt.Usage.InputTokens > 0 || evt.Usage.OutputTokens > 0) {
-					a.status.AddTokens(evt.Usage.InputTokens, evt.Usage.OutputTokens)
+					a.program.Send(StreamTokenUsageMsg{Input: evt.Usage.InputTokens, Output: evt.Usage.OutputTokens})
 				}
 			case api.EventError:
 				if evt.Output != nil {
-					a.chat.AddError(fmt.Sprintf("%v", evt.Output))
+					a.program.Send(StreamErrorTextMsg{Text: fmt.Sprintf("%v", evt.Output)})
 				}
 			}
 		}
 
-		runCancel()
-		a.runCancel = nil
 		return StreamDoneMsg{}
 	}
 }
 
 // runBtw runs a /btw side question independently of the main stream.
-// Text is written directly to the side panel overlay.
-func (a *App) runBtw(question string) tea.Cmd {
+// Text events are forwarded to the Update loop via SidePanelTextMsg.
+func (a *App) runBtw(ctx context.Context, question string) tea.Cmd {
 	return func() tea.Msg {
-		btwCtx, btwCancel := context.WithCancel(a.ctx)
-		a.sidePanelCancel = btwCancel
-
 		btwSessionID := "btw-" + uuid.NewString()
 		wrappedPrompt := clikit.SideQuestionPromptWrapper + question
 
-		// Fork from main session to inherit conversation context.
-		ch, err := a.cfg.Engine.RunStreamForked(btwCtx, a.sessionID, btwSessionID, wrappedPrompt)
+		ch, err := a.cfg.Engine.RunStreamForked(ctx, a.sessionID, btwSessionID, wrappedPrompt)
 		if err != nil {
-			btwCancel()
 			return BtwErrorMsg{Err: err}
 		}
 
 		for evt := range ch {
 			if evt.Type == api.EventContentBlockDelta && evt.Delta != nil && evt.Delta.Type == "text_delta" {
-				if a.sidePanel != nil {
-					a.sidePanel.AppendText(evt.Delta.Text)
-				}
+				a.program.Send(SidePanelTextMsg{Text: evt.Delta.Text})
 			}
 		}
 
-		btwCancel()
 		return BtwDoneMsg{}
 	}
 }
 
 // runIM runs an /im side question for IM bridge management.
-// Text is written directly to the side panel overlay.
-func (a *App) runIM(instruction string) tea.Cmd {
+// Text events are forwarded to the Update loop via SidePanelTextMsg.
+func (a *App) runIM(ctx context.Context, imSessionID, instruction string) tea.Cmd {
 	return func() tea.Msg {
-		imCtx, imCancel := context.WithCancel(a.ctx)
-		a.sidePanelCancel = imCancel
-
-		imSessionID := "im-" + uuid.NewString()
 		wrappedPrompt := clikit.IMSidePromptWrapper + instruction
 
-		// Fork from main session to inherit conversation context.
-		ch, err := a.cfg.Engine.RunStreamForked(imCtx, a.sessionID, imSessionID, wrappedPrompt)
+		ch, err := a.cfg.Engine.RunStreamForked(ctx, a.sessionID, imSessionID, wrappedPrompt)
 		if err != nil {
-			imCancel()
 			return IMErrorMsg{Err: err}
 		}
 
@@ -147,37 +115,22 @@ func (a *App) runIM(instruction string) tea.Cmd {
 			switch evt.Type {
 			case api.EventContentBlockDelta:
 				if evt.Delta != nil && evt.Delta.Type == "text_delta" {
-					if a.sidePanel != nil {
-						a.sidePanel.AppendText(evt.Delta.Text)
-					}
+					a.program.Send(SidePanelTextMsg{Text: evt.Delta.Text})
 				}
 			case api.EventToolExecutionStart:
-				if a.sidePanel != nil {
-					a.sidePanel.AppendText(fmt.Sprintf("\n[tool: %s]\n", evt.Name))
-				}
+				a.program.Send(SidePanelToolMsg{Name: evt.Name})
 			}
 		}
 
-		imCancel()
 		return IMDoneMsg{}
 	}
 }
 
 // runIMFollowUp sends a follow-up message in the /im panel's session.
-func (a *App) runIMFollowUp(text string) tea.Cmd {
+func (a *App) runIMFollowUp(ctx context.Context, sessionID, text string) tea.Cmd {
 	return func() tea.Msg {
-		if a.sidePanel == nil {
-			return IMDoneMsg{}
-		}
-
-		followCtx, followCancel := context.WithCancel(a.ctx)
-		a.sidePanelCancel = followCancel
-
-		sessionID := a.sidePanel.SessionID()
-
-		ch, err := a.cfg.Engine.RunStream(followCtx, sessionID, text)
+		ch, err := a.cfg.Engine.RunStream(ctx, sessionID, text)
 		if err != nil {
-			followCancel()
 			return IMErrorMsg{Err: err}
 		}
 
@@ -185,18 +138,13 @@ func (a *App) runIMFollowUp(text string) tea.Cmd {
 			switch evt.Type {
 			case api.EventContentBlockDelta:
 				if evt.Delta != nil && evt.Delta.Type == "text_delta" {
-					if a.sidePanel != nil {
-						a.sidePanel.AppendText(evt.Delta.Text)
-					}
+					a.program.Send(SidePanelTextMsg{Text: evt.Delta.Text})
 				}
 			case api.EventToolExecutionStart:
-				if a.sidePanel != nil {
-					a.sidePanel.AppendText(fmt.Sprintf("\n[tool: %s]\n", evt.Name))
-				}
+				a.program.Send(SidePanelToolMsg{Name: evt.Name})
 			}
 		}
 
-		followCancel()
 		return IMDoneMsg{}
 	}
 }
@@ -373,14 +321,14 @@ func summarizeToolResult(toolName, output string) string {
 }
 
 var aigoToolLabels = map[string]string{
-	"generate_image":  "Image generated",
-	"edit_image":      "Image edited",
-	"generate_video":  "Video generated",
-	"edit_video":      "Video edited",
-	"generate_3d":     "3D model generated",
-	"generate_music":  "Music generated",
-	"text_to_speech":  "Audio generated",
-	"design_voice":    "Voice designed",
+	"generate_image":   "Image generated",
+	"edit_image":       "Image edited",
+	"generate_video":   "Video generated",
+	"edit_video":       "Video edited",
+	"generate_3d":      "3D model generated",
+	"generate_music":   "Music generated",
+	"text_to_speech":   "Audio generated",
+	"design_voice":     "Voice designed",
 	"transcribe_audio": "Transcription complete",
 }
 

@@ -3,6 +3,7 @@ package tui
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"sort"
 	"strings"
@@ -34,7 +35,56 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, cmd)
 		}
 
+	case StreamTextMsg:
+		a.chat.AppendStreamText(msg.Text)
+		a.smartSpinner.AddTokens(len(msg.Text))
+
+	case StreamToolStartMsg:
+		a.chat.FinishStreaming()
+		a.chat.AddToolCallWithParams(msg.Name, msg.Params, "pending")
+		a.smartSpinner.SetVerb(toolVerb(msg.Name, msg.Params))
+
+	case StreamToolOutputMsg:
+		if msg.Output != "" {
+			a.chat.UpdateLastToolOutput(msg.Output)
+		}
+
+	case StreamToolResultMsg:
+		if msg.Output != "" {
+			a.chat.UpdateLastToolOutput(msg.Output)
+		}
+		if msg.IsError {
+			a.chat.UpdateLastToolStatus("error")
+		} else {
+			a.chat.UpdateLastToolStatus("success")
+		}
+		for _, p := range msg.ImagePaths {
+			a.chat.AddImage(p)
+		}
+		a.chat.StartStreaming()
+		a.smartSpinner.SetVerb("Thinking...")
+
+	case StreamTokenUsageMsg:
+		a.status.AddTokens(msg.Input, msg.Output)
+
+	case StreamErrorTextMsg:
+		a.chat.AddError(msg.Text)
+
+	case SidePanelTextMsg:
+		if a.sidePanel != nil {
+			a.sidePanel.AppendText(msg.Text)
+		}
+
+	case SidePanelToolMsg:
+		if a.sidePanel != nil {
+			a.sidePanel.AppendText("\n[tool: " + msg.Name + "]\n")
+		}
+
 	case StreamDoneMsg:
+		if a.runCancel != nil {
+			a.runCancel()
+			a.runCancel = nil
+		}
 		a.chat.FinishStreaming()
 		a.smartSpinner.Stop()
 		a.spinning = false
@@ -43,6 +93,10 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, a.flushChat()
 
 	case StreamErrorMsg:
+		if a.runCancel != nil {
+			a.runCancel()
+			a.runCancel = nil
+		}
 		a.chat.FinishStreaming()
 		if msg.Err != nil {
 			a.chat.AddError(msg.Err.Error())
@@ -54,6 +108,9 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, a.flushChat()
 
 	case BtwDoneMsg:
+		if a.sidePanelCancel != nil {
+			a.sidePanelCancel()
+		}
 		a.sidePanelCancel = nil
 		if a.sidePanel != nil {
 			a.sidePanel.SetDone()
@@ -68,6 +125,9 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, nil
 
 	case BtwErrorMsg:
+		if a.sidePanelCancel != nil {
+			a.sidePanelCancel()
+		}
 		a.sidePanelCancel = nil
 		if a.sidePanel != nil {
 			a.sidePanel.SetError(msg.Err)
@@ -84,6 +144,9 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, a.flushChat()
 
 	case IMDoneMsg:
+		if a.sidePanelCancel != nil {
+			a.sidePanelCancel()
+		}
 		a.sidePanelCancel = nil
 		if a.sidePanel != nil {
 			a.sidePanel.SetDone()
@@ -102,6 +165,9 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, nil
 
 	case IMErrorMsg:
+		if a.sidePanelCancel != nil {
+			a.sidePanelCancel()
+		}
 		a.sidePanelCancel = nil
 		if a.sidePanel != nil {
 			a.sidePanel.SetError(msg.Err)
@@ -266,7 +332,10 @@ func (a *App) handleSidePanelKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			a.spinning = true
 			a.input.SetEnabled(false)
 			a.status.SetText("Thinking...")
-			return a, tea.Batch(a.smartSpinner.Tick(), a.runIMFollowUp(text))
+			followCtx, followCancel := context.WithCancel(a.ctx)
+			a.sidePanelCancel = followCancel
+			sessionID := a.sidePanel.SessionID()
+			return a, tea.Batch(a.smartSpinner.Tick(), a.runIMFollowUp(followCtx, sessionID, text))
 		}
 	}
 
@@ -466,7 +535,9 @@ func (a *App) handleSubmit(text string) (tea.Model, tea.Cmd) {
 			a.spinning = true
 			a.input.SetEnabled(false)
 			a.status.SetText("Thinking...")
-			return a, tea.Batch(a.smartSpinner.Tick(), a.runBtw(question))
+			btwCtx, btwCancel := context.WithCancel(a.ctx)
+			a.sidePanelCancel = btwCancel
+			return a, tea.Batch(a.smartSpinner.Tick(), a.runBtw(btwCtx, question))
 		case "/im":
 			instruction := strings.TrimSpace(text[3:])
 			if instruction == "" {
@@ -478,7 +549,9 @@ func (a *App) handleSubmit(text string) (tea.Model, tea.Cmd) {
 			a.spinning = true
 			a.input.SetEnabled(false)
 			a.status.SetText("IM bridge...")
-			return a, tea.Batch(a.smartSpinner.Tick(), a.runIM(instruction))
+			imCtx, imCancel := context.WithCancel(a.ctx)
+			a.sidePanelCancel = imCancel
+			return a, tea.Batch(a.smartSpinner.Tick(), a.runIM(imCtx, imSessionID, instruction))
 		case "/status":
 			status := fmt.Sprintf("Session: %s | Model: %s | Repo: %s | Sandbox: %s | Skills: %d",
 				a.sessionID, a.cfg.Engine.ModelName(), a.cfg.Engine.RepoRoot(),
@@ -506,8 +579,10 @@ func (a *App) handleSubmit(text string) (tea.Model, tea.Cmd) {
 	a.input.SetEnabled(false)
 	a.status.SetText("Thinking...")
 
+	runCtx, runCancel := context.WithCancel(a.ctx)
+	a.runCancel = runCancel
 	a.smartSpinner.Start()
-	return a, tea.Batch(a.smartSpinner.Tick(), a.runStream(text), flush)
+	return a, tea.Batch(a.smartSpinner.Tick(), a.runStream(runCtx, text), flush)
 }
 
 // displaySandbox renders the sandbox backend name for /status, defaulting to "host".

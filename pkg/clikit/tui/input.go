@@ -3,6 +3,7 @@ package tui
 import (
 	"image/color"
 	"strings"
+	"sync"
 
 	"charm.land/bubbles/v2/textarea"
 	tea "charm.land/bubbletea/v2"
@@ -92,9 +93,11 @@ type Input struct {
 	search        searchState
 }
 
+var keywordColorsOnce sync.Once
+
 // NewInput creates an Input component.
 func NewInput(s Styles) *Input {
-	initKeywordColors(s.Theme)
+	keywordColorsOnce.Do(func() { initKeywordColors(s.Theme) })
 
 	ta := textarea.New()
 	ta.Placeholder = "Type a message..."
@@ -165,6 +168,10 @@ func (i *Input) SaveHistory(text string) {
 	}
 	if len(i.history) == 0 || i.history[len(i.history)-1] != text {
 		i.history = append(i.history, text)
+	}
+	const maxHistorySize = 500
+	if len(i.history) > maxHistorySize {
+		i.history = i.history[len(i.history)-maxHistorySize:]
 	}
 	i.historyIdx = -1
 	i.historyDraft = ""

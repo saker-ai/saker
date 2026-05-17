@@ -212,23 +212,21 @@ func (c *Chat) View() string {
 	// cursor appended to the trailing line (no extra empty cursor row).
 	if c.streaming && c.streamingBuffer.Len() > 0 {
 		cw := c.contentWidth()
-		// Trim the trailing newline so the cursor lands on the final visible
-		// line rather than its own blank row.
 		text := strings.TrimRight(c.streamingBuffer.String(), "\n")
+		rendered := c.streamRenderer.Render(text, cw)
 		cursor := lipgloss.NewStyle().Foreground(c.styles.Theme.Primary).Render(IconCursor)
-		lines := strings.Split(text, "\n")
+		lines := strings.Split(rendered, "\n")
 		lastIdx := len(lines) - 1
 		for i, line := range lines {
-			rendered := c.styles.AssistantText.Width(cw).Render(line)
 			suffix := ""
 			if i == lastIdx {
 				suffix = " " + cursor
 			}
 			if i == 0 {
 				dot := c.styles.AssistantDot.Render(IconCircle)
-				fmt.Fprintf(&b, "%s %s%s\n", dot, rendered, suffix)
+				fmt.Fprintf(&b, "%s %s%s\n", dot, line, suffix)
 			} else {
-				fmt.Fprintf(&b, "    %s%s\n", rendered, suffix)
+				fmt.Fprintf(&b, "    %s%s\n", line, suffix)
 			}
 		}
 	}

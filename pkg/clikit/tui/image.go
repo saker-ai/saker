@@ -8,6 +8,7 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
@@ -150,7 +151,7 @@ func renderITerm2(data []byte, name string, maxCellWidth int) string {
 // It decodes image headers to get the aspect ratio and scales to fit maxCellWidth.
 // Falls back to (maxCellWidth, maxCellWidth/2) if dimensions cannot be determined.
 func imageCellSize(data []byte, maxCellWidth int) (int, int) {
-	cfg, _, err := image.DecodeConfig(strings.NewReader(string(data)))
+	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
 	if err != nil || cfg.Width == 0 || cfg.Height == 0 {
 		return maxCellWidth, maxCellWidth / 2
 	}

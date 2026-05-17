@@ -26,6 +26,10 @@ type SidePanel struct {
 	done        bool
 	err         error
 	scrollY     int
+
+	cachedRendered string
+	cachedLen      int
+	cachedWidth    int
 }
 
 // NewSidePanel creates a single-shot side panel (for /btw).
@@ -243,12 +247,20 @@ func (p *SidePanel) scrollToBottom() {
 }
 
 // contentLines returns the rendered content split into lines.
+// Results are cached until content changes or width changes.
 func (p *SidePanel) contentLines() []string {
 	innerW := p.width - 4
 	if innerW < 10 {
 		innerW = 76
 	}
+	cl := p.content.Len()
+	if cl == p.cachedLen && innerW == p.cachedWidth && p.cachedRendered != "" {
+		return strings.Split(p.cachedRendered, "\n")
+	}
 	rendered := renderMarkdown(p.content.String(), innerW)
+	p.cachedRendered = rendered
+	p.cachedLen = cl
+	p.cachedWidth = innerW
 	return strings.Split(rendered, "\n")
 }
 

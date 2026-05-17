@@ -66,6 +66,36 @@ type QuestionPanelDoneMsg struct {
 	Outcome QuestionPanelOutcome
 }
 
+// Stream event messages — sent from Cmd goroutines via program.Send()
+// to keep all state mutation on the main Update thread.
+
+type StreamTextMsg struct{ Text string }
+
+type StreamToolStartMsg struct {
+	Name   string
+	Params string
+}
+
+type StreamToolOutputMsg struct{ Output string }
+
+type StreamToolResultMsg struct {
+	Output     string
+	IsError    bool
+	ImagePaths []string
+}
+
+type StreamTokenUsageMsg struct {
+	Input  int
+	Output int
+}
+
+type StreamErrorTextMsg struct{ Text string }
+
+// Side panel messages (for /btw and /im goroutines).
+
+type SidePanelTextMsg struct{ Text string }
+type SidePanelToolMsg struct{ Name string }
+
 // OpenPermissionPanelMsg requests opening a tool permission confirmation panel.
 type OpenPermissionPanelMsg struct {
 	Request PermissionPanelRequest
