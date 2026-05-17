@@ -8,6 +8,9 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
+	"sync"
 	"time"
 )
 
@@ -53,28 +56,158 @@ func SetupCLI(dir string) (*slog.Logger, func(), error) {
 	return logger, cleanup, nil
 }
 
+const (
+	defaultMaxSize  int64 = 50 * 1024 * 1024 // 50 MB per file
+	defaultMaxFiles       = 7                 // keep at most 7 log files
+	logPrefix             = "saker"
+)
+
 func setupLogger(dir string, stderr bool) (*slog.Logger, func(), error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return nil, nil, fmt.Errorf("logging: mkdir %s: %w", dir, err)
 	}
 
-	name := fmt.Sprintf("saker-%s.log", time.Now().Format("2006-01-02"))
-	path := filepath.Join(dir, name)
-
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+	rw, err := newRotatingWriter(dir, defaultMaxSize, defaultMaxFiles)
 	if err != nil {
-		return nil, nil, fmt.Errorf("logging: open %s: %w", path, err)
+		return nil, nil, err
 	}
 
-	var w io.Writer = f
+	var w io.Writer = rw
 	if stderr {
-		w = io.MultiWriter(os.Stderr, f)
+		w = io.MultiWriter(os.Stderr, rw)
 	}
 	handler := slog.NewJSONHandler(w, &slog.HandlerOptions{
-		Level: slog.LevelInfo,
+		Level: slog.LevelDebug,
 	})
 	logger := slog.New(handler)
 
-	cleanup := func() { f.Close() }
+	cleanup := func() { rw.Close() }
 	return logger, cleanup, nil
+}
+
+// rotatingWriter is an io.WriteCloser that writes to date-stamped log files
+// with automatic rotation when a file exceeds maxSize, and prunes old files
+// beyond maxFiles.
+type rotatingWriter struct {
+	dir      string
+	maxSize  int64
+	maxFiles int
+
+	mu   sync.Mutex
+	file *os.File
+	size int64
+}
+
+func newRotatingWriter(dir string, maxSize int64, maxFiles int) (*rotatingWriter, error) {
+	rw := &rotatingWriter{
+		dir:      dir,
+		maxSize:  maxSize,
+		maxFiles: maxFiles,
+	}
+	if err := rw.openCurrent(); err != nil {
+		return nil, err
+	}
+	rw.prune()
+	return rw, nil
+}
+
+func (rw *rotatingWriter) currentName() string {
+	return fmt.Sprintf("%s-%s.log", logPrefix, time.Now().Format("2006-01-02"))
+}
+
+func (rw *rotatingWriter) openCurrent() error {
+	path := filepath.Join(rw.dir, rw.currentName())
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+	if err != nil {
+		return fmt.Errorf("logging: open %s: %w", path, err)
+	}
+	info, err := f.Stat()
+	if err != nil {
+		f.Close()
+		return fmt.Errorf("logging: stat %s: %w", path, err)
+	}
+	rw.file = f
+	rw.size = info.Size()
+	return nil
+}
+
+func (rw *rotatingWriter) Write(p []byte) (int, error) {
+	rw.mu.Lock()
+	defer rw.mu.Unlock()
+
+	if rw.size+int64(len(p)) > rw.maxSize {
+		if err := rw.rotate(); err != nil {
+			return 0, err
+		}
+	}
+
+	n, err := rw.file.Write(p)
+	rw.size += int64(n)
+	return n, err
+}
+
+func (rw *rotatingWriter) Close() error {
+	rw.mu.Lock()
+	defer rw.mu.Unlock()
+	if rw.file != nil {
+		return rw.file.Close()
+	}
+	return nil
+}
+
+func (rw *rotatingWriter) rotate() error {
+	if rw.file != nil {
+		rw.file.Close()
+	}
+
+	base := filepath.Join(rw.dir, rw.currentName())
+
+	// Shift existing rotated files: .3 → .4, .2 → .3, .1 → .2
+	for i := rw.maxFiles - 1; i >= 1; i-- {
+		src := fmt.Sprintf("%s.%d", base, i)
+		dst := fmt.Sprintf("%s.%d", base, i+1)
+		os.Rename(src, dst)
+	}
+	// Current file becomes .1
+	os.Rename(base, base+".1")
+
+	return rw.openCurrent()
+}
+
+// prune removes the oldest log files when total count exceeds maxFiles.
+func (rw *rotatingWriter) prune() {
+	entries, err := os.ReadDir(rw.dir)
+	if err != nil {
+		return
+	}
+
+	var logFiles []os.DirEntry
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+		name := e.Name()
+		if strings.HasPrefix(name, logPrefix+"-") && strings.Contains(name, ".log") {
+			logFiles = append(logFiles, e)
+		}
+	}
+
+	if len(logFiles) <= rw.maxFiles {
+		return
+	}
+
+	// Sort by modification time, oldest first.
+	sort.Slice(logFiles, func(i, j int) bool {
+		fi, _ := logFiles[i].Info()
+		fj, _ := logFiles[j].Info()
+		if fi == nil || fj == nil {
+			return logFiles[i].Name() < logFiles[j].Name()
+		}
+		return fi.ModTime().Before(fj.ModTime())
+	})
+
+	toRemove := len(logFiles) - rw.maxFiles
+	for i := 0; i < toRemove; i++ {
+		os.Remove(filepath.Join(rw.dir, logFiles[i].Name()))
+	}
 }

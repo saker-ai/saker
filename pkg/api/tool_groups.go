@@ -42,7 +42,7 @@ const (
 
 var presetGroups = map[ModePreset][]ToolGroup{
 	PresetCLI:       {GroupCoreIO, GroupBashMgmt, GroupTaskMgmt, GroupWeb, GroupMedia, GroupInteraction},
-	PresetServerWeb: {GroupCoreIO, GroupBashMgmt, GroupTaskMgmt, GroupWeb, GroupMedia, GroupCanvas, GroupBrowser},
+	PresetServerWeb: {GroupCoreIO, GroupBashMgmt, GroupTaskMgmt, GroupWeb, GroupMedia, GroupInteraction, GroupCanvas, GroupBrowser},
 	PresetServerAPI: {GroupCoreIO, GroupBashMgmt, GroupTaskMgmt, GroupWeb, GroupMedia, GroupInteraction},
 	PresetCI:        {GroupCoreIO, GroupBashMgmt},
 }

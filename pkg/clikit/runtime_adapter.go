@@ -3,6 +3,7 @@ package clikit
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"strings"
 	"sync"
 
@@ -137,6 +138,7 @@ func (a *RuntimeAdapter) SetAskQuestionFunc(fn toolbuiltin.AskQuestionFunc) {
 	a.askMu.Lock()
 	a.askQuestionFunc = fn
 	a.askMu.Unlock()
+	slog.Debug("RuntimeAdapter.SetAskQuestionFunc", "has_fn", fn != nil)
 }
 
 // withAskQuestion injects the registered AskQuestionFunc into ctx if one is
@@ -150,6 +152,7 @@ func (a *RuntimeAdapter) withAskQuestion(ctx context.Context) context.Context {
 	a.askMu.RLock()
 	fn := a.askQuestionFunc
 	a.askMu.RUnlock()
+	slog.Debug("RuntimeAdapter.withAskQuestion", "has_fn", fn != nil)
 	if fn == nil {
 		return ctx
 	}

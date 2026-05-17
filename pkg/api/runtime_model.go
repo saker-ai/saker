@@ -324,6 +324,54 @@ func (m *conversationModel) Generate(ctx context.Context, _ *agent.Context) (*ag
 		"stop_reason", resp.StopReason,
 		"tool_calls", len(resp.Message.ToolCalls),
 	)
+	// Question nudge: when the model responds with text that looks like a
+	// question with options (bullets/numbered list) but no tool calls, and
+	// ask_user_question is available, retry once with a hint to use the tool.
+	if resp != nil && len(resp.Message.ToolCalls) == 0 && hasAskTool(m.tools) {
+		text := strings.TrimSpace(resp.Message.Content)
+		if looksLikeTextQuestion(text) {
+			genLogger.Debug("question-nudge: detected text question, retrying with tool hint",
+				"text_len", len(text))
+			m.history.Append(message.Message{Role: "assistant", Content: text})
+			m.history.Append(message.Message{
+				Role:    "user",
+				Content: "[System] You asked questions in plain text. You MUST reformat them using the ask_user_question tool with structured options. Call the tool now.",
+			})
+			retrySnap := m.history.All()
+			if m.trimmer != nil {
+				retrySnap = m.trimmer.Trim(retrySnap)
+			}
+			retryReq := model.Request{
+				Messages:          convertMessages(retrySnap),
+				Tools:             m.tools,
+				MaxTokens:         m.maxOutputTokens,
+				EnablePromptCache: m.enableCache,
+			}
+			if len(m.systemPromptBlocks) > 0 {
+				retryReq.SystemBlocks = append([]string(nil), m.systemPromptBlocks...)
+			} else {
+				retryReq.System = m.systemPrompt
+			}
+			var retryResp *model.Response
+			retryErr := m.base.CompleteStream(ctx, retryReq, func(sr model.StreamResult) error {
+				if sr.Final && sr.Response != nil {
+					retryResp = sr.Response
+				}
+				return nil
+			})
+			if retryErr == nil && retryResp != nil && len(retryResp.Message.ToolCalls) > 0 {
+				genLogger.Info("question-nudge: retry succeeded with tool calls",
+					"tool_calls", len(retryResp.Message.ToolCalls))
+				resp = retryResp
+				m.usage.InputTokens += retryResp.Usage.InputTokens
+				m.usage.OutputTokens += retryResp.Usage.OutputTokens
+			} else {
+				genLogger.Debug("question-nudge: retry did not produce tool calls, using original")
+				m.history.TruncateLast(2)
+			}
+		}
+	}
+
 	// Observability for runaway generation: when the model burns through a
 	// large output budget but emits no real text *and* the tool call has
 	// empty/near-empty arguments, it usually means the model walked into a
@@ -484,4 +532,41 @@ func applyModelOverrides(req *model.Request, o *ModelOverrides) {
 		v := *o.ParallelToolCalls
 		req.ParallelToolCalls = &v
 	}
+}
+
+// hasAskTool reports whether ask_user_question is among the tool definitions.
+func hasAskTool(tools []model.ToolDefinition) bool {
+	for _, td := range tools {
+		if td.Name == "ask_user_question" {
+			return true
+		}
+	}
+	return false
+}
+
+// looksLikeTextQuestion detects when model output contains a question with
+// structured options presented as plain text (bullets or numbered items)
+// instead of calling the ask_user_question tool.
+func looksLikeTextQuestion(text string) bool {
+	if len(text) < 20 {
+		return false
+	}
+	hasQuestion := strings.ContainsAny(text, "？?")
+	if !hasQuestion {
+		return false
+	}
+	hasList := strings.Contains(text, "• ") ||
+		strings.Contains(text, "- ") ||
+		strings.Contains(text, "* ") ||
+		matchesNumberedList(text)
+	return hasList
+}
+
+func matchesNumberedList(text string) bool {
+	for _, prefix := range []string{"1.", "1、", "1)", "①"} {
+		if strings.Contains(text, prefix) {
+			return true
+		}
+	}
+	return false
 }

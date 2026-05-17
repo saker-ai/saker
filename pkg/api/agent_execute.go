@@ -84,6 +84,13 @@ func (rt *Runtime) runAgentWithMiddleware(prep preparedRun, extras ...middleware
 
 	// Build tool definitions, filtering out persona-disallowed tools.
 	toolDefs := availableTools(rt.registry, prep.toolWhitelist)
+	if logger.Enabled(prep.ctx, slog.LevelDebug) {
+		tdNames := make([]string, len(toolDefs))
+		for i, td := range toolDefs {
+			tdNames[i] = td.Name
+		}
+		logger.Debug("tools sent to model", "count", len(tdNames), "whitelist_size", len(prep.toolWhitelist), "names", tdNames)
+	}
 	if len(prep.personaDisallowed) > 0 {
 		filtered := make([]model.ToolDefinition, 0, len(toolDefs))
 		for _, td := range toolDefs {

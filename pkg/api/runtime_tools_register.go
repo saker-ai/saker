@@ -163,6 +163,7 @@ func registerTools(registry *tool.Registry, opts Options, settings *config.Setti
 		filtered = append(filtered, impl)
 	}
 
+	regNames := make([]string, 0, len(filtered))
 	for _, impl := range filtered {
 		var err error
 		if _, isAigo := aigoToolNames[impl.Name()]; isAigo {
@@ -173,7 +174,9 @@ func registerTools(registry *tool.Registry, opts Options, settings *config.Setti
 		if err != nil {
 			return nil, fmt.Errorf("api: register tool %s: %w", impl.Name(), err)
 		}
+		regNames = append(regNames, impl.Name())
 	}
+	slog.Debug("tools registered", "count", len(regNames), "names", regNames)
 
 	if refs.taskTool == nil {
 		refs.taskTool = locateTaskTool(filtered)

@@ -88,6 +88,13 @@ var migrations = []migration{
 			return tx.AutoMigrate(&Blob{})
 		},
 	},
+	{
+		version: 5,
+		name:    "turns",
+		apply: func(tx *gorm.DB) error {
+			return tx.AutoMigrate(&Turn{})
+		},
+	},
 }
 
 // applyMessagesFTS5 lands the messages table (in case the DB was

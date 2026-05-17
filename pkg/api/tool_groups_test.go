@@ -36,17 +36,10 @@ func TestPresetTools_ServerWeb(t *testing.T) {
 	tools := PresetTools(PresetServerWeb)
 	set := toSet(tools)
 
-	mustHave := []string{"bash", "canvas_get_node", "browser", "webhook", "web_fetch"}
+	mustHave := []string{"bash", "canvas_get_node", "browser", "webhook", "web_fetch", "ask_user_question", "skill", "slash_command"}
 	for _, name := range mustHave {
 		if !set[name] {
 			t.Errorf("PresetServerWeb missing %q", name)
-		}
-	}
-
-	mustNotHave := []string{"ask_user_question", "skill", "slash_command"}
-	for _, name := range mustNotHave {
-		if set[name] {
-			t.Errorf("PresetServerWeb should not include %q", name)
 		}
 	}
 }

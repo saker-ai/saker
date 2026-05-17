@@ -133,7 +133,8 @@ func New(ctx context.Context, opts Options) (*Runtime, error) {
 	var promptBlocks []string
 	if strings.TrimSpace(opts.SystemPrompt) == "" {
 		envInfo := collectEnvironmentInfo(opts)
-		promptBlocks = buildSystemPromptBlocks(opts, envInfo, defaultBuiltinToolNames)
+		toolNames := builtinOrder(effectiveEntryPoint(opts), opts.ModePreset)
+		promptBlocks = buildSystemPromptBlocks(opts, envInfo, toolNames)
 		opts.SystemPrompt = strings.Join(promptBlocks, "\n\n")
 	}
 

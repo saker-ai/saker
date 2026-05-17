@@ -73,16 +73,6 @@ func toolNameSet(names []string) map[string]bool {
 	return set
 }
 
-// defaultBuiltinToolNames lists well-known built-in tool names for system prompt
-// generation. Used before the tool registry is fully populated.
-var defaultBuiltinToolNames = []string{
-	"bash", "read", "write", "edit", "grep", "glob", "image_read",
-	"task", "task_create", "task_update", "task_list", "task_get",
-	"ask_user_question", "skill", "slash_command",
-	"analyze_video", "video_sampler", "video_summarizer", "frame_analyzer",
-	"web_fetch", "web_search",
-}
-
 // --- Section builders ---
 
 func sectionIntro() string {
@@ -163,7 +153,12 @@ func sectionUsingTools(toolNames []string) string {
 
 	if toolSet["ask_user_question"] {
 		sb.WriteString(`
- - If a tool call is denied, use ask_user_question to understand why and adjust your approach.`)
+ - Use ask_user_question to interact with the user when you need to:
+   - Clarify ambiguous instructions or gather requirements before proceeding
+   - Offer choices between multiple valid approaches
+   - Get user decisions on implementation details
+   - Confirm before destructive or irreversible actions
+   Do NOT guess the user's intent — ask when uncertain. Do NOT just describe options in text — use this tool to present structured choices.`)
 	}
 
 	return sb.String()

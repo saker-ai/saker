@@ -380,12 +380,10 @@ func TestMigrationsIdempotent(t *testing.T) {
 	require.NoError(t, err)
 	defer s2.Close()
 
-	// schema_migrations must contain v1 (initial_schema), v2
-	// (messages_fts5), v3 (turn_contexts), v4 (blobs) exactly once each —
-	// re-Open is a no-op.
+	// schema_migrations must contain v1–v5 exactly once each — re-Open is a no-op.
 	var rows []SchemaMigration
 	require.NoError(t, s2.DB().Order("version ASC").Find(&rows).Error)
-	require.Len(t, rows, 4)
+	require.Len(t, rows, 5)
 	require.Equal(t, 1, rows[0].Version)
 	require.Equal(t, "initial_schema", rows[0].Name)
 	require.Equal(t, 2, rows[1].Version)
@@ -394,6 +392,8 @@ func TestMigrationsIdempotent(t *testing.T) {
 	require.Equal(t, "turn_contexts", rows[2].Name)
 	require.Equal(t, 4, rows[3].Version)
 	require.Equal(t, "blobs", rows[3].Name)
+	require.Equal(t, 5, rows[4].Version)
+	require.Equal(t, "turns", rows[4].Name)
 }
 
 func TestListThreads_Pagination(t *testing.T) {

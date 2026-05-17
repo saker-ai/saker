@@ -74,6 +74,47 @@ func (c *countingCounter) Count(Message) int {
 	return c.cost
 }
 
+func TestTruncateLast(t *testing.T) {
+	t.Run("remove fewer than total", func(t *testing.T) {
+		h := NewHistory()
+		counter := &countingCounter{cost: 3}
+		h.counter = counter
+		for _, r := range []string{"user", "assistant", "user", "assistant"} {
+			h.Append(Message{Role: r, Content: r})
+		}
+		h.TruncateLast(2)
+		if h.Len() != 2 {
+			t.Fatalf("Len=%d, want 2", h.Len())
+		}
+		if got := h.TokenCount(); got != 6 {
+			t.Fatalf("TokenCount=%d, want 6", got)
+		}
+		last, _ := h.Last()
+		if last.Role != "assistant" {
+			t.Fatalf("last role=%q, want assistant", last.Role)
+		}
+	})
+	t.Run("remove all", func(t *testing.T) {
+		h := NewHistory()
+		h.Append(Message{Role: "user"})
+		h.TruncateLast(5)
+		if h.Len() != 0 {
+			t.Fatalf("Len=%d, want 0", h.Len())
+		}
+		if h.TokenCount() != 0 {
+			t.Fatalf("TokenCount=%d, want 0", h.TokenCount())
+		}
+	})
+	t.Run("zero is noop", func(t *testing.T) {
+		h := NewHistory()
+		h.Append(Message{Role: "user"})
+		h.TruncateLast(0)
+		if h.Len() != 1 {
+			t.Fatalf("Len=%d, want 1", h.Len())
+		}
+	})
+}
+
 func TestHistoryTokenCountTracksAppendReplaceAndReset(t *testing.T) {
 	h := NewHistory()
 	counter := &countingCounter{cost: 2}

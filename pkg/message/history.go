@@ -76,6 +76,29 @@ func (h *History) TokenCount() int {
 	return h.tokenCount
 }
 
+// TruncateLast removes the last n messages from the history. If n exceeds
+// the history length, the history is cleared.
+func (h *History) TruncateLast(n int) {
+	if n <= 0 {
+		return
+	}
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	if n >= len(h.messages) {
+		h.messages = nil
+		h.tokenCount = 0
+		return
+	}
+	counter := h.counter
+	if counter == nil {
+		counter = NaiveCounter{}
+	}
+	for i := len(h.messages) - n; i < len(h.messages); i++ {
+		h.tokenCount -= counter.Count(h.messages[i])
+	}
+	h.messages = h.messages[:len(h.messages)-n]
+}
+
 // Reset clears the history contents.
 func (h *History) Reset() {
 	h.mu.Lock()
