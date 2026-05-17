@@ -54,6 +54,12 @@ func (c Config) Resolved() Config {
 		out.RemoteMode = true
 	}
 	out.Registry = strings.TrimRight(out.Registry, "/")
+	if out.RemoteRegistry == "" && out.Registry != "" {
+		out.RemoteRegistry = out.Registry
+	}
+	if out.RemoteRegistry != "" && !out.Offline {
+		out.RemoteMode = true
+	}
 	return out
 }
 

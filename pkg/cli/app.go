@@ -25,6 +25,7 @@ import (
 	"github.com/saker-ai/saker/pkg/sandbox/gvisorhelper"
 	"github.com/saker-ai/saker/pkg/sandbox/landlockhelper"
 	"github.com/saker-ai/saker/pkg/server"
+	"github.com/saker-ai/saker/pkg/runtime/skills"
 	"github.com/saker-ai/saker/pkg/skillhub"
 	versionpkg "github.com/saker-ai/saker/pkg/version"
 	"github.com/godeps/goim"
@@ -376,6 +377,16 @@ Options:
 				return fmt.Errorf("govm native runtime unavailable: build with -tags govm_native and ensure bundled native assets are present")
 			}
 			return fmt.Errorf("govm runtime preflight failed: %w", err)
+		}
+	}
+	if shCfg, err := skillhub.LoadFromProject(*projectFlag); err == nil {
+		resolved := shCfg.Resolved()
+		if resolved.RemoteMode && resolved.RemoteRegistry != "" {
+			options.RemoteSkillSources = []skills.RemoteSkillSource{{
+				Registry: resolved.RemoteRegistry,
+				Token:    resolved.Token,
+				Slugs:    append([]string(nil), resolved.RemoteSlugs...),
+			}}
 		}
 	}
 	if *acpMode {
