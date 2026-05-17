@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -77,7 +78,19 @@ func setupLogger(dir string, stderr bool) (*slog.Logger, func(), error) {
 		w = io.MultiWriter(os.Stderr, rw)
 	}
 	handler := slog.NewJSONHandler(w, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
+		Level:     slog.LevelDebug,
+		AddSource: true,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			switch a.Key {
+			case slog.TimeKey:
+				a.Key = "ts"
+			case slog.SourceKey:
+				if src, ok := a.Value.Any().(*slog.Source); ok {
+					a = slog.String("caller", src.File+":"+strconv.Itoa(src.Line))
+				}
+			}
+			return a
+		},
 	})
 	logger := slog.New(handler)
 
