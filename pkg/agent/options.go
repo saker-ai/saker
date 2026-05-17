@@ -26,23 +26,12 @@ const DefaultSubagentMaxIterations = 50
 // (e.g. polling, idempotent re-reads) aren't killed prematurely.
 const DefaultRepeatLoopThreshold = 5
 
-// DefaultStagnationThreshold is the number of consecutive iterations without
-// a "productive" tool call (write/edit) before the agent aborts. This catches
-// degenerate loops where the agent explores endlessly (reading files, running
-// trivial bash commands) without producing a solution. Zero disables.
-const DefaultStagnationThreshold = 15
-
 // RepeatWarningHook is called once per run when the agent observes
 // (RepeatLoopThreshold-1) identical consecutive tool calls — i.e. one short
 // of the abort. Implementers typically use this to inject a self-correction
 // hint into the conversation history so the model has a chance to break out
 // of its loop on the next turn.
 type RepeatWarningHook func(ctx context.Context, call ToolCall, count int)
-
-// StagnationWarningHook is called when the agent hasn't made a productive
-// tool call (write/edit) for (StagnationThreshold-2) iterations. Gives the
-// caller a chance to inject guidance before the abort fires.
-type StagnationWarningHook func(ctx context.Context, iterationsSinceWrite int)
 
 // Options controls runtime behavior of the Agent.
 type Options struct {
@@ -62,15 +51,6 @@ type Options struct {
 	// consecutive calls. Useful for injecting a "try a different approach"
 	// nudge into the conversation before the abort fires.
 	OnRepeatWarning RepeatWarningHook
-	// StagnationThreshold aborts Run when N consecutive iterations pass
-	// without a "productive" tool call (write or edit). This catches
-	// degenerate exploration loops where the agent reads/greps/bashes
-	// endlessly without producing output. Zero applies
-	// DefaultStagnationThreshold; negative disables.
-	StagnationThreshold int
-	// OnStagnationWarning is invoked when the stagnation count reaches
-	// (StagnationThreshold-2), giving the model a chance to self-correct.
-	OnStagnationWarning StagnationWarningHook
 	// MaxBudgetUSD aborts Run when the cumulative estimated cost reaches
 	// this value (US dollars). Zero disables the check. Requires ModelName
 	// to be set so EstimateCost can resolve a price. The check fires after
@@ -94,9 +74,6 @@ func (o Options) withDefaults() Options {
 	}
 	if o.RepeatLoopThreshold == 0 {
 		o.RepeatLoopThreshold = DefaultRepeatLoopThreshold
-	}
-	if o.StagnationThreshold == 0 {
-		o.StagnationThreshold = DefaultStagnationThreshold
 	}
 	return o
 }

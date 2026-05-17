@@ -187,7 +187,6 @@ func (rt *Runtime) runAgentWithMiddleware(prep preparedRun, extras ...middleware
 		MaxTokens:           rt.opts.MaxTokens,
 		ModelName:           budgetModelName,
 		RepeatLoopThreshold: rt.opts.RepeatLoopThreshold,
-		StagnationThreshold: rt.opts.StagnationThreshold,
 	})
 	if err != nil {
 		return runResult{}, err

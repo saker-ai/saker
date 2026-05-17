@@ -113,9 +113,6 @@ type Options struct {
 	// RepeatLoopThreshold caps identical consecutive tool calls before aborting.
 	// Zero applies the agent default; negative disables detection.
 	RepeatLoopThreshold int
-	// StagnationThreshold aborts when N consecutive iterations pass without a
-	// write/edit tool call. Zero applies the agent default; negative disables.
-	StagnationThreshold int
 
 	Tools []tool.Tool
 

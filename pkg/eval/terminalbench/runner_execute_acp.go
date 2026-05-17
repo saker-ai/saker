@@ -63,7 +63,6 @@ func (r *Runner) runAgentACP(
 		DangerouslySkipPermissions: true,
 		MaxIterations:              r.cfg.MaxIterations,
 		Timeout:                    r.taskAgentCap(task),
-		StagnationThreshold:        -1, // disabled — MaxIterations+Timeout are sufficient for eval
 	}
 	if strings.TrimSpace(r.cfg.SystemPrompt) != "" {
 		opts.SystemPrompt = r.cfg.SystemPrompt
@@ -341,8 +340,6 @@ func extractACPStopReason(err error) string {
 		return "max_tokens"
 	case strings.Contains(msg, "repeat"):
 		return "repeat_loop"
-	case strings.Contains(msg, "stagnation"):
-		return "stagnation"
 	case strings.Contains(msg, "context deadline exceeded"):
 		return "timeout"
 	case strings.Contains(msg, "context canceled"):
