@@ -214,7 +214,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.questionDeliver = msg.Reply
 		a.prevInputEnabled = a.input.enabled
 		a.input.SetEnabled(false)
-		a.status.SetText("Awaiting your input...")
+		a.status.SetText("Ready")
 		return a, a.waitForQuestionOutcome()
 
 	case CloseQuestionPanelMsg:
@@ -241,7 +241,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.permDeliver = msg.Reply
 		a.prevInputEnabled = a.input.enabled
 		a.input.SetEnabled(false)
-		a.status.SetText("Permission required...")
+		a.status.SetText("Ready")
 		return a, a.waitForPermOutcome()
 
 	case PermissionPanelDoneMsg:
@@ -255,9 +255,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.permOutcome = nil
 		a.permDeliver = nil
 		a.input.SetEnabled(a.prevInputEnabled)
-		if a.runCancel == nil && !a.spinning {
-			a.status.SetText("Ready")
-		}
+		a.status.SetText("Ready")
 		return a, nil
 
 	case QuestionPanelDoneMsg:
@@ -272,9 +270,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.questionOutcome = nil
 		a.questionDeliver = nil
 		a.input.SetEnabled(a.prevInputEnabled)
-		if a.runCancel == nil && !a.spinning {
-			a.status.SetText("Ready")
-		}
+		a.status.SetText("Ready")
 		return a, nil
 	}
 
