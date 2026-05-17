@@ -65,7 +65,7 @@ type App struct {
 
 // New creates a new TUI App.
 func New(ctx context.Context, cfg AppConfig) *App {
-	theme := DefaultTheme()
+	theme := DetectTheme()
 	styles := NewStyles(theme)
 
 	sessionID := strings.TrimSpace(cfg.InitialSessionID)

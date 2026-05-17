@@ -2,6 +2,7 @@ package tui
 
 import (
 	"image/color"
+	"os"
 
 	"charm.land/lipgloss/v2"
 )
@@ -34,6 +35,14 @@ type Theme struct {
 	UserMsgBg    color.Color // user message background
 }
 
+// DetectTheme returns the appropriate theme based on terminal background.
+func DetectTheme() Theme {
+	if lipgloss.HasDarkBackground(os.Stdin, os.Stderr) {
+		return DefaultTheme()
+	}
+	return LightTheme()
+}
+
 // DefaultTheme returns a dark theme matching Claude Code's darkTheme.
 func DefaultTheme() Theme {
 	return Theme{
@@ -49,6 +58,24 @@ func DefaultTheme() Theme {
 		Bg:           lipgloss.Color("#000000"), // black
 		PromptBorder: lipgloss.Color("#888888"), // mid grey
 		UserMsgBg:    lipgloss.Color("#373737"), // dark grey
+	}
+}
+
+// LightTheme returns a light theme for terminals with light backgrounds.
+func LightTheme() Theme {
+	return Theme{
+		Primary:      lipgloss.Color("#C05630"), // darker orange for light bg
+		Secondary:    lipgloss.Color("#5B63C7"), // deeper blue-purple
+		Accent:       lipgloss.Color("#C05630"),
+		Muted:        lipgloss.Color("#BBBBBB"),
+		Error:        lipgloss.Color("#D32F2F"), // deeper red
+		Success:      lipgloss.Color("#2E7D32"), // deeper green
+		Warning:      lipgloss.Color("#F57F17"), // deeper amber
+		Fg:           lipgloss.Color("#1A1A1A"), // near black
+		FgDim:        lipgloss.Color("#666666"), // medium grey
+		Bg:           lipgloss.Color("#FFFFFF"),
+		PromptBorder: lipgloss.Color("#AAAAAA"),
+		UserMsgBg:    lipgloss.Color("#EDEDED"), // light grey
 	}
 }
 

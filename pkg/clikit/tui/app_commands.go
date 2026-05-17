@@ -361,12 +361,54 @@ func summarizeToolResult(toolName, output string) string {
 		last := lastNonEmpty(lines)
 		return fmt.Sprintf("… %s (%d lines)", truncLine(last, 60), n)
 
+	case isAigoTool(name):
+		return summarizeAigoResult(name, output)
+
 	default:
 		if n == 1 {
 			return truncLine(output, 100)
 		}
 		return fmt.Sprintf("%d lines", n)
 	}
+}
+
+var aigoToolLabels = map[string]string{
+	"generate_image":  "Image generated",
+	"edit_image":      "Image edited",
+	"generate_video":  "Video generated",
+	"edit_video":      "Video edited",
+	"generate_3d":     "3D model generated",
+	"generate_music":  "Music generated",
+	"text_to_speech":  "Audio generated",
+	"design_voice":    "Voice designed",
+	"transcribe_audio": "Transcription complete",
+}
+
+func isAigoTool(name string) bool {
+	_, ok := aigoToolLabels[name]
+	return ok
+}
+
+func summarizeAigoResult(name, output string) string {
+	label := aigoToolLabels[name]
+	if label == "" {
+		label = "Done"
+	}
+	output = strings.TrimSpace(output)
+	if strings.HasPrefix(output, "http://") || strings.HasPrefix(output, "https://") {
+		return label
+	}
+	if name == "transcribe_audio" && output != "" {
+		r := []rune(output)
+		if len(r) > 40 {
+			return fmt.Sprintf("%s — %s…", label, string(r[:40]))
+		}
+		return fmt.Sprintf("%s — %s", label, output)
+	}
+	if output != "" {
+		return fmt.Sprintf("%s — %s", label, truncLine(output, 60))
+	}
+	return label
 }
 
 func truncLine(s string, maxLen int) string {
