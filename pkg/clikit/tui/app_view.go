@@ -26,14 +26,16 @@ func (a *App) View() tea.View {
 
 	// Side panel overlay.
 	if a.sidePanel != nil {
-		if a.spinning {
-			a.status.SetText(a.smartSpinner.View())
-		}
 		panelView := a.sidePanel.View()
 		statusView := a.status.View()
 		if a.sidePanel.IsInteractive() {
-			// Interactive panel (im): show panel + input + status.
+			// Interactive panel (im): show panel + [spinner] + input + status.
 			inputView := a.input.View()
+			if a.spinning {
+				spinnerView := a.styles.StatusText.Render(" " + a.smartSpinner.View())
+				view := lipgloss.JoinVertical(lipgloss.Left, panelView, spinnerView, inputView, statusView)
+				return tea.NewView(view)
+			}
 			view := lipgloss.JoinVertical(lipgloss.Left, panelView, inputView, statusView)
 			return tea.NewView(view)
 		}
@@ -42,9 +44,6 @@ func (a *App) View() tea.View {
 		return tea.NewView(view)
 	}
 
-	if a.spinning {
-		a.status.SetText(a.smartSpinner.View())
-	}
 	statusView := a.status.View()
 	inputView := a.input.View()
 	chatView := a.chat.View()
@@ -52,6 +51,10 @@ func (a *App) View() tea.View {
 	var parts []string
 	if chatView != "" {
 		parts = append(parts, chatView)
+	}
+	if a.spinning {
+		spinnerView := a.styles.StatusText.Render(" " + a.smartSpinner.View())
+		parts = append(parts, spinnerView)
 	}
 	parts = append(parts, inputView, statusView)
 

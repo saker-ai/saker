@@ -257,8 +257,6 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.input.SetEnabled(a.prevInputEnabled)
 		if a.runCancel == nil && !a.spinning {
 			a.status.SetText("Ready")
-		} else if a.runCancel != nil {
-			a.status.SetText("Thinking...")
 		}
 		return a, nil
 
@@ -274,11 +272,8 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.questionOutcome = nil
 		a.questionDeliver = nil
 		a.input.SetEnabled(a.prevInputEnabled)
-		// Status: leave "Thinking..." if the model is still running, else Ready.
 		if a.runCancel == nil && !a.spinning {
 			a.status.SetText("Ready")
-		} else if a.runCancel != nil {
-			a.status.SetText("Thinking...")
 		}
 		return a, nil
 	}
@@ -331,7 +326,7 @@ func (a *App) handleSidePanelKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			a.sidePanel.AddUserMessage(text)
 			a.spinning = true
 			a.input.SetEnabled(false)
-			a.status.SetText("Thinking...")
+			a.status.SetText("Ready")
 			followCtx, followCancel := context.WithCancel(a.ctx)
 			a.sidePanelCancel = followCancel
 			sessionID := a.sidePanel.SessionID()
@@ -534,7 +529,7 @@ func (a *App) handleSubmit(text string) (tea.Model, tea.Cmd) {
 			a.sidePanel.SetSize(a.width, a.height)
 			a.spinning = true
 			a.input.SetEnabled(false)
-			a.status.SetText("Thinking...")
+			a.status.SetText("Ready")
 			btwCtx, btwCancel := context.WithCancel(a.ctx)
 			a.sidePanelCancel = btwCancel
 			return a, tea.Batch(a.smartSpinner.Tick(), a.runBtw(btwCtx, question))
@@ -548,7 +543,7 @@ func (a *App) handleSubmit(text string) (tea.Model, tea.Cmd) {
 			a.sidePanel.SetSize(a.width, a.height)
 			a.spinning = true
 			a.input.SetEnabled(false)
-			a.status.SetText("IM bridge...")
+			a.status.SetText("Ready")
 			imCtx, imCancel := context.WithCancel(a.ctx)
 			a.sidePanelCancel = imCancel
 			return a, tea.Batch(a.smartSpinner.Tick(), a.runIM(imCtx, imSessionID, instruction))
@@ -577,7 +572,7 @@ func (a *App) handleSubmit(text string) (tea.Model, tea.Cmd) {
 	a.chat.StartStreaming()
 	a.spinning = true
 	a.input.SetEnabled(false)
-	a.status.SetText("Thinking...")
+	a.status.SetText("Ready")
 
 	runCtx, runCancel := context.WithCancel(a.ctx)
 	a.runCancel = runCancel
