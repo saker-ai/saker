@@ -68,7 +68,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.status.AddTokens(msg.Input, msg.Output)
 
 	case StreamErrorTextMsg:
-		a.chat.AddError(msg.Text)
+		a.chat.AddError(a.friendlyError(msg.Text))
 
 	case SidePanelTextMsg:
 		if a.sidePanel != nil {
@@ -99,7 +99,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		a.chat.FinishStreaming()
 		if msg.Err != nil {
-			a.chat.AddError(msg.Err.Error())
+			a.chat.AddError(a.friendlyError(msg.Err.Error()))
 		}
 		a.smartSpinner.Stop()
 		a.spinning = false
@@ -134,7 +134,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return a, nil
 		}
 		if msg.Err != nil {
-			a.chat.AddError(msg.Err.Error())
+			a.chat.AddError(a.friendlyError(msg.Err.Error()))
 		}
 		if a.runCancel == nil {
 			a.spinning = false
@@ -179,7 +179,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return a, nil
 		}
 		if msg.Err != nil {
-			a.chat.AddError(msg.Err.Error())
+			a.chat.AddError(a.friendlyError(msg.Err.Error()))
 		}
 		if a.runCancel == nil {
 			a.spinning = false
@@ -370,7 +370,7 @@ func (a *App) dismissSidePanel() tea.Cmd {
 		a.chat.AddSystem(content)
 	}
 	if a.sidePanel.err != nil {
-		a.chat.AddError(a.sidePanel.err.Error())
+		a.chat.AddError(a.friendlyError(a.sidePanel.err.Error()))
 	}
 	a.sidePanel = nil
 	a.sidePanelCancel = nil
