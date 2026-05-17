@@ -340,14 +340,14 @@ func TestIsMediaURL(t *testing.T) {
 // ----- toToolResult: media URL guard -----
 
 func TestToToolResultRejectsTaskID(t *testing.T) {
-	_, err := toToolResult(sdk.Result{Value: "task-uuid-123"}, "generate_image")
+	_, err := toToolResult(context.Background(), sdk.Result{Value: "task-uuid-123"}, "generate_image")
 	if err == nil {
 		t.Fatal("expected error for non-URL value")
 	}
 }
 
 func TestToToolResultAcceptsURL(t *testing.T) {
-	tr, err := toToolResult(sdk.Result{Value: "https://example.com/x.png"}, "generate_image")
+	tr, err := toToolResult(context.Background(), sdk.Result{Value: "https://example.com/x.png"}, "generate_image")
 	if err != nil {
 		t.Fatalf("unexpected: %v", err)
 	}
@@ -361,7 +361,7 @@ func TestToToolResultAcceptsURL(t *testing.T) {
 
 func TestToToolResultNonMediaCapability(t *testing.T) {
 	// transcribe_audio is "asr" which is not in mediaCapabilities → any value ok.
-	tr, err := toToolResult(sdk.Result{Value: "transcribed text here"}, "transcribe_audio")
+	tr, err := toToolResult(context.Background(), sdk.Result{Value: "transcribed text here"}, "transcribe_audio")
 	if err != nil {
 		t.Fatalf("unexpected: %v", err)
 	}
@@ -371,12 +371,80 @@ func TestToToolResultNonMediaCapability(t *testing.T) {
 }
 
 func TestToToolResultEmptyValueNonMedia(t *testing.T) {
-	tr, err := toToolResult(sdk.Result{Value: ""}, "transcribe_audio")
+	tr, err := toToolResult(context.Background(), sdk.Result{Value: ""}, "transcribe_audio")
 	if err != nil {
 		t.Fatalf("unexpected: %v", err)
 	}
 	if tr == nil {
 		t.Fatal("expected ToolResult")
+	}
+}
+
+func TestToToolResultAutoDownload(t *testing.T) {
+	// Serve a tiny PNG via httptest.
+	pngData := []byte("\x89PNG\r\n\x1a\n" + strings.Repeat("\x00", 32))
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/png")
+		w.Write(pngData)
+	}))
+	defer srv.Close()
+
+	tr, err := toToolResult(context.Background(), sdk.Result{Value: srv.URL + "/test.png"}, "generate_image")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	meta, _ := tr.Structured.(map[string]interface{})
+	if meta == nil {
+		t.Fatal("expected structured metadata")
+	}
+	// Output should be a local path, not the URL.
+	if strings.HasPrefix(tr.Output, "http") {
+		t.Errorf("expected local path, got URL: %s", tr.Output)
+	}
+	// media_url should preserve the original URL.
+	if mu, _ := meta["media_url"].(string); !strings.HasPrefix(mu, "http") {
+		t.Errorf("media_url should be the original URL, got: %s", mu)
+	}
+	// local_path should match Output.
+	if lp, _ := meta["local_path"].(string); lp != tr.Output {
+		t.Errorf("local_path %q != Output %q", lp, tr.Output)
+	}
+	// File should exist on disk.
+	if _, err := os.Stat(tr.Output); err != nil {
+		t.Errorf("downloaded file should exist: %v", err)
+	}
+}
+
+func TestToToolResultDownloadFailureFallback(t *testing.T) {
+	// Use a URL that will fail to connect.
+	badURL := "http://127.0.0.1:1/unreachable.png"
+	tr, err := toToolResult(context.Background(), sdk.Result{Value: badURL}, "generate_image")
+	if err != nil {
+		t.Fatalf("download failure should not be fatal: %v", err)
+	}
+	// Output should fall back to the original URL.
+	if tr.Output != badURL {
+		t.Errorf("expected fallback to URL, got: %s", tr.Output)
+	}
+	meta, _ := tr.Structured.(map[string]interface{})
+	if _, ok := meta["local_path"]; ok {
+		t.Error("local_path should not be set on download failure")
+	}
+}
+
+func TestToToolResultDataURIPassthrough(t *testing.T) {
+	dataURI := "data:image/png;base64,iVBORw0KGgo="
+	tr, err := toToolResult(context.Background(), sdk.Result{Value: dataURI}, "generate_image")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	// data: URIs should pass through unchanged (ResolveMediaPath only handles http/https).
+	if tr.Output != dataURI {
+		t.Errorf("expected passthrough, got: %s", tr.Output)
+	}
+	meta, _ := tr.Structured.(map[string]interface{})
+	if _, ok := meta["local_path"]; ok {
+		t.Error("local_path should not be set for data: URIs")
 	}
 }
 

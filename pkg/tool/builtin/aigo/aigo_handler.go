@@ -12,6 +12,7 @@ import (
 	"github.com/godeps/aigo/tooldef"
 
 	"github.com/saker-ai/saker/pkg/tool"
+	toolbuiltin "github.com/saker-ai/saker/pkg/tool/builtin"
 )
 
 func (t *AigoTool) Execute(ctx context.Context, params map[string]interface{}) (*tool.ToolResult, error) {
@@ -158,7 +159,7 @@ func (t *AigoTool) executeSync(ctx context.Context, params map[string]interface{
 			return nil, fmt.Errorf("aigo %s (engine %s): %w", t.def.Name, eng, err)
 		}
 		slog.Info("[aigo] engine OK", "tool", t.def.Name, "engine", eng, "elapsed", time.Since(start), "result_len", len(result.Value))
-		tr, terr := toToolResult(result, t.def.Name)
+		tr, terr := toToolResult(ctx, result, t.def.Name)
 		if terr != nil {
 			slog.Error("[aigo] engine INVALID", "tool", t.def.Name, "engine", eng, "elapsed", time.Since(start), "error", terr)
 			return nil, terr
@@ -175,7 +176,7 @@ func (t *AigoTool) executeSync(ctx context.Context, params map[string]interface{
 			return nil, fmt.Errorf("aigo %s: %w", t.def.Name, err)
 		}
 		slog.Info("[aigo] engine OK", "tool", t.def.Name, "engine", engines[0], "elapsed", time.Since(start), "result_len", len(result.Value))
-		tr, terr := toToolResult(result, t.def.Name)
+		tr, terr := toToolResult(ctx, result, t.def.Name)
 		if terr != nil {
 			slog.Error("[aigo] engine INVALID", "tool", t.def.Name, "engine", engines[0], "elapsed", time.Since(start), "error", terr)
 			return nil, terr
@@ -191,7 +192,7 @@ func (t *AigoTool) executeSync(ctx context.Context, params map[string]interface{
 		return nil, fmt.Errorf("aigo %s: %w", t.def.Name, err)
 	}
 	slog.Info("[aigo] fallback OK", "tool", t.def.Name, "elapsed", time.Since(start), "engine", fr.Engine, "result_len", len(fr.Output.Value))
-	tr, terr := toToolResult(fr.Output, t.def.Name)
+	tr, terr := toToolResult(ctx, fr.Output, t.def.Name)
 	if terr != nil {
 		slog.Error("[aigo] fallback INVALID", "tool", t.def.Name, "elapsed", time.Since(start), "engine", fr.Engine, "error", terr)
 		return nil, terr
@@ -199,7 +200,7 @@ func (t *AigoTool) executeSync(ctx context.Context, params map[string]interface{
 	return tr, nil
 }
 
-func toToolResult(result sdk.Result, toolName string) (*tool.ToolResult, error) {
+func toToolResult(ctx context.Context, result sdk.Result, toolName string) (*tool.ToolResult, error) {
 	cap := toolCapability[toolName]
 
 	// Backstop for the "engine returned task_id instead of URL" bug class:
@@ -239,6 +240,17 @@ func toToolResult(result sdk.Result, toolName string) (*tool.ToolResult, error) 
 	if result.Value != "" {
 		meta["media_url"] = result.Value
 	}
+	if mediaCapabilities[cap] && result.Value != "" {
+		localPath, dlErr := toolbuiltin.ResolveMediaPath(ctx, result.Value)
+		if dlErr != nil {
+			slog.Warn("[aigo] media auto-download failed, returning URL",
+				"tool", toolName, "error", dlErr)
+		} else if localPath != result.Value {
+			tr.Output = localPath
+			meta["local_path"] = localPath
+		}
+	}
+
 	if len(meta) > 0 {
 		tr.Structured = meta
 	}

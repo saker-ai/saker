@@ -23,7 +23,7 @@ const (
 // Otherwise the input is returned unchanged. Files are named by content hash
 // so repeated downloads of the same resource are no-ops and the file remains
 // available for subsequent tool calls within the same session.
-func resolveMediaPath(ctx context.Context, path string) (localPath string, err error) {
+func ResolveMediaPath(ctx context.Context, path string) (localPath string, err error) {
 	trimmed := strings.TrimSpace(path)
 	if !strings.HasPrefix(trimmed, "http://") && !strings.HasPrefix(trimmed, "https://") {
 		return path, nil

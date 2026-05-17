@@ -70,7 +70,7 @@ func (i *ImageReadTool) Execute(ctx context.Context, params map[string]interface
 	}
 	rawPath, _ := params["file_path"].(string)
 	// Resolve HTTP URLs to local temp files before sandbox path resolution.
-	localPath, err := resolveMediaPath(ctx, rawPath)
+	localPath, err := ResolveMediaPath(ctx, rawPath)
 	if err != nil {
 		return nil, err
 	}

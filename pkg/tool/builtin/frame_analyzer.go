@@ -74,7 +74,7 @@ func (f *FrameAnalyzerTool) Execute(ctx context.Context, params map[string]any) 
 	}
 
 	// Resolve HTTP URLs to local temp files.
-	localPath, err := resolveMediaPath(ctx, imagePath)
+	localPath, err := ResolveMediaPath(ctx, imagePath)
 	if err != nil {
 		return nil, fmt.Errorf("resolve frame path: %w", err)
 	}
