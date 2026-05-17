@@ -129,7 +129,7 @@ Options:
 	sessionID := flags.String("session-id", "", "Session identifier (UUID)")
 	sessionAlias := flags.String("session", "", "Session identifier (alias for --session-id)")
 
-	timeoutMs := flags.Int("timeout-ms", 10*60*1000, "Run timeout in milliseconds")
+	timeoutMs := flags.Int("timeout-ms", 0, "Run timeout in milliseconds (0 = no limit)")
 	printConfig := flags.Bool("print-effective-config", false, "Print resolved runtime config before running")
 	promptFile := flags.String("prompt-file", "", "Read prompt from file")
 	promptLiteral := flags.String("prompt", "", "Prompt literal (overrides stdin)")
