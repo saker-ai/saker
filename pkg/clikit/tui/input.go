@@ -60,6 +60,20 @@ func initKeywordColors(t Theme) {
 	}
 }
 
+// completionState tracks Tab-completion for slash commands.
+type completionState struct {
+	active   bool
+	matches  []string
+	selected int
+}
+
+// searchState tracks Ctrl+R reverse history search.
+type searchState struct {
+	active bool
+	query  string
+	idx    int // position in history being shown (-1 = no match)
+}
+
 // Input wraps a textarea for user prompt entry.
 type Input struct {
 	textarea  textarea.Model
@@ -72,6 +86,10 @@ type Input struct {
 	history      []string
 	historyIdx   int    // -1 means not browsing history
 	historyDraft string // text being edited before entering history mode
+
+	completion    completionState
+	extraCommands []string // dynamic commands (skills, etc.)
+	search        searchState
 }
 
 // NewInput creates an Input component.
@@ -152,10 +170,149 @@ func (i *Input) SaveHistory(text string) {
 	i.historyDraft = ""
 }
 
+// SetExtraCommands sets additional slash commands for Tab completion (e.g., skill names).
+func (i *Input) SetExtraCommands(cmds []string) {
+	i.extraCommands = cmds
+}
+
+// allCommands returns built-in keywords + extra commands for completion.
+func (i *Input) allCommands() []string {
+	cmds := make([]string, 0, len(inputKeywords)+len(i.extraCommands))
+	for _, kw := range inputKeywords {
+		cmds = append(cmds, kw.prefix)
+	}
+	cmds = append(cmds, i.extraCommands...)
+	return cmds
+}
+
+// filterCommands returns commands matching the given prefix.
+func filterCommands(cmds []string, prefix string) []string {
+	prefix = strings.ToLower(prefix)
+	var out []string
+	for _, c := range cmds {
+		if strings.HasPrefix(strings.ToLower(c), prefix) {
+			out = append(out, c)
+		}
+	}
+	return out
+}
+
+// searchHistory finds the next match (searching backward from idx) for query.
+func (i *Input) searchHistory(query string, startIdx int) (string, int) {
+	lower := strings.ToLower(query)
+	for idx := startIdx; idx >= 0; idx-- {
+		if strings.Contains(strings.ToLower(i.history[idx]), lower) {
+			return i.history[idx], idx
+		}
+	}
+	return "", -1
+}
+
 // Update handles key events for the textarea.
 // Input is always editable (type-ahead); submission is gated by enabled.
 // When the textarea is single-line, up/down arrows navigate input history.
 func (i *Input) Update(msg tea.Msg) (*Input, tea.Cmd) {
+	if km, ok := msg.(tea.KeyPressMsg); ok {
+		// Ctrl+R: enter/continue reverse search.
+		if km.String() == "ctrl+r" && len(i.history) > 0 {
+			if !i.search.active {
+				i.search.active = true
+				i.search.query = ""
+				i.search.idx = len(i.history) - 1
+			} else if i.search.idx > 0 {
+				_, i.search.idx = i.searchHistory(i.search.query, i.search.idx-1)
+			}
+			return i, nil
+		}
+
+		// Handle keys during search mode.
+		if i.search.active {
+			switch km.String() {
+			case "esc":
+				i.search.active = false
+				return i, nil
+			case "enter":
+				if i.search.idx >= 0 {
+					i.textarea.SetValue(i.history[i.search.idx])
+					i.textarea.CursorEnd()
+				}
+				i.search.active = false
+				return i, nil
+			case "backspace":
+				if len(i.search.query) > 0 {
+					i.search.query = i.search.query[:len(i.search.query)-1]
+					_, i.search.idx = i.searchHistory(i.search.query, len(i.history)-1)
+				}
+				return i, nil
+			default:
+				r := km.String()
+				if len(r) == 1 && r[0] >= 32 {
+					i.search.query += r
+					start := len(i.history) - 1
+					if i.search.idx >= 0 {
+						start = i.search.idx
+					}
+					_, i.search.idx = i.searchHistory(i.search.query, start)
+				}
+				return i, nil
+			}
+		}
+
+		// Tab: slash command completion.
+		if km.String() == "tab" {
+			value := strings.TrimSpace(i.textarea.Value())
+			if i.completion.active {
+				if len(i.completion.matches) > 0 {
+					i.completion.selected = (i.completion.selected + 1) % len(i.completion.matches)
+				}
+				return i, nil
+			}
+			if strings.HasPrefix(value, "/") && i.textarea.LineCount() <= 1 {
+				matches := filterCommands(i.allCommands(), value)
+				if len(matches) == 1 {
+					i.textarea.SetValue(matches[0] + " ")
+					i.textarea.CursorEnd()
+					return i, nil
+				}
+				if len(matches) > 0 {
+					i.completion.active = true
+					i.completion.matches = matches
+					i.completion.selected = 0
+					return i, nil
+				}
+			}
+			return i, nil
+		}
+
+		// Handle keys during completion.
+		if i.completion.active {
+			switch km.String() {
+			case "esc":
+				i.completion.active = false
+				return i, nil
+			case "up":
+				if i.completion.selected > 0 {
+					i.completion.selected--
+				}
+				return i, nil
+			case "down":
+				if i.completion.selected < len(i.completion.matches)-1 {
+					i.completion.selected++
+				}
+				return i, nil
+			case "enter":
+				if len(i.completion.matches) > 0 {
+					i.textarea.SetValue(i.completion.matches[i.completion.selected] + " ")
+					i.textarea.CursorEnd()
+				}
+				i.completion.active = false
+				return i, nil
+			default:
+				i.completion.active = false
+			}
+		}
+	}
+
 	if km, ok := msg.(tea.KeyPressMsg); ok && len(i.history) > 0 && i.textarea.LineCount() <= 1 {
 		switch km.String() {
 		case "up":
@@ -278,7 +435,55 @@ func (i *Input) View() string {
 		content = highlightKeywordInView(content, kw.prefix, kw.color)
 	}
 
-	return borderStyle.Render(content)
+	var parts []string
+
+	// Completion overlay above the input.
+	if i.completion.active && len(i.completion.matches) > 0 {
+		max := 5
+		if len(i.completion.matches) < max {
+			max = len(i.completion.matches)
+		}
+		var lines []string
+		for idx := 0; idx < max; idx++ {
+			m := i.completion.matches[idx]
+			if idx == i.completion.selected {
+				lines = append(lines, lipgloss.NewStyle().
+					Foreground(i.styles.Theme.Fg).
+					Background(i.styles.Theme.UserMsgBg).
+					Bold(true).Render("  "+m+"  "))
+			} else {
+				lines = append(lines, lipgloss.NewStyle().
+					Foreground(i.styles.Theme.FgDim).Render("  "+m))
+			}
+		}
+		overlay := strings.Join(lines, "\n")
+		parts = append(parts, overlay)
+	}
+
+	// Search mode indicator.
+	if i.search.active {
+		prompt := lipgloss.NewStyle().Foreground(i.styles.Theme.Warning).Render("(reverse-i-search)")
+		query := lipgloss.NewStyle().Foreground(i.styles.Theme.Fg).Render(i.search.query)
+		result := ""
+		if i.search.idx >= 0 && i.search.idx < len(i.history) {
+			result = lipgloss.NewStyle().Foreground(i.styles.Theme.FgDim).
+				Render(": " + truncInputLine(i.history[i.search.idx], i.width-30))
+		}
+		parts = append(parts, prompt+query+result)
+	}
+
+	parts = append(parts, borderStyle.Render(content))
+	return strings.Join(parts, "\n")
+}
+
+func truncInputLine(s string, max int) string {
+	if max < 10 {
+		max = 10
+	}
+	if len(s) <= max {
+		return s
+	}
+	return s[:max-1] + "…"
 }
 
 // Focused returns whether the textarea has focus.

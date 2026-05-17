@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
 	"github.com/saker-ai/saker/pkg/clikit"
 	"github.com/google/uuid"
@@ -33,13 +32,13 @@ type App struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	styles   Styles
-	header   *Header
-	chat     *Chat
-	input    *Input
-	status   *StatusBar
-	spinner  spinner.Model
-	spinning bool
+	styles       Styles
+	header       *Header
+	chat         *Chat
+	input        *Input
+	status       *StatusBar
+	smartSpinner *SmartSpinner
+	spinning     bool
 
 	sessionID string
 	width     int
@@ -58,6 +57,11 @@ type App struct {
 	questionOutcome  <-chan QuestionPanelOutcome
 	questionDeliver  chan<- QuestionPanelOutcome // bridge channel back to askFn caller
 	prevInputEnabled bool                        // saved input state to restore after panel closes
+
+	// permission panel overlay (for tool permission confirmation)
+	permPanel        *PermissionPanel
+	permOutcome      <-chan PermissionPanelOutcome
+	permDeliver      chan<- PermissionPanelOutcome
 
 	// program is set by Run() so that cross-thread tool callers can use program.Send().
 	program *tea.Program
@@ -80,12 +84,12 @@ func New(ctx context.Context, cfg AppConfig) *App {
 		ctx:       appCtx,
 		cancel:    appCancel,
 		styles:    styles,
-		header:    NewHeader(styles),
-		chat:      NewChat(styles),
-		input:     NewInput(styles),
-		status:    NewStatusBar(styles),
-		spinner:   NewSpinner(theme),
-		sessionID: sessionID,
+		header:       NewHeader(styles),
+		chat:         NewChat(styles),
+		input:        NewInput(styles),
+		status:       NewStatusBar(styles),
+		smartSpinner: NewSmartSpinner(theme, styles),
+		sessionID:    sessionID,
 	}
 
 	// Populate header and status bar.
@@ -94,6 +98,16 @@ func New(ctx context.Context, cfg AppConfig) *App {
 	a.header.SetSkillCount(len(cfg.Engine.Skills()))
 	a.header.SetUpdateNotice(cfg.UpdateNotice)
 	a.status.SetModel(cfg.Engine.ModelName())
+
+	// Feed skill names to input for Tab completion.
+	skills := cfg.Engine.Skills()
+	if len(skills) > 0 {
+		cmds := make([]string, 0, len(skills))
+		for _, s := range skills {
+			cmds = append(cmds, "/"+s.Name)
+		}
+		a.input.SetExtraCommands(cmds)
+	}
 
 	return a
 }

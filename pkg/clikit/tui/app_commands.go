@@ -45,8 +45,8 @@ func (a *App) runStream(prompt string) tea.Cmd {
 					switch evt.Delta.Type {
 					case "text_delta":
 						a.chat.AppendStreamText(evt.Delta.Text)
+						a.smartSpinner.AddTokens(len(evt.Delta.Text))
 					case "input_json_delta":
-						// Accumulate tool input JSON for param extraction.
 						var chunk string
 						_ = json.Unmarshal(evt.Delta.PartialJSON, &chunk)
 						pendingToolInput.WriteString(chunk)
@@ -57,7 +57,7 @@ func (a *App) runStream(prompt string) tea.Cmd {
 				params := extractToolParamsFromJSON(evt.Name, pendingToolInput.String())
 				pendingToolInput.Reset()
 				a.chat.AddToolCallWithParams(evt.Name, params, "pending")
-				a.status.SetText(fmt.Sprintf("Tool: %s", evt.Name))
+				a.smartSpinner.SetVerb(toolVerb(evt.Name, params))
 			case api.EventToolExecutionOutput:
 				output := formatToolOutput(evt)
 				if output != "" {
@@ -78,7 +78,7 @@ func (a *App) runStream(prompt string) tea.Cmd {
 					a.chat.AddImage(path)
 				}
 				a.chat.StartStreaming()
-				a.status.SetText("Thinking...")
+				a.smartSpinner.SetVerb("Thinking...")
 			case api.EventMessageDelta:
 				if evt.Usage != nil && (evt.Usage.InputTokens > 0 || evt.Usage.OutputTokens > 0) {
 					a.status.AddTokens(evt.Usage.InputTokens, evt.Usage.OutputTokens)

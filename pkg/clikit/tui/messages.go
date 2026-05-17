@@ -65,3 +65,14 @@ type CloseQuestionPanelMsg struct{}
 type QuestionPanelDoneMsg struct {
 	Outcome QuestionPanelOutcome
 }
+
+// OpenPermissionPanelMsg requests opening a tool permission confirmation panel.
+type OpenPermissionPanelMsg struct {
+	Request PermissionPanelRequest
+	Reply   chan<- PermissionPanelOutcome
+}
+
+// PermissionPanelDoneMsg is sent when the permission panel finishes.
+type PermissionPanelDoneMsg struct {
+	Outcome PermissionPanelOutcome
+}

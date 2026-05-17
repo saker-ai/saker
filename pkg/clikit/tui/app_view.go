@@ -8,7 +8,15 @@ import (
 
 // View implements tea.Model.
 func (a *App) View() tea.View {
-	// Question panel overlay (highest priority — interactive AskUserQuestion).
+	// Permission panel overlay (highest priority).
+	if a.permPanel != nil {
+		panelView := a.permPanel.View()
+		statusView := a.status.View()
+		view := lipgloss.JoinVertical(lipgloss.Left, panelView, statusView)
+		return tea.NewView(view)
+	}
+
+	// Question panel overlay (interactive AskUserQuestion).
 	if a.questionPanel != nil {
 		panelView := a.questionPanel.View()
 		statusView := a.status.View()
@@ -19,7 +27,7 @@ func (a *App) View() tea.View {
 	// Side panel overlay.
 	if a.sidePanel != nil {
 		if a.spinning {
-			a.status.SetText(a.spinner.View() + " Thinking...")
+			a.status.SetText(a.smartSpinner.View())
 		}
 		panelView := a.sidePanel.View()
 		statusView := a.status.View()
@@ -34,9 +42,8 @@ func (a *App) View() tea.View {
 		return tea.NewView(view)
 	}
 
-	// Status text with spinner if active.
 	if a.spinning {
-		a.status.SetText(a.spinner.View() + " Thinking...")
+		a.status.SetText(a.smartSpinner.View())
 	}
 	statusView := a.status.View()
 	inputView := a.input.View()

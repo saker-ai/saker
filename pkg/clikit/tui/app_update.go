@@ -29,13 +29,14 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case spinner.TickMsg:
 		if a.spinning {
-			var cmd tea.Cmd
-			a.spinner, cmd = a.spinner.Update(msg)
+			cmd := a.smartSpinner.Update(msg)
+			a.smartSpinner.CheckStall()
 			cmds = append(cmds, cmd)
 		}
 
 	case StreamDoneMsg:
 		a.chat.FinishStreaming()
+		a.smartSpinner.Stop()
 		a.spinning = false
 		a.input.SetEnabled(true)
 		a.status.SetText("Ready")
@@ -46,6 +47,7 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.Err != nil {
 			a.chat.AddError(msg.Err.Error())
 		}
+		a.smartSpinner.Stop()
 		a.spinning = false
 		a.input.SetEnabled(true)
 		a.status.SetText("Ready")
@@ -158,6 +160,42 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.questionPanel.Cancel()
 		return a, nil
 
+	case OpenPermissionPanelMsg:
+		if a.permPanel != nil {
+			select {
+			case msg.Reply <- PermissionPanelOutcome{Cancelled: true}:
+			default:
+			}
+			return a, nil
+		}
+		panel, outcome := NewPermissionPanel(a.styles, msg.Request)
+		panel.SetSize(a.width, a.height)
+		a.permPanel = panel
+		a.permOutcome = outcome
+		a.permDeliver = msg.Reply
+		a.prevInputEnabled = a.input.enabled
+		a.input.SetEnabled(false)
+		a.status.SetText("Permission required...")
+		return a, a.waitForPermOutcome()
+
+	case PermissionPanelDoneMsg:
+		if a.permDeliver != nil {
+			select {
+			case a.permDeliver <- msg.Outcome:
+			default:
+			}
+		}
+		a.permPanel = nil
+		a.permOutcome = nil
+		a.permDeliver = nil
+		a.input.SetEnabled(a.prevInputEnabled)
+		if a.runCancel == nil && !a.spinning {
+			a.status.SetText("Ready")
+		} else if a.runCancel != nil {
+			a.status.SetText("Thinking...")
+		}
+		return a, nil
+
 	case QuestionPanelDoneMsg:
 		// Forward the outcome to the tool-side caller (if still waiting).
 		if a.questionDeliver != nil {
@@ -228,7 +266,7 @@ func (a *App) handleSidePanelKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			a.spinning = true
 			a.input.SetEnabled(false)
 			a.status.SetText("Thinking...")
-			return a, tea.Batch(a.spinner.Tick, a.runIMFollowUp(text))
+			return a, tea.Batch(a.smartSpinner.Tick(), a.runIMFollowUp(text))
 		}
 	}
 
@@ -300,6 +338,10 @@ func (a *App) flushChat() tea.Cmd {
 
 // handleKey processes key events.
 func (a *App) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	// Permission panel takes highest precedence.
+	if a.permPanel != nil {
+		return a.handlePermPanelKey(msg)
+	}
 	// Question panel takes precedence over everything else.
 	if a.questionPanel != nil {
 		return a.handleQuestionPanelKey(msg)
@@ -424,7 +466,7 @@ func (a *App) handleSubmit(text string) (tea.Model, tea.Cmd) {
 			a.spinning = true
 			a.input.SetEnabled(false)
 			a.status.SetText("Thinking...")
-			return a, tea.Batch(a.spinner.Tick, a.runBtw(question))
+			return a, tea.Batch(a.smartSpinner.Tick(), a.runBtw(question))
 		case "/im":
 			instruction := strings.TrimSpace(text[3:])
 			if instruction == "" {
@@ -436,7 +478,7 @@ func (a *App) handleSubmit(text string) (tea.Model, tea.Cmd) {
 			a.spinning = true
 			a.input.SetEnabled(false)
 			a.status.SetText("IM bridge...")
-			return a, tea.Batch(a.spinner.Tick, a.runIM(instruction))
+			return a, tea.Batch(a.smartSpinner.Tick(), a.runIM(instruction))
 		case "/status":
 			status := fmt.Sprintf("Session: %s | Model: %s | Repo: %s | Sandbox: %s | Skills: %d",
 				a.sessionID, a.cfg.Engine.ModelName(), a.cfg.Engine.RepoRoot(),
@@ -464,7 +506,8 @@ func (a *App) handleSubmit(text string) (tea.Model, tea.Cmd) {
 	a.input.SetEnabled(false)
 	a.status.SetText("Thinking...")
 
-	return a, tea.Batch(a.spinner.Tick, a.runStream(text), flush)
+	a.smartSpinner.Start()
+	return a, tea.Batch(a.smartSpinner.Tick(), a.runStream(text), flush)
 }
 
 // displaySandbox renders the sandbox backend name for /status, defaulting to "host".
@@ -507,5 +550,33 @@ func (a *App) waitForQuestionOutcome() tea.Cmd {
 			return QuestionPanelDoneMsg{Outcome: QuestionPanelOutcome{Cancelled: true}}
 		}
 		return QuestionPanelDoneMsg{Outcome: outcome}
+	}
+}
+
+func (a *App) handlePermPanelKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
+	if msg.String() == "ctrl+d" {
+		if a.permDeliver != nil {
+			select {
+			case a.permDeliver <- PermissionPanelOutcome{Cancelled: true}:
+			default:
+			}
+		}
+		return a, tea.Quit
+	}
+	a.permPanel.HandleKey(msg)
+	return a, nil
+}
+
+func (a *App) waitForPermOutcome() tea.Cmd {
+	ch := a.permOutcome
+	if ch == nil {
+		return nil
+	}
+	return func() tea.Msg {
+		outcome, ok := <-ch
+		if !ok {
+			return PermissionPanelDoneMsg{Outcome: PermissionPanelOutcome{Cancelled: true}}
+		}
+		return PermissionPanelDoneMsg{Outcome: outcome}
 	}
 }

@@ -53,11 +53,12 @@ type Chat struct {
 	// streaming accumulator for the current assistant response
 	streaming       bool
 	streamingBuffer strings.Builder
+	streamRenderer  *StreamingRenderer
 }
 
 // NewChat creates a Chat component.
 func NewChat(s Styles) *Chat {
-	return &Chat{styles: s}
+	return &Chat{styles: s, streamRenderer: NewStreamingRenderer()}
 }
 
 // SetWidth updates the chat rendering width.
@@ -82,6 +83,7 @@ func (c *Chat) AddUserMessage(text string) {
 func (c *Chat) StartStreaming() {
 	c.streaming = true
 	c.streamingBuffer.Reset()
+	c.streamRenderer.Reset()
 }
 
 // AppendStreamText adds a text delta to the current streaming response.
@@ -396,10 +398,12 @@ func (c *Chat) renderIM(b *strings.Builder, msg ChatMsg, width int) {
 func (c *Chat) toolIcon(status string) string {
 	switch status {
 	case "success":
-		return c.styles.ToolSuccess.Render(IconCircle)
+		return c.styles.ToolSuccess.Render(IconCheck)
 	case "error":
-		return c.styles.ToolError.Render(IconCircle)
+		return c.styles.ToolError.Render(IconError)
+	case "queued":
+		return c.styles.ToolPending.Render(IconDot)
 	default:
-		return c.styles.ToolPending.Render(IconCircle) // dim ● when running
+		return c.styles.ToolPending.Render(IconPending)
 	}
 }
