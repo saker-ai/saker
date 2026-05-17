@@ -9,12 +9,40 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
 	bifrost "github.com/maximhq/bifrost/core"
 	"github.com/maximhq/bifrost/core/schemas"
 )
+
+// slogBifrostLogger adapts slog.Default() to Bifrost's schemas.Logger interface
+// so that Bifrost's internal log output (warn/error from SSE parsing, etc.)
+// routes through saker's file-based logging instead of writing to stderr and
+// breaking the TUI.
+type slogBifrostLogger struct{}
+
+func (slogBifrostLogger) Debug(msg string, args ...any) {
+	slog.Debug(fmt.Sprintf(msg, args...), "component", "bifrost")
+}
+func (slogBifrostLogger) Info(msg string, args ...any) {
+	slog.Info(fmt.Sprintf(msg, args...), "component", "bifrost")
+}
+func (slogBifrostLogger) Warn(msg string, args ...any) {
+	slog.Warn(fmt.Sprintf(msg, args...), "component", "bifrost")
+}
+func (slogBifrostLogger) Error(msg string, args ...any) {
+	slog.Error(fmt.Sprintf(msg, args...), "component", "bifrost")
+}
+func (slogBifrostLogger) Fatal(msg string, args ...any) {
+	slog.Error(fmt.Sprintf(msg, args...), "component", "bifrost", "fatal", true)
+}
+func (slogBifrostLogger) SetLevel(schemas.LogLevel)            {}
+func (slogBifrostLogger) SetOutputType(schemas.LoggerOutputType) {}
+func (slogBifrostLogger) LogHTTPRequest(schemas.LogLevel, string) schemas.LogEventBuilder {
+	return schemas.NoopLogEvent
+}
 
 // BifrostFallbackSpec describes one fallback provider/model pair plus its
 // authentication / network details. Each spec is registered into the same
@@ -316,6 +344,7 @@ func NewBifrost(cfg BifrostConfig) (Model, error) {
 	bifrostCfg := schemas.BifrostConfig{
 		Account:         account,
 		InitialPoolSize: 16,
+		Logger:          slogBifrostLogger{},
 	}
 	plugins := make([]schemas.LLMPlugin, 0, 2)
 	if cfg.OnFailover != nil && len(fallbacks) > 0 {
